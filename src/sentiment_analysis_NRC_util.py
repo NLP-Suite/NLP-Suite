@@ -1,60 +1,89 @@
 import sys
+
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_Python_packages(GUI_util.window, "sentiment_analysis_NRC", ['os', 'csv', 'tkinter', 'nrclex', 'numpy', 'matplotlib']) == False:
+if (
+    IO_libraries_util.install_all_Python_packages(
+        GUI_util.window, "sentiment_analysis_NRC", ["os", "csv", "tkinter", "nrclex", "numpy", "matplotlib"]
+    )
+    == False
+):
     sys.exit(0)
 
-import os
 import csv
-import time
-import numpy as np
-import tkinter.messagebox as mb
-import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
-from matplotlib.colors import to_rgba
-from nrclex import NRCLex
-from collections import defaultdict
 import math
+import os
+import tkinter.messagebox as mb
 
-import GUI_IO_util
+from matplotlib.colors import to_rgba
+import matplotlib.patches as mpatches
+import matplotlib.pyplot as plt
+from nrclex import NRCLex
+import numpy as np
+
+import charts_util
 import IO_csv_util
 import IO_files_util
-import IO_user_interface_util
-import charts_util
+from Stanza_functions_util import sentence_split_stanza_text, stanzaPipeLine
 import statistics_statistical_tests_util
 
-from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text
-
-EIGHT_EMOTIONS = ["anger", "anticipation", "disgust", "fear",
-                   "joy", "sadness", "surprise", "trust"]
+EIGHT_EMOTIONS = ["anger", "anticipation", "disgust", "fear", "joy", "sadness", "surprise", "trust"]
 
 NRC_COLORS = {
-    "joy":          "#F9CB42",
-    "trust":        "#639922",
-    "fear":         "#1D9E75",
-    "surprise":     "#378ADD",
-    "sadness":      "#534AB7",
-    "disgust":      "#D4537E",
-    "anger":        "#E24B4A",
+    "joy": "#F9CB42",
+    "trust": "#639922",
+    "fear": "#1D9E75",
+    "surprise": "#378ADD",
+    "sadness": "#534AB7",
+    "disgust": "#D4537E",
+    "anger": "#E24B4A",
     "anticipation": "#BA7517",
 }
 
 # Plutchik intensity data
 PLUTCHIK_EMOTIONS = [
-    {"name": "Joy",          "mild": "Serenity",      "intense": "Ecstasy",    "opposite": "Sadness",      "color": "#F9CB42", "angle": 90},
-    {"name": "Trust",        "mild": "Acceptance",    "intense": "Admiration",  "opposite": "Disgust",      "color": "#639922", "angle": 45},
-    {"name": "Fear",         "mild": "Apprehension",  "intense": "Terror",      "opposite": "Anger",        "color": "#1D9E75", "angle": 0},
-    {"name": "Surprise",     "mild": "Distraction",   "intense": "Amazement",   "opposite": "Anticipation", "color": "#378ADD", "angle": -45},
-    {"name": "Sadness",      "mild": "Pensiveness",   "intense": "Grief",       "opposite": "Joy",          "color": "#534AB7", "angle": -90},
-    {"name": "Disgust",      "mild": "Boredom",       "intense": "Loathing",    "opposite": "Trust",        "color": "#D4537E", "angle": -135},
-    {"name": "Anger",        "mild": "Annoyance",     "intense": "Rage",        "opposite": "Fear",         "color": "#E24B4A", "angle": 180},
-    {"name": "Anticipation", "mild": "Interest",      "intense": "Vigilance",   "opposite": "Surprise",     "color": "#BA7517", "angle": 135},
+    {"name": "Joy", "mild": "Serenity", "intense": "Ecstasy", "opposite": "Sadness", "color": "#F9CB42", "angle": 90},
+    {
+        "name": "Trust",
+        "mild": "Acceptance",
+        "intense": "Admiration",
+        "opposite": "Disgust",
+        "color": "#639922",
+        "angle": 45,
+    },
+    {"name": "Fear", "mild": "Apprehension", "intense": "Terror", "opposite": "Anger", "color": "#1D9E75", "angle": 0},
+    {
+        "name": "Surprise",
+        "mild": "Distraction",
+        "intense": "Amazement",
+        "opposite": "Anticipation",
+        "color": "#378ADD",
+        "angle": -45,
+    },
+    {"name": "Sadness", "mild": "Pensiveness", "intense": "Grief", "opposite": "Joy", "color": "#534AB7", "angle": -90},
+    {
+        "name": "Disgust",
+        "mild": "Boredom",
+        "intense": "Loathing",
+        "opposite": "Trust",
+        "color": "#D4537E",
+        "angle": -135,
+    },
+    {"name": "Anger", "mild": "Annoyance", "intense": "Rage", "opposite": "Fear", "color": "#E24B4A", "angle": 180},
+    {
+        "name": "Anticipation",
+        "mild": "Interest",
+        "intense": "Vigilance",
+        "opposite": "Surprise",
+        "color": "#BA7517",
+        "angle": 135,
+    },
 ]
 
 INTENSITY_LEVELS = {
-    "mild":    (0.35, 0.60),
-    "basic":   (0.60, 0.85),
+    "mild": (0.35, 0.60),
+    "basic": (0.60, 0.85),
     "intense": (0.85, 1.00),
 }
 
@@ -142,23 +171,43 @@ def plot_plutchik_wheel(scores, title, outputFilename):
                 alpha = 0.3
 
             color = tuple(base_color[:3] * shade) + (alpha,)
-            ax.bar(theta_center, r_out - r_in, width=width - 0.02,
-                   bottom=r_in, color=color, edgecolor="white",
-                   linewidth=0.8, align="center")
+            ax.bar(
+                theta_center,
+                r_out - r_in,
+                width=width - 0.02,
+                bottom=r_in,
+                color=color,
+                edgecolor="white",
+                linewidth=0.8,
+                align="center",
+            )
 
             r_mid = (r_in + r_out) / 2
             label_map = {"mild": e["mild"], "basic": e["name"], "intense": e["intense"]}
             lbl = label_map[level]
             text_alpha = 1.0 if alpha > 0.5 else 0.4
-            ax.text(theta_center, r_mid, lbl, ha="center", va="center",
-                    fontsize=6.5 if level != "basic" else 7.5,
-                    fontweight="bold" if level == "basic" else "normal",
-                    color=(0, 0, 0, text_alpha))
+            ax.text(
+                theta_center,
+                r_mid,
+                lbl,
+                ha="center",
+                va="center",
+                fontsize=6.5 if level != "basic" else 7.5,
+                fontweight="bold" if level == "basic" else "normal",
+                color=(0, 0, 0, text_alpha),
+            )
 
         if emotion_score > 0:
-            ax.text(theta_center, 1.08, f"{emotion_score:.0%}",
-                    ha="center", va="center", fontsize=8,
-                    fontweight="bold", color=e["color"])
+            ax.text(
+                theta_center,
+                1.08,
+                f"{emotion_score:.0%}",
+                ha="center",
+                va="center",
+                fontsize=8,
+                fontweight="bold",
+                color=e["color"],
+            )
 
     ax.set_ylim(0, 1.15)
     fig.suptitle(title, fontsize=14, y=0.97)
@@ -170,12 +219,14 @@ def plot_plutchik_wheel(scores, title, outputFilename):
 
 
 def analyzefile(inputFilename, outputDir, writer, Document_ID, Document):
-    with open(inputFilename, 'r', encoding='utf-8', errors='ignore') as f:
+    with open(inputFilename, encoding="utf-8", errors="ignore") as f:
         fulltext = f.read()
 
     if len(fulltext) < 1:
-        mb.showerror(title='File empty',
-                     message='The file ' + inputFilename + ' is empty.\n\nPlease, use another file and try again.')
+        mb.showerror(
+            title="File empty",
+            message="The file " + inputFilename + " is empty.\n\nPlease, use another file and try again.",
+        )
         return
 
     sentences = sentence_split_stanza_text(stanzaPipeLine(fulltext))
@@ -184,32 +235,39 @@ def analyzefile(inputFilename, outputDir, writer, Document_ID, Document):
         scores = score_sentence(s)
         dom = dominant_emotion(scores)
 
-        row = {'Sentence ID': i, 'Sentence': s,
-               'Dominant emotion': dom,
-               'Document ID': Document_ID,
-               'Document': IO_csv_util.dressFilenameForCSVHyperlink(Document)}
+        row = {
+            "Sentence ID": i,
+            "Sentence": s,
+            "Dominant emotion": dom,
+            "Document ID": Document_ID,
+            "Document": IO_csv_util.dressFilenameForCSVHyperlink(Document),
+        }
         for e in EIGHT_EMOTIONS:
             row[e.capitalize()] = round(scores[e], 4)
 
         writer.writerow(row)
 
 
-def main(inputFilename, inputDir, outputDir, chartPackage='Excel', dataTransformation='No transformation'):
+def main(inputFilename, inputDir, outputDir, chartPackage="Excel", dataTransformation="No transformation"):
     filesToOpen = []
 
-    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir,
-                                                        label='sentiment_NRC', silent=True)
-    if outputDir == '':
+    outputDir = IO_files_util.make_output_subdirectory(
+        inputFilename, inputDir, outputDir, label="sentiment_NRC", silent=True
+    )
+    if outputDir == "":
         return
 
-    outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir,
-                                                              '.csv', 'NRC_emotions', '', '', '', '', False, True)
+    outputFilename = IO_files_util.generate_output_file_name(
+        inputFilename, inputDir, outputDir, ".csv", "NRC_emotions", "", "", "", "", False, True
+    )
 
-    fieldnames = ['Sentence ID', 'Sentence', 'Dominant emotion'] + \
-                 [e.capitalize() for e in EIGHT_EMOTIONS] + \
-                 ['Document ID', 'Document']
+    fieldnames = (
+        ["Sentence ID", "Sentence", "Dominant emotion"]
+        + [e.capitalize() for e in EIGHT_EMOTIONS]
+        + ["Document ID", "Document"]
+    )
 
-    with open(outputFilename, 'w', encoding='utf-8', errors='ignore', newline='') as csvfile:
+    with open(outputFilename, "w", encoding="utf-8", errors="ignore", newline="") as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
 
@@ -235,6 +293,7 @@ def main(inputFilename, inputDir, outputDir, chartPackage='Excel', dataTransform
 
     # aggregate scores across all sentences for the wheel visualizations
     import pandas as pd
+
     df = pd.read_csv(outputFilename)
     emotion_cols = [e.capitalize() for e in EIGHT_EMOTIONS]
     avg_scores = {e.lower(): df[e].mean() for e in emotion_cols}
@@ -244,18 +303,31 @@ def main(inputFilename, inputDir, outputDir, chartPackage='Excel', dataTransform
     else:
         base_name = os.path.basename(inputDir)
 
-    radar_file = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir,
-                                                          '.png', 'NRC_radar', '', '', '', '', False, True)
+    radar_file = IO_files_util.generate_output_file_name(
+        inputFilename, inputDir, outputDir, ".png", "NRC_radar", "", "", "", "", False, True
+    )
     plot_nrc_radar(avg_scores, f"NRC Emotion Wheel — {base_name}", radar_file)
     filesToOpen.append(radar_file)
 
-    plutchik_file = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir,
-                                                             '.png', 'Plutchik_wheel', '', '', '', '', False, True)
+    plutchik_file = IO_files_util.generate_output_file_name(
+        inputFilename, inputDir, outputDir, ".png", "Plutchik_wheel", "", "", "", "", False, True
+    )
     plot_plutchik_wheel(avg_scores, f"Plutchik Emotion Wheel — {base_name}", plutchik_file)
     filesToOpen.append(plutchik_file)
 
-    if chartPackage != 'No charts':
-        outputFiles = charts_util.plot(outputFilename, outputDir, columns=emotion_cols, title='NRC Emotion Scores by Sentence', x_label='Sentence ID', count=0, file_label='NRC', plot_list=emotion_cols, title_label='NRC Emotion Scores', y_label='Emotion Score')
+    if chartPackage != "No charts":
+        outputFiles = charts_util.plot(
+            outputFilename,
+            outputDir,
+            columns=emotion_cols,
+            title="NRC Emotion Scores by Sentence",
+            x_label="Sentence ID",
+            count=0,
+            file_label="NRC",
+            plot_list=emotion_cols,
+            title_label="NRC Emotion Scores",
+            y_label="Emotion Score",
+        )
         if outputFiles is not None:
             if isinstance(outputFiles, str):
                 filesToOpen.append(outputFiles)
@@ -263,7 +335,8 @@ def main(inputFilename, inputDir, outputDir, chartPackage='Excel', dataTransform
                 filesToOpen.extend(outputFiles)
 
     stat_files = statistics_statistical_tests_util.run_automatic_tests(
-        outputFilename, outputDir, chartPackage, dataTransformation)
+        outputFilename, outputDir, chartPackage, dataTransformation
+    )
     filesToOpen.extend(stat_files)
 
     return filesToOpen

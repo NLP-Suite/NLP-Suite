@@ -1,8 +1,5 @@
 # Written by Roberto Franzosi January 2023
 
-import sys
-import GUI_util
-import IO_libraries_util
 
 # if pafy gives an error
 #   pip uninstall pafy
@@ -11,6 +8,7 @@ import IO_libraries_util
 #     sys.exit(0)
 
 import tkinter.messagebox as mb
+
 # importing vlc module
 # try:
 #     import vlc
@@ -25,40 +23,51 @@ import tkinter.messagebox as mb
 # platform (Windows in particular). Import them OPTIONALLY so a missing module degrades the video
 # feature gracefully instead of breaking this whole module on import.
 try:
-    import vlc
     import pafy
+    import vlc
+
     _VIDEO_LIBS_AVAILABLE = True
 except Exception:
     _VIDEO_LIBS_AVAILABLE = False
 
 import IO_internet_util
 
+
 # def get_videos(selected_videos,lookup,menu_lb, dropdown_field):
 def get_video(selected_video, lookup):
     # lookup[selected_video] contains the YouTube video url
-    if selected_video=='Watch videos':
+    if selected_video == "Watch videos":
         return
-    if lookup=={''} or selected_video=='No videos available':
-        mb.showinfo(title='videos Warning', message="There are no videos available for this GUI.")
+    if lookup == {""} or selected_video == "No videos available":
+        mb.showinfo(title="videos Warning", message="There are no videos available for this GUI.")
         return
     try:
-        if len(lookup[selected_video])==0:
+        if len(lookup[selected_video]) == 0:
             pass
     except:
-        mb.showinfo(title='videos keyError', message="There was an error in the videos dictionary lookup for \n\n" + selected_video +"\n\nPlease, report the issue to the NLP Suite developers.")
+        mb.showinfo(
+            title="videos keyError",
+            message="There was an error in the videos dictionary lookup for \n\n"
+            + selected_video
+            + "\n\nPlease, report the issue to the NLP Suite developers.",
+        )
         return False
     play_video(lookup[selected_video])
+
 
 # #Trace and open videos files based on user selection
 # field = None
 # lookup = None
 
+
 def play_video(video_url):
     if not _VIDEO_LIBS_AVAILABLE:
-        mb.showinfo(title='Video playback unavailable',
-                    message="Watching the help videos needs the 'python-vlc' and 'pafy' modules, "
-                            "which are not installed in this environment.\n\nThe rest of the NLP "
-                            "Suite works normally - only in-app video playback is affected.")
+        mb.showinfo(
+            title="Video playback unavailable",
+            message="Watching the help videos needs the 'python-vlc' and 'pafy' modules, "
+            "which are not installed in this environment.\n\nThe rest of the NLP "
+            "Suite works normally - only in-app video playback is affected.",
+        )
         return
     if not IO_internet_util.check_internet_availability_warning("videos_util.py"):
         return
@@ -69,7 +78,10 @@ def play_video(video_url):
         # if pafy gives an error
         #   pip uninstall pafy
         #   pip install git+https://github.com/Cupcakus/pafy
-        mb.showinfo(title='Warning', message="The YouTube video module pafy has raised an error.\n\nPlease, in command line/prompt and in the NLP environment type\n\npip uninstall pafy\n\nWhen uninstalling pafy is complete, type\n\npip install git+https://github.com/Cupcakus/pafy\n\nClose the NLP Suite and try again.")
+        mb.showinfo(
+            title="Warning",
+            message="The YouTube video module pafy has raised an error.\n\nPlease, in command line/prompt and in the NLP environment type\n\npip uninstall pafy\n\nWhen uninstalling pafy is complete, type\n\npip install git+https://github.com/Cupcakus/pafy\n\nClose the NLP Suite and try again.",
+        )
         return
     # getting best stream
     best = video.getbest()

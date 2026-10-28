@@ -1,43 +1,47 @@
-﻿# Written by Yuhang Feng November 2019-April 2020
+# Written by Yuhang Feng November 2019-April 2020
 # Written by Yuhang Feng November 2019-April 2020
 # Edited by Roberto Franzosi, Tony May 2022
 # Edited by Samir Kaddoura, March 2023
 
 import sys
+
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_Python_packages(GUI_util.window, "charts_util",
-                                                 ['csv', 'os', 'collections', 're', 'tkinter', 'openpyxl', 'pandas',
-                                                  'numpy', 'matplotlib', 'plotly', 'seaborn']) == False:
+if (
+    IO_libraries_util.install_all_Python_packages(
+        GUI_util.window,
+        "charts_util",
+        ["csv", "os", "collections", "re", "tkinter", "openpyxl", "pandas", "numpy", "matplotlib", "plotly", "seaborn"],
+    )
+    == False
+):
     sys.exit(0)
 
-import plotly
-from plotly.subplots import make_subplots
+import re
+import warnings
 
 import numpy as np
-import re
-
 import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
-import warnings
-warnings.simplefilter(action='ignore', category=RuntimeWarning)
+warnings.simplefilter(action="ignore", category=RuntimeWarning)
 
-import tkinter.messagebox as mb
 from collections import Counter
-import pandas as pd
 import os
+import tkinter.messagebox as mb
 
+import pandas as pd
+
+import charts_Excel_util
+import charts_Plotly_util
 import IO_csv_util
 import IO_user_interface_util
-import charts_Plotly_util
+
 # Esri tiles: OpenStreetMap refuses a map page opened from disk (map_tiles_util)
 import map_tiles_util
-import charts_Excel_util
 import statistics_csv_util
-
 
 # Prepare the data (data_to_be_plotted) to be used in charts_Excel_util.create_excel_chart with the format:
 #   one series: [[['Name1','Frequency'], ['A', 7]]]
@@ -47,9 +51,11 @@ import statistics_csv_util
 # inputFilename has the full path
 # columns_to_be_plotted is a double list [[0, 1], [0, 2], [0, 3]]
 
+
 # returns a double list of dataframes
-def prepare_data_to_be_plotted_inExcel(inputFilename, columns_to_be_plotted, chart_type_list,
-                                       count_var=0, column_yAxis_field_list=[]):
+def prepare_data_to_be_plotted_inExcel(
+    inputFilename, columns_to_be_plotted, chart_type_list, count_var=0, column_yAxis_field_list=[]
+):
     # TODO temporary to measure process time
     # startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running Excel prepare_data_to_be_plotted_inExcel at',
     #                                              True, '', True, '', True)
@@ -59,27 +65,37 @@ def prepare_data_to_be_plotted_inExcel(inputFilename, columns_to_be_plotted, cha
     try:
         # low_memory=False: read each column in one pass so pandas infers a single dtype per column
         # (avoids the "Columns (N) have mixed types" DtypeWarning on large CSVs like a big CoNLL table).
-        data = pd.read_csv(inputFilename, encoding='utf-8', on_bad_lines='skip', low_memory=False)
+        data = pd.read_csv(inputFilename, encoding="utf-8", on_bad_lines="skip", low_memory=False)
     except:
         try:
-            data = pd.read_csv(inputFilename, encoding='ISO-8859-1', on_bad_lines='skip')
-            IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Warning',
-                                               'Excel-util encountered errors with utf-8 encoding and switched to ISO-8859-1 in reading into pandas the csv file ' + inputFilename)
+            data = pd.read_csv(inputFilename, encoding="ISO-8859-1", on_bad_lines="skip")
+            IO_user_interface_util.timed_alert(
+                GUI_util.window,
+                2000,
+                "Warning",
+                "Excel-util encountered errors with utf-8 encoding and switched to ISO-8859-1 in reading into pandas the csv file "
+                + inputFilename,
+            )
             print(
-                "Excel-util encountered errors with utf-8 encoding and switched to ISO-8859-1 encoding in reading into pandas the csv file " + inputFilename)
+                "Excel-util encountered errors with utf-8 encoding and switched to ISO-8859-1 encoding in reading into pandas the csv file "
+                + inputFilename
+            )
         except ValueError as err:
-            if 'codec' in str(err):
-                err = str(
-                    err) + '\n\nExcel-util encountered errors with both utf-8 and ISO-8859-1 encoding in the function \'prepare_data_to_be_plotted_inExcel\' while reading into pandas the csv file\n\n' + inputFilename + '\n\nPlease, check carefully the data in the csv file; it may contain filenames with non-utf-8/ISO-8859-1 characters; less likely, the data in the txt files that generated the csv file may also contain non-compliant characters. Run the utf-8 compliance algorithm and, perhaps, run the cleaning algorithm that converts apostrophes.\n\nNO EXCEL CHART PRODUCED.'
-            mb.showwarning(title='Input file read error',
-                           message=str(err))
+            if "codec" in str(err):
+                err = (
+                    str(err)
+                    + "\n\nExcel-util encountered errors with both utf-8 and ISO-8859-1 encoding in the function 'prepare_data_to_be_plotted_inExcel' while reading into pandas the csv file\n\n"
+                    + inputFilename
+                    + "\n\nPlease, check carefully the data in the csv file; it may contain filenames with non-utf-8/ISO-8859-1 characters; less likely, the data in the txt files that generated the csv file may also contain non-compliant characters. Run the utf-8 compliance algorithm and, perhaps, run the cleaning algorithm that converts apostrophes.\n\nNO EXCEL CHART PRODUCED."
+                )
+            mb.showwarning(title="Input file read error", message=str(err))
             return
 
     headers = list(data.columns.values)
     withHeader_var = False
-    if len(headers)>0:
+    if len(headers) > 0:
         withHeader_var = True
-    if ('byDoc' in inputFilename and 'hyperlinks' in inputFilename) and (not 'group' in inputFilename):
+    if ("byDoc" in inputFilename and "hyperlinks" in inputFilename) and ("group" not in inputFilename):
         # sort by document ID and relevant column in headers[columns_to_be_plotted[0][0]]
         #   use [0][1] if saving with Index=False
         data = data.sort_values([headers[0], headers[columns_to_be_plotted[0][0]]])
@@ -94,12 +110,13 @@ def prepare_data_to_be_plotted_inExcel(inputFilename, columns_to_be_plotted, cha
         dataRange = get_dataRange(columns_to_be_plotted, data)
         # TODO hover_over_values not being passed, neither are any potential aggregate columns
         #   get_data_to_be_plotted_with_counts is less general than
-        data_to_be_plotted = get_data_to_be_plotted_with_counts(inputFilename, withHeader_var, headers,
-                                                                columns_to_be_plotted, column_yAxis_field_list,
-                                                                dataRange)
+        data_to_be_plotted = get_data_to_be_plotted_with_counts(
+            inputFilename, withHeader_var, headers, columns_to_be_plotted, column_yAxis_field_list, dataRange
+        )
     else:
-        data_to_be_plotted = get_data_to_be_plotted_NO_counts(inputFilename, withHeader_var, headers,
-                                                              columns_to_be_plotted, data)
+        data_to_be_plotted = get_data_to_be_plotted_NO_counts(
+            inputFilename, withHeader_var, headers, columns_to_be_plotted, data
+        )
     # TODO temporary to measure process time
     # IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running Excel prepare_data_to_be_plotted_inExcel at',
     #                                    True, '', True, startTime, True)
@@ -112,27 +129,41 @@ def prepare_data_to_be_plotted_inExcel(inputFilename, columns_to_be_plotted, cha
 # plot the words contained in each groupBy field values (e.g, the word 'Rome' in POS tag PPN)
 # must first run compute_csv_column_frequencies_with_aggregation
 # columns_to_be_plotted_yAxis=['Form']
-def visualize_chart_byGroup(inputFilename, outputDir, chartPackage, dataTransformation, filesToOpen,
-                            columns_to_be_plotted_byGroup, groupByList,
-                            chart_title, columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis):
+def visualize_chart_byGroup(
+    inputFilename,
+    outputDir,
+    chartPackage,
+    dataTransformation,
+    filesToOpen,
+    columns_to_be_plotted_byGroup,
+    groupByList,
+    chart_title,
+    columns_to_be_plotted_xAxis,
+    columns_to_be_plotted_yAxis,
+):
     pivot = False
     filesToOpen = []
 
     # the function compute_csv_column_frequencies produces plots
     # @@@ 9/29/2023
-    outputFiles = statistics_csv_util.compute_csv_column_frequencies(GUI_util.window,
-                                                                     inputFilename, None, outputDir, False,
-                                                                     chartPackage, dataTransformation,
-                                                                     # plot_cols=columns_to_be_plotted_numeric,
-                                                                     plot_cols=columns_to_be_plotted_yAxis,
-                                                                     hover_col=[],
-                                                                     group_cols=groupByList,
-                                                                     complete_sid=False,
-                                                                     chart_title=chart_title,
-                                                                     fileNameType=
-                                                                     columns_to_be_plotted_yAxis[0],
-                                                                     chartType='',
-                                                                     pivot=pivot)
+    outputFiles = statistics_csv_util.compute_csv_column_frequencies(
+        GUI_util.window,
+        inputFilename,
+        None,
+        outputDir,
+        False,
+        chartPackage,
+        dataTransformation,
+        # plot_cols=columns_to_be_plotted_numeric,
+        plot_cols=columns_to_be_plotted_yAxis,
+        hover_col=[],
+        group_cols=groupByList,
+        complete_sid=False,
+        chart_title=chart_title,
+        fileNameType=columns_to_be_plotted_yAxis[0],
+        chartType="",
+        pivot=pivot,
+    )
     if outputFiles != None:
         if isinstance(outputFiles, str):
             filesToOpen.append(outputFiles)
@@ -153,9 +184,10 @@ def visualize_chart_byGroup(inputFilename, outputDir, chartPackage, dataTransfor
     # 4 is Frequency
     # sel_column_name = IO_csv_util. = IO_csv_util.get_columnNumber_from_headerValue(headers, 'Document', inputFilename)(headers, 1)
     headers = IO_csv_util.get_csvfile_headers(inputFilename, ask_Question=False)
-    docCol = IO_csv_util.get_columnNumber_from_headerValue(headers, 'Document', inputFilename)
-    groupBy_Field = IO_csv_util.get_columnNumber_from_headerValue(headers, columns_to_be_plotted_yAxis[0],
-                                                                  inputFilename)
+    docCol = IO_csv_util.get_columnNumber_from_headerValue(headers, "Document", inputFilename)
+    groupBy_Field = IO_csv_util.get_columnNumber_from_headerValue(
+        headers, columns_to_be_plotted_yAxis[0], inputFilename
+    )
 
     # columns_to_be_plotted_byGroup = [[docCol, groupBy_Field, 3]]  # will give different bars for each value
     columns_to_be_plotted_byGroup = [[docCol, groupBy_Field]]  # will give different bars for each value
@@ -164,7 +196,7 @@ def visualize_chart_byGroup(inputFilename, outputDir, chartPackage, dataTransfor
     # outputFileLabel='by_' + str(groupByList[0])
     # chart_title='Frequency Distribution of ' + str(columns_to_be_plotted_yAxis[0]) + ' by ' + str(groupByList[0])
     # hover_label=[]
-    column_yAxis_label = 'Frequencies'
+    column_yAxis_label = "Frequencies"
     # if chartPackage == "Excel":
     #     column_name = IO_csv_util.get_headerValue_from_columnNumber(headers, 1)
     # chart is visualized in compute_csv_column_frequencies
@@ -323,7 +355,8 @@ def _bin_numeric_columns_for_chart(inputFilename, outputDir, value_col_indices, 
     any error), so the caller falls back to the original file unchanged."""
     try:
         import numpy as np
-        df = pd.read_csv(inputFilename, encoding='utf-8', on_bad_lines='skip')
+
+        df = pd.read_csv(inputFilename, encoding="utf-8", on_bad_lines="skip")
     except Exception:
         return None
     binned_any = False
@@ -332,7 +365,7 @@ def _bin_numeric_columns_for_chart(inputFilename, outputDir, value_col_indices, 
             if idx is None or idx < 0 or idx >= len(df.columns):
                 continue
             col = df.columns[idx]
-            s = pd.to_numeric(df[col], errors='coerce')
+            s = pd.to_numeric(df[col], errors="coerce")
             # A column counts as numeric only when (nearly) EVERY non-empty value parses as a number.
             # The old test was `s.notna().sum() == 0` -- i.e. skip only if NOT ONE value was numeric --
             # which made a single stray number enough to classify a TEXT column as numeric. Because the
@@ -346,7 +379,7 @@ def _bin_numeric_columns_for_chart(inputFilename, outputDir, value_col_indices, 
                 continue
             if numeric_count < _NUMERIC_COLUMN_MIN_SHARE * non_empty:
                 continue
-            if s.dropna().nunique() <= threshold:    # few enough distinct values already
+            if s.dropna().nunique() <= threshold:  # few enough distinct values already
                 continue
             vmin, vmax = float(s.min()), float(s.max())
             if vmin == vmax:
@@ -361,17 +394,30 @@ def _bin_numeric_columns_for_chart(inputFilename, outputDir, value_col_indices, 
     if not binned_any:
         return None
     try:
-        outFile = os.path.join(outputDir, 'NLP_binned_' + os.path.basename(inputFilename))
+        outFile = os.path.join(outputDir, "NLP_binned_" + os.path.basename(inputFilename))
         df.to_csv(outFile, index=False)
         return outFile
     except Exception:
         return None
 
 
-def plot(input_file, output_dir, *, columns,
-         title='', x_label='', y_label='Frequencies',
-         count=True, group_by='Document', hover=None, file_label='',
-         plot_list=None, title_label='', package=None, transform=None):
+def plot(
+    input_file,
+    output_dir,
+    *,
+    columns,
+    title="",
+    x_label="",
+    y_label="Frequencies",
+    count=True,
+    group_by="Document",
+    hover=None,
+    file_label="",
+    plot_list=None,
+    title_label="",
+    package=None,
+    transform=None,
+):
     """Name-based, keyword-only front door to the Excel chart engine -- covers the two dominant chart
     shapes ('count & bar' and 'numeric scores'): a bar chart of one or more columns, optionally grouped
     by document, with an optional per-field statistics pass. Thin wrapper over visualize_chart().
@@ -388,6 +434,7 @@ def plot(input_file, output_dir, *, columns,
     package/transform: default to the GUI's current chart package + data transformation.
     Returns the list of files to open (same as visualize_chart)."""
     import GUI_util
+
     if isinstance(columns, str):
         columns = [columns]
     if package is None:
@@ -400,26 +447,51 @@ def plot(input_file, output_dir, *, columns,
         groupByList = [group_by]
     else:
         groupByList = list(group_by)
-    return visualize_chart(package, transform, input_file, output_dir,
-                           [], columns,
-                           title, 1 if count else 0, hover if hover is not None else [],
-                           file_label, x_label,
-                           groupByList, plot_list if plot_list is not None else [], title_label,
-                           column_yAxis_label=y_label)
+    return visualize_chart(
+        package,
+        transform,
+        input_file,
+        output_dir,
+        [],
+        columns,
+        title,
+        1 if count else 0,
+        hover if hover is not None else [],
+        file_label,
+        x_label,
+        groupByList,
+        plot_list if plot_list is not None else [],
+        title_label,
+        column_yAxis_label=y_label,
+    )
 
 
-def visualize_chart(chartPackage, dataTransformation, inputFilename, outputDir,
-                    columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
-                    chart_title, count_var, hover_label, outputFileNameType, column_xAxis_label,
-                    groupByList, plotList, chart_title_label, column_yAxis_label='Frequencies', pivot=False):
-    outputFiles= []
+def visualize_chart(
+    chartPackage,
+    dataTransformation,
+    inputFilename,
+    outputDir,
+    columns_to_be_plotted_xAxis,
+    columns_to_be_plotted_yAxis,
+    chart_title,
+    count_var,
+    hover_label,
+    outputFileNameType,
+    column_xAxis_label,
+    groupByList,
+    plotList,
+    chart_title_label,
+    column_yAxis_label="Frequencies",
+    pivot=False,
+):
+    outputFiles = []
     filesToOpen = []
     columns_to_be_plotted_numeric = []
     columns_to_be_plotted_byDoc = []
     columns_to_be_plotted_bySent = []
 
-    if chartPackage != 'No charts':
-        chart_outputFilenameSV = ''
+    if chartPackage != "No charts":
+        chart_outputFilenameSV = ""
     else:
         return
 
@@ -440,34 +512,48 @@ def visualize_chart(chartPackage, dataTransformation, inputFilename, outputDir,
     #   see the example of call in get_ngramlist
     headers = IO_csv_util.get_csvfile_headers_pandas(inputFilename)
     if len(headers) == 0:
-        IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Empty csv file',
-                                           'The file\n\n' + inputFilename + '\n\nis empty. No charts can be produced using this csv file.\n\nPlease, check the file and try again.',
-                                           True, '', True, '', False)
+        IO_user_interface_util.timed_alert(
+            GUI_util.window,
+            2000,
+            "Empty csv file",
+            "The file\n\n"
+            + inputFilename
+            + "\n\nis empty. No charts can be produced using this csv file.\n\nPlease, check the file and try again.",
+            True,
+            "",
+            True,
+            "",
+            False,
+        )
         # mb.showwarning(title='Empty file', message='The file\n\n' + inputFilename + '\n\nis empty. No charts can be produced using this csv file.\n\nPlease, check the file and try again.')
         print(
-            'The file\n\n' + inputFilename + '\n\nis empty. No charts can be produced using this csv file.\n\nPlease, check the file and try again.')
+            "The file\n\n"
+            + inputFilename
+            + "\n\nis empty. No charts can be produced using this csv file.\n\nPlease, check the file and try again."
+        )
         return filesToOpen
     # A file with headers but no data rows (e.g. an empty word-class subcategory such as modal verbs
     # on a Stanza table) cannot be plotted; skip it gracefully rather than erroring in the plotting code.
     try:
         if pd.read_csv(inputFilename, nrows=1).shape[0] == 0:
-            print('The file\n\n' + inputFilename + '\n\nhas no data rows; skipping chart.')
+            print("The file\n\n" + inputFilename + "\n\nhas no data rows; skipping chart.")
             return filesToOpen
     except Exception:
         pass
     field_number_xAxis = None
     if len(columns_to_be_plotted_xAxis) == 1:
-        field_number_xAxis = IO_csv_util.get_columnNumber_from_headerValue(headers, columns_to_be_plotted_xAxis[0],
-                                                                           inputFilename)
+        field_number_xAxis = IO_csv_util.get_columnNumber_from_headerValue(
+            headers, columns_to_be_plotted_xAxis[0], inputFilename
+        )
 
-    if "Document" in str(groupByList): # regardless of Document or Document ID
-        docCol = IO_csv_util.get_columnNumber_from_headerValue(headers, 'Document', inputFilename)
+    if "Document" in str(groupByList):  # regardless of Document or Document ID
+        docCol = IO_csv_util.get_columnNumber_from_headerValue(headers, "Document", inputFilename)
         # we need to visualize the doc filename
         byDoc = True
     else:
         byDoc = False
     if "Sentence ID" in headers:
-        sentCol = IO_csv_util.get_columnNumber_from_headerValue(headers, 'Sentence ID', inputFilename)
+        sentCol = IO_csv_util.get_columnNumber_from_headerValue(headers, "Sentence ID", inputFilename)
         bySent = True
     else:
         bySent = False
@@ -475,8 +561,9 @@ def visualize_chart(chartPackage, dataTransformation, inputFilename, outputDir,
     # in visualize_chart
     for i in range(0, len(columns_to_be_plotted_yAxis)):
         # get numeric value of header, necessary for run_all
-        field_number_yAxis = IO_csv_util.get_columnNumber_from_headerValue(headers, columns_to_be_plotted_yAxis[i],
-                                                                           inputFilename)
+        field_number_yAxis = IO_csv_util.get_columnNumber_from_headerValue(
+            headers, columns_to_be_plotted_yAxis[i], inputFilename
+        )
         if field_number_yAxis == None:
             return filesToOpen
 
@@ -513,8 +600,9 @@ def visualize_chart(chartPackage, dataTransformation, inputFilename, outputDir,
     # and every other path keep the original file untouched.
     chartInputFilename = inputFilename
     if count_var == 1 and len(columns_to_be_plotted_xAxis) == 0:
-        binnedFilename = _bin_numeric_columns_for_chart(inputFilename, outputDir,
-                                                        [pair[1] for pair in columns_to_be_plotted_numeric])
+        binnedFilename = _bin_numeric_columns_for_chart(
+            inputFilename, outputDir, [pair[1] for pair in columns_to_be_plotted_numeric]
+        )
         if binnedFilename:
             chartInputFilename = binnedFilename
 
@@ -522,17 +610,21 @@ def visualize_chart(chartPackage, dataTransformation, inputFilename, outputDir,
     # Form	Lemma	POS	Record ID	Sentence ID	Document ID	Document
     # columns_to_be_plotted_numeric = [[0,0], [1,1]] with count_var = 1 since these values need to be counted
     # @@@ 12/22/2024
-    if isinstance(columns_to_be_plotted_numeric, list): # only plot if not empty list
-        outputFiles = run_all(columns_to_be_plotted_numeric, chartInputFilename, outputDir,
-                              outputFileLabel=outputFileNameType,
-                              chartPackage=chartPackage,
-                              dataTransformation=dataTransformation,
-                              chart_type_list=['bar'],
-                              chart_title=chart_title,
-                              column_xAxis_label_var=column_xAxis_label,
-                              column_yAxis_label_var=column_yAxis_label,
-                              hover_info_column_list=hover_label,
-                              count_var=count_var)  # always 1 to get frequencies of values, except for n-grams where we already pass stats
+    if isinstance(columns_to_be_plotted_numeric, list):  # only plot if not empty list
+        outputFiles = run_all(
+            columns_to_be_plotted_numeric,
+            chartInputFilename,
+            outputDir,
+            outputFileLabel=outputFileNameType,
+            chartPackage=chartPackage,
+            dataTransformation=dataTransformation,
+            chart_type_list=["bar"],
+            chart_title=chart_title,
+            column_xAxis_label_var=column_xAxis_label,
+            column_yAxis_label_var=column_yAxis_label,
+            hover_info_column_list=hover_label,
+            count_var=count_var,
+        )  # always 1 to get frequencies of values, except for n-grams where we already pass stats
 
         if outputFiles != None:
             chart_outputFilenameSV = outputFiles
@@ -545,28 +637,33 @@ def visualize_chart(chartPackage, dataTransformation, inputFilename, outputDir,
             #   typically because of too many rows for Excel to handle, when Excel is used
             return
 
-    n_documents=0
+    n_documents = 0
     # by DOCUMENT
     if byDoc:
         # TODO depends on how many documents we have;
         #   no point charting one document since these charts would be the same as no document
-        n_documents = IO_csv_util.GetMaxValueInCSVField(inputFilename, 'visualize_charts_util', 'Document ID')
+        n_documents = IO_csv_util.GetMaxValueInCSVField(inputFilename, "visualize_charts_util", "Document ID")
         if n_documents > 1:
-            column_yAxis_label = 'Frequencies'
+            column_yAxis_label = "Frequencies"
             columns_to_be_plotted_byGroup = []
-            chart_title = chart_title + ' by Document'
+            chart_title = chart_title + " by Document"
             for header in groupByList:
                 groupCol = IO_csv_util.get_columnNumber_from_headerValue(headers, header, inputFilename)
                 columns_to_be_plotted_byGroup.append([groupCol, field_number_yAxis])
 
             # by DOCUMENT
-            outputFiles = visualize_chart_byGroup(inputFilename, outputDir,
-                                                  chartPackage, dataTransformation,
-                                                  filesToOpen,
-                                                  columns_to_be_plotted_byGroup, groupByList,
-                                                  chart_title,
-                                                  columns_to_be_plotted_xAxis,
-                                                  columns_to_be_plotted_yAxis)
+            outputFiles = visualize_chart_byGroup(
+                inputFilename,
+                outputDir,
+                chartPackage,
+                dataTransformation,
+                filesToOpen,
+                columns_to_be_plotted_byGroup,
+                groupByList,
+                chart_title,
+                columns_to_be_plotted_xAxis,
+                columns_to_be_plotted_yAxis,
+            )
 
             if outputFiles != None:
                 chart_outputFilenameSV = outputFiles
@@ -576,16 +673,24 @@ def visualize_chart(chartPackage, dataTransformation, inputFilename, outputDir,
                     filesToOpen.extend(outputFiles)
     # bar chart aggregated by group  (e.g., form values by POS tags) -----------------------------------------------------------------
     #   avoid plotting by ['Document ID', 'Document'] as groupBy; done in chart byDoc
-    if n_documents > 1 and len(groupByList) > 0 and groupByList != ['Document ID', 'Document']:
+    if n_documents > 1 and len(groupByList) > 0 and groupByList != ["Document ID", "Document"]:
         columns_to_be_plotted_byGroup = []
         for header in groupByList:
             groupCol = IO_csv_util.get_columnNumber_from_headerValue(headers, header, inputFilename)
             # [POS, Form]
             columns_to_be_plotted_byGroup.append([groupCol, field_number_yAxis])
-        outputFiles = visualize_chart_byGroup(inputFilename, outputDir, chartPackage, dataTransformation,
-                                              filesToOpen,
-                                              columns_to_be_plotted_byGroup, groupByList, chart_title,
-                                              columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis)
+        outputFiles = visualize_chart_byGroup(
+            inputFilename,
+            outputDir,
+            chartPackage,
+            dataTransformation,
+            filesToOpen,
+            columns_to_be_plotted_byGroup,
+            groupByList,
+            chart_title,
+            columns_to_be_plotted_xAxis,
+            columns_to_be_plotted_yAxis,
+        )
 
         if outputFiles != None:
             chart_outputFilenameSV = outputFiles
@@ -606,17 +711,23 @@ def visualize_chart(chartPackage, dataTransformation, inputFilename, outputDir,
     if len(groupByList) > 0 and not isinstance(outputFiles, str):  # compute only if list is not empty
         if count_var == 1:
             if len(outputFiles) == 0:
-                return filesToOpen # []
+                return filesToOpen  # []
             temp_inputFilename = outputFiles[0]
         else:
             temp_inputFilename = inputFilename
-        if plotList == ['Frequency']:
-            plotList = ['Frequency_' + str(columns_to_be_plotted_yAxis[0])]
-        outputFiles = statistics_csv_util.compute_csv_column_statistics(GUI_util.window, temp_inputFilename,
-                                                                        outputDir,
-                                                                        outputFileNameType, groupByList,
-                                                                        plotList, chart_title_label,
-                                                                        chartPackage, dataTransformation)
+        if plotList == ["Frequency"]:
+            plotList = ["Frequency_" + str(columns_to_be_plotted_yAxis[0])]
+        outputFiles = statistics_csv_util.compute_csv_column_statistics(
+            GUI_util.window,
+            temp_inputFilename,
+            outputDir,
+            outputFileNameType,
+            groupByList,
+            plotList,
+            chart_title_label,
+            chartPackage,
+            dataTransformation,
+        )
 
         if outputFiles != None:
             if isinstance(outputFiles, str):
@@ -671,19 +782,34 @@ def visualize_chart(chartPackage, dataTransformation, inputFilename, outputDir,
 
 #   plotList is the list of fields to be plotted
 
-def run_all(columns_to_be_plotted, inputFilename, outputDir, outputFileLabel,
-            chartPackage, dataTransformation, chart_type_list, chart_title, column_xAxis_label_var,
-            hover_info_column_list=[],
-            count_var=0,
-            column_yAxis_label_var='Frequencies',
-            column_yAxis_field_list=[],
-            reverse_column_position_for_series_label=False,
-            series_label_list=[], second_y_var=0, second_yAxis_label='',
-            complete_sid=False, remove_hyperlinks=False, csv_field_Y_axis_list=[], X_axis_var=[]):
-    # get the chart type from the GUI user selection
-    chart_type_list = [GUI_util.charts_type_options_widget.get().split(' ')[0]]
 
-    use_Plotly = 'plotly' in chartPackage.lower()
+def run_all(
+    columns_to_be_plotted,
+    inputFilename,
+    outputDir,
+    outputFileLabel,
+    chartPackage,
+    dataTransformation,
+    chart_type_list,
+    chart_title,
+    column_xAxis_label_var,
+    hover_info_column_list=[],
+    count_var=0,
+    column_yAxis_label_var="Frequencies",
+    column_yAxis_field_list=[],
+    reverse_column_position_for_series_label=False,
+    series_label_list=[],
+    second_y_var=0,
+    second_yAxis_label="",
+    complete_sid=False,
+    remove_hyperlinks=False,
+    csv_field_Y_axis_list=[],
+    X_axis_var=[],
+):
+    # get the chart type from the GUI user selection
+    chart_type_list = [GUI_util.charts_type_options_widget.get().split(" ")[0]]
+
+    use_Plotly = "plotly" in chartPackage.lower()
 
     # AUTO-SWITCH to Plotly when the caller asked for Excel but the input CSV exceeds Excel's hard
     # 1,048,576-row cap. Excel would otherwise SKIP the chart entirely (charts_Excel_util returns on
@@ -693,9 +819,11 @@ def run_all(columns_to_be_plotted, inputFilename, outputDir, outputFileLabel,
         try:
             _nrec, _ = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(inputFilename)
             if _nrec and int(_nrec) > 1048575:
-                print('charts_util: "%s" has %s rows, exceeding Excel\'s 1,048,576-row limit; '
-                      'rendering this chart with Plotly instead of Excel.'
-                      % (os.path.basename(str(inputFilename)), format(int(_nrec), ',')))
+                print(
+                    'charts_util: "%s" has %s rows, exceeding Excel\'s 1,048,576-row limit; '
+                    "rendering this chart with Plotly instead of Excel."
+                    % (os.path.basename(str(inputFilename)), format(int(_nrec), ","))
+                )
                 use_Plotly = True
         except Exception:
             pass
@@ -707,41 +835,43 @@ def run_all(columns_to_be_plotted, inputFilename, outputDir, outputFileLabel,
         inputFilename = add_missing_IDs(inputFilename, inputFilename)
         # complete_sentence_index(inputFilename)
     if use_Plotly:
-        if 'static' in chartPackage.lower():
+        if "static" in chartPackage.lower():
             static_flag = True
         else:
             static_flag = False
         # TODO Tony when plotting bar charts with documents in the X-axis we need to remove the path and just keep the tail
         #   or the display is too messy; it works well with Excel
-        if 'Kurtosis' in chart_title:
+        if "Kurtosis" in chart_title:
             chart_type_list = ["Bar"]
-        Plotly_outputFilename = charts_Plotly_util.create_Plotly_chart(inputFilename=inputFilename,
-                                                                       outputDir=outputDir,
-                                                                       chart_title=chart_title,
-                                                                       chart_type_list=chart_type_list,
-                                                                       cols_to_plot=columns_to_be_plotted,
-                                                                       column_xAxis_label=column_xAxis_label_var,
-                                                                       column_yAxis_label=column_yAxis_label_var,
-                                                                       remove_hyperlinks=remove_hyperlinks,
-                                                                       static_flag=static_flag,
-                                                                       csv_field_Y_axis_list=csv_field_Y_axis_list,
-                                                                       X_axis_var=X_axis_var)
+        Plotly_outputFilename = charts_Plotly_util.create_Plotly_chart(
+            inputFilename=inputFilename,
+            outputDir=outputDir,
+            chart_title=chart_title,
+            chart_type_list=chart_type_list,
+            cols_to_plot=columns_to_be_plotted,
+            column_xAxis_label=column_xAxis_label_var,
+            column_yAxis_label=column_yAxis_label_var,
+            remove_hyperlinks=remove_hyperlinks,
+            static_flag=static_flag,
+            csv_field_Y_axis_list=csv_field_Y_axis_list,
+            X_axis_var=X_axis_var,
+        )
         return Plotly_outputFilename
 
-    data_to_be_plotted = prepare_data_to_be_plotted_inExcel(inputFilename,
-                                                            columns_to_be_plotted,
-                                                            chart_type_list, count_var,
-                                                            column_yAxis_field_list)
+    data_to_be_plotted = prepare_data_to_be_plotted_inExcel(
+        inputFilename, columns_to_be_plotted, chart_type_list, count_var, column_yAxis_field_list
+    )
+
     def list_of_lists_to_csv(data, csv_file_path):
         df = pd.DataFrame(data[1:], columns=data[0])
         df.to_csv(csv_file_path, index=False)
 
     data_to_be_plotted_2 = []
-    if len(data_to_be_plotted)>0:
+    if len(data_to_be_plotted) > 0:
         if type(data_to_be_plotted[0]) == list:
             list_of_lists_to_csv(data_to_be_plotted[0], "temptemp2.csv")
-            df = statistics_csv_util.data_transformation('temptemp2.csv', dataTransformation)
-            os.remove('temptemp2.csv')
+            df = statistics_csv_util.data_transformation("temptemp2.csv", dataTransformation)
+            os.remove("temptemp2.csv")
             data_to_be_plotted_2 = [[df.columns.tolist()] + df.values.tolist()]
     if len(data_to_be_plotted_2) == len(data_to_be_plotted):
         data_to_be_plotted = data_to_be_plotted_2
@@ -772,11 +902,12 @@ def run_all(columns_to_be_plotted, inputFilename, outputDir, outputFileLabel,
         def double_level_grouping_and_frequency(data, plot_cols, group_cols):
             # Calculate the counts for each column
             group_cols_count = data[group_cols[0]].value_counts().reset_index()
-            group_cols_count.columns = [group_cols[0], f'Frequency_{group_cols[0]}']
-            plot_cols_count = data.groupby(group_cols)[plot_cols[0]].value_counts().reset_index(
-                name=f'Frequency_{plot_cols[0]}')
+            group_cols_count.columns = [group_cols[0], f"Frequency_{group_cols[0]}"]
+            plot_cols_count = (
+                data.groupby(group_cols)[plot_cols[0]].value_counts().reset_index(name=f"Frequency_{plot_cols[0]}")
+            )
             # Merge the counts back into the original dataframe
-            data_final = pd.merge(group_cols_count, plot_cols_count, how='inner', on=group_cols[0])
+            data_final = pd.merge(group_cols_count, plot_cols_count, how="inner", on=group_cols[0])
             data_final = data_final.drop_duplicates()  # Remove potential duplicate rows
             return data_final
             # Convert DataFrame into list of lists
@@ -788,41 +919,53 @@ def run_all(columns_to_be_plotted, inputFilename, outputDir, outputFileLabel,
             # list_2.insert(0, ['Lemma values', 'Frequencies of Lemma'])
             # return [list_1, list_2]
 
-        if len(data_to_be_plotted) == 2 and data_to_be_plotted[0][0] == ['Form values', 'Frequencies of Form'] and \
-                data_to_be_plotted[1][0] == ['Lemma values', 'Frequencies of Lemma']:
+        if (
+            len(data_to_be_plotted) == 2
+            and data_to_be_plotted[0][0] == ["Form values", "Frequencies of Form"]
+            and data_to_be_plotted[1][0] == ["Lemma values", "Frequencies of Lemma"]
+        ):
             data = pd.DataFrame(data, columns=headers)
-            data_to_be_plotted = double_level_grouping_and_frequency(data, ['Form'], ['Lemma'])
+            data_to_be_plotted = double_level_grouping_and_frequency(data, ["Form"], ["Lemma"])
             data_to_be_plotted.to_csv("Temptemp.csv", index=False)
             data_final = statistics_csv_util.data_transformation("Temptemp.csv", dataTransformation)
             data_list = data_final.values.tolist()
             list_1 = [[row[2], row[3]] for row in data_list]
             list_2 = [[row[0], row[1]] for row in data_list]
-            list_1.insert(0, ['Form values', 'Frequencies of Form' + "_" + dataTransformation])
-            list_2.insert(0, ['Lemma values', 'Frequencies of Lemma' + "_" + dataTransformation])
+            list_1.insert(0, ["Form values", "Frequencies of Form" + "_" + dataTransformation])
+            list_2.insert(0, ["Lemma values", "Frequencies of Lemma" + "_" + dataTransformation])
             data_to_be_plotted = [list_1, list_2]
             os.remove("Temptemp.csv")
 
         chart_title = chart_title
-        outputFiles = charts_Excel_util.create_excel_chart(GUI_util.window, data_to_be_plotted,
-                                                           inputFilename, outputDir,
-                                                           outputFileLabel, chart_title, chart_type_list,
-                                                           column_xAxis_label_var, column_yAxis_label_var,
-                                                           hover_info_column_list,
-                                                           reverse_column_position_for_series_label,
-                                                           series_label_list, second_y_var, second_yAxis_label)
+        outputFiles = charts_Excel_util.create_excel_chart(
+            GUI_util.window,
+            data_to_be_plotted,
+            inputFilename,
+            outputDir,
+            outputFileLabel,
+            chart_title,
+            chart_type_list,
+            column_xAxis_label_var,
+            column_yAxis_label_var,
+            hover_info_column_list,
+            reverse_column_position_for_series_label,
+            series_label_list,
+            second_y_var,
+            second_yAxis_label,
+        )
 
     return outputFiles
 
 
 def build_timed_alert_message(chart_type, withHeader_var, count_var):
     if withHeader_var == 1:
-        withHeader_msg = 'WITH HEADERS'
+        withHeader_msg = "WITH HEADERS"
     else:
-        withHeader_msg = 'WITHOUT HEADERS'
+        withHeader_msg = "WITHOUT HEADERS"
     if count_var == 1:
-        count_msg = 'WITH COUNTS'
+        count_msg = "WITH COUNTS"
     else:
-        count_msg = 'WITHOUT COUNTS'
+        count_msg = "WITHOUT COUNTS"
     return withHeader_msg, count_msg
 
 
@@ -845,7 +988,7 @@ def get_dataRange(columns_to_be_plotted, data):
                 dataRange.append(value)
             except IndexError:
                 continue
-    dataRange = [dataRange[i:i + len(data)] for i in range(0, len(dataRange), len(data))]
+    dataRange = [dataRange[i : i + len(data)] for i in range(0, len(dataRange), len(data))]
     return dataRange
 
 
@@ -872,15 +1015,16 @@ def get_dataRange(columns_to_be_plotted, data):
 # also IO_csv_util.get_csv_field_values(inputfile_name, column_name)
 
 
-def get_data_to_be_plotted_with_counts(inputFilename, withHeader_var, headers, columns_to_be_plotted,
-                                       specific_column_value_list, data_list):
+def get_data_to_be_plotted_with_counts(
+    inputFilename, withHeader_var, headers, columns_to_be_plotted, specific_column_value_list, data_list
+):
     data_to_be_plotted = []
     # data_to_be_plotted = compute_column_frequencies_4Excel(columns_to_be_plotted, dataRange, headers, column_yAxis_field_list)
 
     column_list = []
     column_frequencies = []
     column_stats = []
-    specific_column_value = ''
+    specific_column_value = ""
     complete_column_frequencies = []
     if len(data_list) != 0:
         for k in range(len(columns_to_be_plotted)):
@@ -891,8 +1035,8 @@ def get_data_to_be_plotted_with_counts(inputFilename, withHeader_var, headers, c
             try:
                 #  TODO the datalist is like [['NN','NN'], ...] so the code produces bad results
                 #       when multiple series side-by-side (e.g., form and lemma values) need to be plotted
-                if 'Search Word' in str(headers):
-                    column_list = [i[0] for i in data_list[k]] # works for search function
+                if "Search Word" in str(headers):
+                    column_list = [i[0] for i in data_list[k]]  # works for search function
                 else:
                     column_list = []
                     for val in data_list[k]:
@@ -909,9 +1053,9 @@ def get_data_to_be_plotted_with_counts(inputFilename, withHeader_var, headers, c
                     column_frequencies = [[column_name + " values", "Frequencies of " + column_name]]
                 else:
                     for y in range(len(specific_column_value_list)):
-                        column_frequencies = [[id_name,
-                                               "Frequencies of " + str(specific_column_value) + " in Column " + str(
-                                                   column_name)]]
+                        column_frequencies = [
+                            [id_name, "Frequencies of " + str(specific_column_value) + " in Column " + str(column_name)]
+                        ]
             else:
                 id_name_num = columns_to_be_plotted[k][0]
                 id_name = "column_" + str(id_name_num + 1)
@@ -921,9 +1065,15 @@ def get_data_to_be_plotted_with_counts(inputFilename, withHeader_var, headers, c
                     column_frequencies = [[column_name + " values", "Frequencies of " + column_name]]
                 else:
                     for y in range(len(specific_column_value_list)):
-                        column_frequencies = [[id_name,
-                                               "Frequencies of " + str(specific_column_value) + " in Column_" + str(
-                                                   column_name_num + 1)]]
+                        column_frequencies = [
+                            [
+                                id_name,
+                                "Frequencies of "
+                                + str(specific_column_value)
+                                + " in Column_"
+                                + str(column_name_num + 1),
+                            ]
+                        ]
             if len(specific_column_value) == 0:
                 for value, count in counts:
                     column_frequencies.append([value, count])
@@ -944,7 +1094,7 @@ def get_data_to_be_plotted_with_counts(inputFilename, withHeader_var, headers, c
 def get_data_to_be_plotted_NO_counts(inputFilename, withHeader_var, headers, columns_to_be_plotted, data):
     data_to_be_plotted = []
     for gp in columns_to_be_plotted:
-        data.iloc[:, gp[1]].replace('N/A', 0)
+        data.iloc[:, gp[1]].replace("N/A", 0)
         # data.iloc[:, gp[1]].astype('float')
         tempData = data.iloc[:, gp]
         data_to_be_plotted.append(data.iloc[:, gp])
@@ -961,10 +1111,19 @@ def get_data_to_be_plotted_NO_counts(inputFilename, withHeader_var, headers, col
 
 
 # TODO Samir very slow
-def process_sentenceID_record(Row_list, Row_list_new, index,
-                              start_sentence, end_sentence,
-                              header, sentenceID_pos, docCol_pos, docName_pos, frequency_pos,
-                              save_current):
+def process_sentenceID_record(
+    Row_list,
+    Row_list_new,
+    index,
+    start_sentence,
+    end_sentence,
+    header,
+    sentenceID_pos,
+    docCol_pos,
+    docName_pos,
+    frequency_pos,
+    save_current,
+):
     # Append one filler row per missing sentence (start_sentence .. end_sentence-1). Each filler carries
     # the document's ID/name (constant across the gap), the missing Sentence ID, and 0 in every frequency
     # column (blank elsewhere). A prototype row is built ONCE and copied per sentence -- the old code
@@ -972,7 +1131,7 @@ def process_sentenceID_record(Row_list, Row_list_new, index,
     # console prints on every call (thousands of times on a corpus).
     # Fixes a latent bug: the old inner loop wrote temp[frequency_pos[i]] (i = sentence number) instead
     # of iterating the frequency positions -> IndexError / wrong column once i exceeded len(frequency_pos).
-    template = [''] * len(header)
+    template = [""] * len(header)
     if isinstance(docCol_pos, int):
         template[docCol_pos] = Row_list[index][docCol_pos]
     if isinstance(docName_pos, int):
@@ -994,24 +1153,26 @@ def process_sentenceID_record(Row_list, Row_list_new, index,
 # written by Yi Wang
 # rewritten by Roberto July 2022
 
+
 # input can be a csv filename or a dataFrame
 # output is a csv file
 # TODO Samir very slow
 def add_missing_IDs(input, outputFilename):
     import stanza
+
     # Count each document's sentences with a TOKENIZE-ONLY pipeline (built once here). The old code ran
     # the shared tokenize+lemma pipeline and lemmatized every word of every document just to count its
     # sentences -- lemmatization does not affect sentence segmentation, so this gives the SAME count while
     # dropping the per-word neural lemmatizer inference (the dominant cost that made this 'VERY SLOW').
-    sentence_counter = stanza.Pipeline(lang='en', processors='tokenize', use_gpu=False, verbose=False)
+    sentence_counter = stanza.Pipeline(lang="en", processors="tokenize", use_gpu=False, verbose=False)
     # TODO temporary to measure process time
-    startTime = IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
-                                                   'Started running Excel Add missing IDs at',
-                                                   True, '', True, '', True)
+    startTime = IO_user_interface_util.timed_alert(
+        GUI_util.window, 2000, "Analysis start", "Started running Excel Add missing IDs at", True, "", True, "", True
+    )
     if isinstance(input, pd.DataFrame):
         df = input
     else:
-        df = pd.read_csv(input, encoding='utf-8', on_bad_lines='skip')
+        df = pd.read_csv(input, encoding="utf-8", on_bad_lines="skip")
     # define variables
     start_sentence = 1  # first sentence in loop
     end_sentence = 1  # last sentence in loop
@@ -1024,71 +1185,113 @@ def add_missing_IDs(input, outputFilename):
         newDoc = False
         if index == 0:  # first record
             newDoc = True
-        else:  # index > 0; all successive records
-            if Row_list[index][docCol_pos] - Row_list[index - 1][docCol_pos] > 0:
-                newDoc = True
+        elif row[docCol_pos] - Row_list[index - 1][docCol_pos] > 0:
+            newDoc = True
 
         if newDoc:
             start_sentence = 1
-            end_sentence = Row_list[index][sentenceID_pos]
-            inputFilename = Row_list[index][docName_pos]
+            end_sentence = row[sentenceID_pos]
+            inputFilename = row[docName_pos]
             inputFilename = IO_csv_util.undressFilenameForCSVHyperlink(inputFilename)
-            text = (open(inputFilename, "r", encoding="utf-8", errors='ignore').read())
+            text = open(inputFilename, encoding="utf-8", errors="ignore").read()
             number_sentences.append([inputFilename, len(sentence_counter(text).sentences)])
 
             # check whether the last sentence for the previous doc was less than number of sentences
             if index == 0:  # first record in df
-                Row_list_new = process_sentenceID_record(Row_list, Row_list_new, index,
-                                                         start_sentence,
-                                                         end_sentence,
-                                                         header, sentenceID_pos, docCol_pos, docName_pos, frequency_pos,
-                                                         save_current=True)
+                Row_list_new = process_sentenceID_record(
+                    Row_list,
+                    Row_list_new,
+                    index,
+                    start_sentence,
+                    end_sentence,
+                    header,
+                    sentenceID_pos,
+                    docCol_pos,
+                    docName_pos,
+                    frequency_pos,
+                    save_current=True,
+                )
             else:  # index>0 all other records
                 # select the number of sentences for the right document
                 for i in range(len(number_sentences)):
                     # TODO hyperlinks should be removed in file before passing it to add_missing_IDs
-                    if IO_csv_util.undressFilenameForCSVHyperlink(Row_list[index - 1][docName_pos]) == \
-                            number_sentences[i][0]:
+                    if (
+                        IO_csv_util.undressFilenameForCSVHyperlink(Row_list[index - 1][docName_pos])
+                        == number_sentences[i][0]
+                    ):
                         n_sentences = number_sentences[i][1]
                 if Row_list[index - 1][sentenceID_pos] < n_sentences:
                     start_sentence = Row_list[index - 1][sentenceID_pos] + 1
                     end_sentence = n_sentences + 1
                     # pass index-1 as argument since we are adding sentence IDs to the previous document
-                    Row_list_new = process_sentenceID_record(Row_list, Row_list_new, index - 1,
-                                                             start_sentence, end_sentence,
-                                                             header, sentenceID_pos, docCol_pos, docName_pos,
-                                                             frequency_pos,
-                                                             save_current=False)
+                    Row_list_new = process_sentenceID_record(
+                        Row_list,
+                        Row_list_new,
+                        index - 1,
+                        start_sentence,
+                        end_sentence,
+                        header,
+                        sentenceID_pos,
+                        docCol_pos,
+                        docName_pos,
+                        frequency_pos,
+                        save_current=False,
+                    )
                     # do NOT save current; already saved when first processing the record
                 # now process the current record
                 start_sentence = 1
-                end_sentence = Row_list[index][sentenceID_pos]
-                Row_list_new = process_sentenceID_record(Row_list, Row_list_new, index,
-                                                         start_sentence,
-                                                         end_sentence,
-                                                         header, sentenceID_pos, docCol_pos, docName_pos, frequency_pos,
-                                                         save_current=True)
+                end_sentence = row[sentenceID_pos]
+                Row_list_new = process_sentenceID_record(
+                    Row_list,
+                    Row_list_new,
+                    index,
+                    start_sentence,
+                    end_sentence,
+                    header,
+                    sentenceID_pos,
+                    docCol_pos,
+                    docName_pos,
+                    frequency_pos,
+                    save_current=True,
+                )
         else:  # same document
             # check that current sentence is not just one sentence greater than previous one
             #   in which case start and end are the same
-            if Row_list[index][sentenceID_pos] == Row_list[index - 1][sentenceID_pos] + 1:
-                start_sentence = Row_list[index][sentenceID_pos]
-                end_sentence = Row_list[index][sentenceID_pos]
+            if row[sentenceID_pos] == Row_list[index - 1][sentenceID_pos] + 1:
+                start_sentence = row[sentenceID_pos]
+                end_sentence = row[sentenceID_pos]
             else:
                 start_sentence = Row_list[index - 1][sentenceID_pos]
-                end_sentence = Row_list[index][sentenceID_pos]
-            Row_list_new = process_sentenceID_record(Row_list, Row_list_new, index,
-                                                     start_sentence, end_sentence,
-                                                     header, sentenceID_pos, docCol_pos, docName_pos, frequency_pos,
-                                                     save_current=True)
+                end_sentence = row[sentenceID_pos]
+            Row_list_new = process_sentenceID_record(
+                Row_list,
+                Row_list_new,
+                index,
+                start_sentence,
+                end_sentence,
+                header,
+                sentenceID_pos,
+                docCol_pos,
+                docName_pos,
+                frequency_pos,
+                save_current=True,
+            )
 
     df = pd.DataFrame(Row_list_new, columns=header)
-    df.sort_values(by=['Document ID', 'Sentence ID'], ascending=True, inplace=True)
-    df.to_csv(outputFilename, encoding='utf-8', index=False)
+    df.sort_values(by=["Document ID", "Sentence ID"], ascending=True, inplace=True)
+    df.to_csv(outputFilename, encoding="utf-8", index=False)
     # TODO temporary to measure process time
-    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end',
-                                       'Finished running Excel Add missing IDs at',
-                                       True, '', True, startTime, True)
+    IO_user_interface_util.timed_alert(
+        GUI_util.window,
+        2000,
+        "Analysis end",
+        "Finished running Excel Add missing IDs at",
+        True,
+        "",
+        True,
+        startTime,
+        True,
+    )
     return outputFilename
 
 
@@ -1097,25 +1300,36 @@ def add_missing_IDs(input, outputFilename):
 # function no longer used since it does not insert sentences in the right document
 # use instead add_missing_IDs
 
+
 def complete_sentence_index(file_path):
-    data = pd.read_csv(file_path, encoding='utf-8', on_bad_lines='skip')
-    if not 'Sentence ID' in data:
+    data = pd.read_csv(file_path, encoding="utf-8", on_bad_lines="skip")
+    if "Sentence ID" not in data:
         head, tail = os.path.split(file_path)
-        IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Wrong csv file',
-                                           'The csv file\n' + tail + '\n does not contain a "Sentence ID" header. A sentence ID value cannot be added.',
-                                           True, '', True, '', False)
+        IO_user_interface_util.timed_alert(
+            GUI_util.window,
+            2000,
+            "Wrong csv file",
+            "The csv file\n"
+            + tail
+            + '\n does not contain a "Sentence ID" header. A sentence ID value cannot be added.',
+            True,
+            "",
+            True,
+            "",
+            False,
+        )
         return
-    if (len(data) == 1):
+    if len(data) == 1:
         return data
     max_sid = max(data["Sentence ID"]) + 1
     sid_list = list(range(1, max_sid))
-    df_sid = pd.DataFrame(sid_list, columns=['Sentence ID'])
+    df_sid = pd.DataFrame(sid_list, columns=["Sentence ID"])
     # use merge to accelerate the process
     data = data.merge(right=df_sid, how="right", on="Sentence ID")
     data = data.fillna(0)
     # headers=IO_csv_util.get_csvfile_headers_pandas(file_path)
-    data.sort_values(by=['Document ID', 'Sentence ID'], ascending=True, inplace=True)
-    data.to_csv(file_path, encoding='utf-8', index=False)
+    data.sort_values(by=["Document ID", "Sentence ID"], ascending=True, inplace=True)
+    data.to_csv(file_path, encoding="utf-8", index=False)
     return
 
 
@@ -1192,37 +1406,49 @@ def complete_sentence_index(file_path):
 
 # written by Samir Kaddoura, March 2023
 
+
 # Returns a grid of barcharts for each algorithm.
 # Algorithms are horizontally organized based on the order on which they are inputted
 # datalist is list of algorithms
 # var is variable of choice
 # ntopchoices is the n max values
 def multiple_barchart(datalist, outputFilename, var, ntopchoices):
-    if pd.__version__[0] == '2':
-        mb.showwarning(title='Warning',
-                       message='The multiple_barchart algorithm is incompatible with a version of pandas higher than 2.0\n\nIn command line, please, pip unistall pandas and pip install pandas==1.5.2 (or even pip install pandas==1.4.4).\n\nMake sure you are in the right NLP environment by typing conda activate NLP')
+    if pd.__version__[0] == "2":
+        mb.showwarning(
+            title="Warning",
+            message="The multiple_barchart algorithm is incompatible with a version of pandas higher than 2.0\n\nIn command line, please, pip unistall pandas and pip install pandas==1.5.2 (or even pip install pandas==1.4.4).\n\nMake sure you are in the right NLP environment by typing conda activate NLP",
+        )
         return
 
     tempdatalist = []
     for i in datalist:
-        tempdatalist.append(pd.read_csv(i, encoding='utf-8', on_bad_lines='skip'))
+        tempdatalist.append(pd.read_csv(i, encoding="utf-8", on_bad_lines="skip"))
     newDatalist = []
     for i in tempdatalist:
         newDatalist.append(
-            pd.DataFrame(i[var].value_counts()).reset_index().rename(columns={'index': var, var: 'Frequency'}).head(
-                ntopchoices))
+            pd.DataFrame(i[var].value_counts())
+            .reset_index()
+            .rename(columns={"index": var, var: "Frequency"})
+            .head(ntopchoices)
+        )
     fig = make_subplots(rows=2, cols=int(len(datalist) / 2) + len(datalist) % 2)
     cols = 1
     for i in range(0, len(newDatalist)):
         if i < int(len(datalist) / 2) + len(datalist) % 2:
-            fig.add_trace(go.Bar(x=newDatalist[i][var], y=newDatalist[i]['Frequency'], name='Algorithm ' + str(i + 1)),
-                          row=1, col=cols)
+            fig.add_trace(
+                go.Bar(x=newDatalist[i][var], y=newDatalist[i]["Frequency"], name="Algorithm " + str(i + 1)),
+                row=1,
+                col=cols,
+            )
             cols = cols + 1
     cols = 1
     for i in range(0, len(newDatalist)):
         if i >= int(len(datalist) / 2) + len(datalist) % 2:
-            fig.add_trace(go.Bar(x=newDatalist[i][var], y=newDatalist[i]['Frequency'], name='Algorithm ' + str(i + 1)),
-                          row=2, col=cols)
+            fig.add_trace(
+                go.Bar(x=newDatalist[i][var], y=newDatalist[i]["Frequency"], name="Algorithm " + str(i + 1)),
+                row=2,
+                col=cols,
+            )
             cols = cols + 1
     fig.write_html(outputFilename)
     return outputFilename
@@ -1230,38 +1456,45 @@ def multiple_barchart(datalist, outputFilename, var, ntopchoices):
 
 # written by Samir Kaddoura, March 2023
 
+
 # var is the variable of choice to apply the boxplot on
 # bycategory is a boolean that chooses whether we want to split it by category along a categorical variable, determined by the following category argument
 # points is the choice to represent all points of data, the outliers, or none of them, it should be given through a dropdown menu
 # color is another choice of categorical variable to split the data along
 def boxplot(data, outputFilename, var, points, bycategory=None, category=None, color=None):
-    if points == 'All points':
-        points = 'all'
-    elif points == 'no points':
+    if points == "All points":
+        points = "all"
+    elif points == "no points":
         points = False
-    elif points == 'outliers only':
-        points = 'outliers'
-    if color == '':
+    elif points == "outliers only":
+        points = "outliers"
+    if color == "":
         color = None
 
     if type(data) == str:
-        data = pd.read_csv(data, encoding='utf-8', on_bad_lines='skip')
+        data = pd.read_csv(data, encoding="utf-8", on_bad_lines="skip")
 
-    if not 'int' in str(type(data[var][0])) and not 'float' in str(type(data[var][0])):
-        mb.showwarning(title='Warning',
-                       message='The "Boxplots" option requires a numeric field.\n\nPlease, use the dropdown menu to select a numeric csv file field for visualization and try again.')
+    if "int" not in str(type(data[var][0])) and "float" not in str(type(data[var][0])):
+        mb.showwarning(
+            title="Warning",
+            message='The "Boxplots" option requires a numeric field.\n\nPlease, use the dropdown menu to select a numeric csv file field for visualization and try again.',
+        )
         return
 
     if bycategory != 0 and bycategory != None and category != None:
-        if not 'str' in str(type(data[category][0])):
-            mb.showwarning(title='Warning',
-                           message='The "Split data by category" Boxplots option requires a CATEGORICAL "csv file field"".\n\nPlease, use the "csv file field" dropdown menu to select a CATEGORICAL field and try again.')
+        if "str" not in str(type(data[category][0])):
+            mb.showwarning(
+                title="Warning",
+                message='The "Split data by category" Boxplots option requires a CATEGORICAL "csv file field"".\n\nPlease, use the "csv file field" dropdown menu to select a CATEGORICAL field and try again.',
+            )
             return
 
     if color != None:
-        if not 'str' in str(type(data[color][0])):
-            mb.showwarning(title='Warning',
-                           message='The Boxplots with "Split data by category" and color options requires a secodn CATEGORICAL "csv file field" for the color option".\n\nPlease, use the second "csv file field" dropdown menu to select a CATEGORICAL field and try again.')
+        if "str" not in str(type(data[color][0])):
+            mb.showwarning(
+                title="Warning",
+                message='The Boxplots with "Split data by category" and color options requires a secodn CATEGORICAL "csv file field" for the color option".\n\nPlease, use the second "csv file field" dropdown menu to select a CATEGORICAL field and try again.',
+            )
             return
 
     if bycategory == False:
@@ -1274,20 +1507,22 @@ def boxplot(data, outputFilename, var, points, bycategory=None, category=None, c
 
 def histogram(data, outputFilename, var, nbins=0, category=None, color=None, marginal=None):
     if type(data) == str:
-        data = pd.read_csv(data, encoding='utf-8', on_bad_lines='skip')
+        data = pd.read_csv(data, encoding="utf-8", on_bad_lines="skip")
 
-    if not 'int' in str(type(data[var].dropna().iloc[0])) and not 'float' in str(type(data[var].dropna().iloc[0])):
-        mb.showwarning(title='Warning',
-                       message='The "Histogram" option requires a numeric field.\n\nPlease, select a numeric csv file field and try again.')
+    if "int" not in str(type(data[var].dropna().iloc[0])) and "float" not in str(type(data[var].dropna().iloc[0])):
+        mb.showwarning(
+            title="Warning",
+            message='The "Histogram" option requires a numeric field.\n\nPlease, select a numeric csv file field and try again.',
+        )
         return
 
-    kwargs = {'x': var}
+    kwargs = {"x": var}
     if nbins > 0:
-        kwargs['nbins'] = nbins
+        kwargs["nbins"] = nbins
     if category and category in data.columns:
-        kwargs['color'] = category
+        kwargs["color"] = category
     if marginal:
-        kwargs['marginal'] = marginal
+        kwargs["marginal"] = marginal
 
     fig = px.histogram(data, **kwargs)
     fig.update_layout(bargap=0.05)
@@ -1295,19 +1530,21 @@ def histogram(data, outputFilename, var, nbins=0, category=None, color=None, mar
     return outputFilename
 
 
-def violin_plot(data, outputFilename, var, points='all', category=None, color=None):
-    if points == 'None' or points == '':
+def violin_plot(data, outputFilename, var, points="all", category=None, color=None):
+    if points == "None" or points == "":
         points = False
 
     if type(data) == str:
-        data = pd.read_csv(data, encoding='utf-8', on_bad_lines='skip')
+        data = pd.read_csv(data, encoding="utf-8", on_bad_lines="skip")
 
-    if not 'int' in str(type(data[var].dropna().iloc[0])) and not 'float' in str(type(data[var].dropna().iloc[0])):
-        mb.showwarning(title='Warning',
-                       message='The "Violin plot" option requires a numeric field.\n\nPlease, select a numeric csv file field and try again.')
+    if "int" not in str(type(data[var].dropna().iloc[0])) and "float" not in str(type(data[var].dropna().iloc[0])):
+        mb.showwarning(
+            title="Warning",
+            message='The "Violin plot" option requires a numeric field.\n\nPlease, select a numeric csv file field and try again.',
+        )
         return
 
-    if color == '':
+    if color == "":
         color = None
 
     if category and category in data.columns:
@@ -1332,39 +1569,50 @@ def correlation_heatmap(inputFilename, outputDir, columns=None):
     str or ''   Path to output HTML file.
     """
     try:
-        df = pd.read_csv(inputFilename, encoding='utf-8', on_bad_lines='skip')
+        df = pd.read_csv(inputFilename, encoding="utf-8", on_bad_lines="skip")
     except Exception as e:
         print(f"  WARNING: Could not read CSV: {e}")
-        return ''
+        return ""
 
     if columns:
-        numeric_df = df[columns].select_dtypes(include='number')
+        numeric_df = df[columns].select_dtypes(include="number")
     else:
-        numeric_df = df.select_dtypes(include='number')
+        numeric_df = df.select_dtypes(include="number")
 
     if numeric_df.shape[1] < 2:
-        mb.showwarning('Warning', 'The correlation heatmap requires at least 2 numeric columns.\n\nPlease, select a csv file with numeric data and try again.')
-        return ''
+        mb.showwarning(
+            "Warning",
+            "The correlation heatmap requires at least 2 numeric columns.\n\nPlease, select a csv file with numeric data and try again.",
+        )
+        return ""
 
     corr = numeric_df.corr()
 
-    fig = px.imshow(corr, text_auto='.2f', color_continuous_scale='RdBu_r',
-                    zmin=-1, zmax=1, aspect='auto',
-                    labels=dict(color='Correlation'))
-    fig.update_layout(title=f'Correlation heatmap ({numeric_df.shape[1]} variables)',
-                      width=max(600, numeric_df.shape[1] * 60 + 200),
-                      height=max(500, numeric_df.shape[1] * 50 + 200))
+    fig = px.imshow(
+        corr,
+        text_auto=".2f",
+        color_continuous_scale="RdBu_r",
+        zmin=-1,
+        zmax=1,
+        aspect="auto",
+        labels=dict(color="Correlation"),
+    )
+    fig.update_layout(
+        title=f"Correlation heatmap ({numeric_df.shape[1]} variables)",
+        width=max(600, numeric_df.shape[1] * 60 + 200),
+        height=max(500, numeric_df.shape[1] * 50 + 200),
+    )
 
     import re as _re
-    base = _re.sub(r'[<>:"/\\|?*]', '_',
-                   os.path.splitext(os.path.basename(inputFilename))[0]).replace(' ', '_')
-    out_path = os.path.join(outputDir, f'{base}_correlation_heatmap.html')
+
+    base = _re.sub(r'[<>:"/\\|?*]', "_", os.path.splitext(os.path.basename(inputFilename))[0]).replace(" ", "_")
+    out_path = os.path.join(outputDir, f"{base}_correlation_heatmap.html")
     fig.write_html(out_path)
     print(f"Data visualization saved as {out_path}")
     return out_path
 
 
-def heatmap_calendar(inputFilename, outputDir, date_col, value_col=None, date_format='mm-dd-yyyy'):
+def heatmap_calendar(inputFilename, outputDir, date_col, value_col=None, date_format="mm-dd-yyyy"):
     """Build a calendar heatmap showing daily values or event counts.
 
     Parameters
@@ -1380,97 +1628,98 @@ def heatmap_calendar(inputFilename, outputDir, date_col, value_col=None, date_fo
     str or ''   Path to output HTML file.
     """
     try:
-        df = pd.read_csv(inputFilename, encoding='utf-8', on_bad_lines='skip')
+        df = pd.read_csv(inputFilename, encoding="utf-8", on_bad_lines="skip")
     except Exception as e:
         print(f"  WARNING: Could not read CSV: {e}")
-        return ''
+        return ""
 
     if date_col not in df.columns:
-        mb.showwarning('Warning', f'Column "{date_col}" not found in the csv file.')
-        return ''
+        mb.showwarning("Warning", f'Column "{date_col}" not found in the csv file.')
+        return ""
 
     fmt_map = {
-        'mm-dd-yyyy': '%m-%d-%Y', 'mm/dd/yyyy': '%m/%d/%Y',
-        'dd-mm-yyyy': '%d-%m-%Y', 'dd/mm/yyyy': '%d/%m/%Y',
-        'yyyy-mm-dd': '%Y-%m-%d', 'yyyy/mm/dd': '%Y/%m/%d',
-        'yyyy-dd-mm': '%Y-%d-%m', 'yyyy-mm': '%Y-%m',
+        "mm-dd-yyyy": "%m-%d-%Y",
+        "mm/dd/yyyy": "%m/%d/%Y",
+        "dd-mm-yyyy": "%d-%m-%Y",
+        "dd/mm/yyyy": "%d/%m/%Y",
+        "yyyy-mm-dd": "%Y-%m-%d",
+        "yyyy/mm/dd": "%Y/%m/%d",
+        "yyyy-dd-mm": "%Y-%d-%m",
+        "yyyy-mm": "%Y-%m",
     }
     py_fmt = fmt_map.get(date_format, None)
 
-    dates = pd.to_datetime(df[date_col], format=py_fmt, errors='coerce')
+    dates = pd.to_datetime(df[date_col], format=py_fmt, errors="coerce")
     valid_mask = dates.notna()
     if valid_mask.sum() == 0:
-        mb.showwarning('Warning', f'No valid dates found in column "{date_col}" with format "{date_format}".\n\nPlease, check the date format and try again.')
-        return ''
+        mb.showwarning(
+            "Warning",
+            f'No valid dates found in column "{date_col}" with format "{date_format}".\n\nPlease, check the date format and try again.',
+        )
+        return ""
 
-    df_work = pd.DataFrame({'date': dates[valid_mask]})
+    df_work = pd.DataFrame({"date": dates[valid_mask]})
 
-    if value_col and value_col in df.columns and value_col != '':
-        df_work['value'] = df[value_col][valid_mask].values
-        daily = df_work.groupby(df_work['date'].dt.date)['value'].sum().reset_index()
-        daily.columns = ['date', 'value']
+    if value_col and value_col in df.columns and value_col != "":
+        df_work["value"] = df[value_col][valid_mask].values
+        daily = df_work.groupby(df_work["date"].dt.date)["value"].sum().reset_index()
+        daily.columns = ["date", "value"]
         color_label = value_col
     else:
-        daily = df_work.groupby(df_work['date'].dt.date).size().reset_index()
-        daily.columns = ['date', 'value']
-        color_label = 'Count'
+        daily = df_work.groupby(df_work["date"].dt.date).size().reset_index()
+        daily.columns = ["date", "value"]
+        color_label = "Count"
 
-    daily['date'] = pd.to_datetime(daily['date'])
-    daily['weekday'] = daily['date'].dt.weekday
-    daily['week'] = daily['date'].dt.isocalendar().week.astype(int)
-    daily['year'] = daily['date'].dt.year
-    daily['month'] = daily['date'].dt.month
-    daily['day_name'] = daily['date'].dt.strftime('%a')
-    daily['date_str'] = daily['date'].dt.strftime('%Y-%m-%d')
+    daily["date"] = pd.to_datetime(daily["date"])
+    daily["weekday"] = daily["date"].dt.weekday
+    daily["week"] = daily["date"].dt.isocalendar().week.astype(int)
+    daily["year"] = daily["date"].dt.year
+    daily["month"] = daily["date"].dt.month
+    daily["day_name"] = daily["date"].dt.strftime("%a")
+    daily["date_str"] = daily["date"].dt.strftime("%Y-%m-%d")
 
-    years = sorted(daily['year'].unique())
+    years = sorted(daily["year"].unique())
 
     import plotly.graph_objects as go
     from plotly.subplots import make_subplots
 
-    fig = make_subplots(rows=len(years), cols=1,
-                        subplot_titles=[str(y) for y in years],
-                        vertical_spacing=0.08)
+    fig = make_subplots(rows=len(years), cols=1, subplot_titles=[str(y) for y in years], vertical_spacing=0.08)
 
     for row_idx, year in enumerate(years, 1):
-        yr_data = daily[daily['year'] == year].copy()
-        yr_data['week_of_year'] = (yr_data['date'] - pd.Timestamp(f'{year}-01-01')).dt.days // 7
+        yr_data = daily[daily["year"] == year].copy()
+        yr_data["week_of_year"] = (yr_data["date"] - pd.Timestamp(f"{year}-01-01")).dt.days // 7
 
         fig.add_trace(
             go.Heatmap(
-                x=yr_data['week_of_year'],
-                y=yr_data['weekday'],
-                z=yr_data['value'],
-                text=yr_data['date_str'],
-                hovertemplate='%{text}<br>' + color_label + ': %{z}<extra></extra>',
-                colorscale='YlOrRd',
+                x=yr_data["week_of_year"],
+                y=yr_data["weekday"],
+                z=yr_data["value"],
+                text=yr_data["date_str"],
+                hovertemplate="%{text}<br>" + color_label + ": %{z}<extra></extra>",
+                colorscale="YlOrRd",
                 showscale=(row_idx == 1),
                 colorbar=dict(title=color_label) if row_idx == 1 else None,
             ),
-            row=row_idx, col=1
+            row=row_idx,
+            col=1,
         )
         fig.update_yaxes(
             tickvals=[0, 1, 2, 3, 4, 5, 6],
-            ticktext=['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-            row=row_idx, col=1
+            ticktext=["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+            row=row_idx,
+            col=1,
         )
         fig.update_xaxes(
-            tickvals=list(range(0, 53, 4)),
-            ticktext=[f'W{w}' for w in range(0, 53, 4)],
-            row=row_idx, col=1
+            tickvals=list(range(0, 53, 4)), ticktext=[f"W{w}" for w in range(0, 53, 4)], row=row_idx, col=1
         )
 
-    fig.update_layout(
-        title=f'Calendar heatmap: {color_label} by date',
-        height=max(300, 250 * len(years)),
-        width=900
-    )
+    fig.update_layout(title=f"Calendar heatmap: {color_label} by date", height=max(300, 250 * len(years)), width=900)
 
     import re as _re
-    base = _re.sub(r'[<>:"/\\|?*]', '_',
-                   os.path.splitext(os.path.basename(inputFilename))[0]).replace(' ', '_')
-    safe_col = _re.sub(r'[<>:"/\\|?*]', '_', date_col).replace(' ', '_')
-    out_path = os.path.join(outputDir, f'{base}_calendar_{safe_col}.html')
+
+    base = _re.sub(r'[<>:"/\\|?*]', "_", os.path.splitext(os.path.basename(inputFilename))[0]).replace(" ", "_")
+    safe_col = _re.sub(r'[<>:"/\\|?*]', "_", date_col).replace(" ", "_")
+    out_path = os.path.join(outputDir, f"{base}_calendar_{safe_col}.html")
     fig.write_html(out_path)
     print(f"Data visualization saved as {out_path}")
     return out_path
@@ -1482,25 +1731,26 @@ def waffle_chart(inputFilename, outputDir, category_col, top_n=10, grid_size=10)
     Each square in a 10x10 grid represents 1% of the total.
     """
     import matplotlib
-    matplotlib.use('Agg')
-    import matplotlib.pyplot as plt
+
+    matplotlib.use("Agg")
     import matplotlib.patches as mpatches
+    import matplotlib.pyplot as plt
     import numpy as np
 
     try:
-        df = pd.read_csv(inputFilename, encoding='utf-8', on_bad_lines='skip')
+        df = pd.read_csv(inputFilename, encoding="utf-8", on_bad_lines="skip")
     except Exception as e:
         print(f"  WARNING: Could not read CSV: {e}")
-        return ''
+        return ""
 
     if category_col not in df.columns:
-        mb.showwarning('Warning', f'Column "{category_col}" not found in the csv file.')
-        return ''
+        mb.showwarning("Warning", f'Column "{category_col}" not found in the csv file.')
+        return ""
 
     counts = df[category_col].value_counts().head(top_n)
     total = counts.sum()
     if total == 0:
-        return ''
+        return ""
 
     proportions = (counts / total * grid_size * grid_size).round().astype(int)
     diff = grid_size * grid_size - proportions.sum()
@@ -1511,46 +1761,56 @@ def waffle_chart(inputFilename, outputDir, category_col, top_n=10, grid_size=10)
     grid = np.zeros(grid_size * grid_size, dtype=int)
     idx = 0
     for i, count in enumerate(proportions):
-        grid[idx:idx + count] = i
+        grid[idx : idx + count] = i
         idx += count
     grid = grid.reshape(grid_size, grid_size)
 
     fig, ax = plt.subplots(figsize=(8, 8))
     for i in range(grid_size):
         for j in range(grid_size):
-            rect = plt.Rectangle((j, grid_size - 1 - i), 0.9, 0.9,
-                                  facecolor=colors[grid[i, j]], edgecolor='white', linewidth=1)
+            rect = plt.Rectangle(
+                (j, grid_size - 1 - i), 0.9, 0.9, facecolor=colors[grid[i, j]], edgecolor="white", linewidth=1
+            )
             ax.add_patch(rect)
 
     ax.set_xlim(-0.1, grid_size)
     ax.set_ylim(-0.1, grid_size)
-    ax.set_aspect('equal')
-    ax.axis('off')
-    ax.set_title(f'Waffle chart: {category_col} (top {len(proportions)})', fontsize=14)
+    ax.set_aspect("equal")
+    ax.axis("off")
+    ax.set_title(f"Waffle chart: {category_col} (top {len(proportions)})", fontsize=14)
 
-    legend_patches = [mpatches.Patch(color=colors[i],
-                      label=f'{proportions.index[i]} ({counts.iloc[i]})')
-                      for i in range(len(proportions))]
-    ax.legend(handles=legend_patches, loc='upper left', bbox_to_anchor=(1.02, 1),
-              fontsize=9, title=category_col, title_fontsize=10)
+    legend_patches = [
+        mpatches.Patch(color=colors[i], label=f"{proportions.index[i]} ({counts.iloc[i]})")
+        for i in range(len(proportions))
+    ]
+    ax.legend(
+        handles=legend_patches,
+        loc="upper left",
+        bbox_to_anchor=(1.02, 1),
+        fontsize=9,
+        title=category_col,
+        title_fontsize=10,
+    )
 
     import re as _re
-    safe = _re.sub(r'[<>:"/\\|?*]', '_', category_col).replace(' ', '_')
-    base = _re.sub(r'[<>:"/\\|?*]', '_',
-                   os.path.splitext(os.path.basename(inputFilename))[0]).replace(' ', '_')
-    out_path = os.path.join(outputDir, f'{base}_waffle_{safe}.png')
-    fig.savefig(out_path, dpi=150, bbox_inches='tight')
+
+    safe = _re.sub(r'[<>:"/\\|?*]', "_", category_col).replace(" ", "_")
+    base = _re.sub(r'[<>:"/\\|?*]', "_", os.path.splitext(os.path.basename(inputFilename))[0]).replace(" ", "_")
+    out_path = os.path.join(outputDir, f"{base}_waffle_{safe}.png")
+    fig.savefig(out_path, dpi=150, bbox_inches="tight")
     plt.close(fig)
     print(f"Data visualization saved as {out_path}")
     return out_path
 
 
-def bubble_chart(inputFilename, outputDir, y_column, X_axis_var='', color_column=''):
+def bubble_chart(inputFilename, outputDir, y_column, X_axis_var="", color_column=""):
     import charts_Plotly_util
+
     return charts_Plotly_util.bubble_chart(inputFilename, outputDir, y_column, X_axis_var, color_column)
 
 
 # written by Samir Kaddoura, March 2023
+
 
 # var1 is the first categorical variable, lengthvar1 is the amount of var 1: should take values of 5 or 10
 # var2 is the second categorical variable, lengthvar2 is the amount of var 2: should take values of 5,10 or 20
@@ -1565,16 +1825,22 @@ def Sankey(data, outputFilename, var1, lengthvar1, var2, lengthvar2, three_way_S
 
     if type(data) == str:
         try:
-            data = pd.read_csv(data, encoding='utf-8', on_bad_lines='skip')
+            data = pd.read_csv(data, encoding="utf-8", on_bad_lines="skip")
         except:
-            mb.showwarning(title='Warning',
-                           message='The input file ' + data + ' is empty.\n\nNo Sankey flowchart can be produced.\n\nPlease, check your input file and try again.')
+            mb.showwarning(
+                title="Warning",
+                message="The input file "
+                + data
+                + " is empty.\n\nNo Sankey flowchart can be produced.\n\nPlease, check your input file and try again.",
+            )
             return
 
-    if type(data[var1][0])!=float: # nan values are float, but do not need to be checked here
+    if type(data[var1][0]) != float:  # nan values are float, but do not need to be checked here
         if type(data[var1][0]) != str or type(data[var2][0]) != str:
-            mb.showwarning("Warning",
-                       "All csv file fields should be CATEGORICAL for a Sankey flowchart.\n\nPlease, select categorical field(s) (i.e., fields with string values), rather than continuous numeric field(s), and try again.")
+            mb.showwarning(
+                "Warning",
+                "All csv file fields should be CATEGORICAL for a Sankey flowchart.\n\nPlease, select categorical field(s) (i.e., fields with string values), rather than continuous numeric field(s), and try again.",
+            )
 
     if three_way_Sankey:
         # 3 variables
@@ -1584,8 +1850,10 @@ def Sankey(data, outputFilename, var1, lengthvar1, var2, lengthvar2, three_way_S
         # was ever assigned -> UnboundLocalError. Use value_counts().index directly (version-agnostic).
         finalframe = data[data[var1].isin(list(data[var1].value_counts().head(lengthvar1).index))]
         if len(finalframe) == 0:
-            mb.showwarning(title='Warning',
-                           message='The dataframe computed by the Sankey flowchart is empty.\n\nNo Sankey flowchart can be produced.')
+            mb.showwarning(
+                title="Warning",
+                message="The dataframe computed by the Sankey flowchart is empty.\n\nNo Sankey flowchart can be produced.",
+            )
             return
         tempframe2 = pd.DataFrame(finalframe[var2]).value_counts().head(lengthvar2).reset_index()
         tempframe3 = pd.DataFrame(finalframe[var3]).value_counts().head(lengthvar3).reset_index()
@@ -1604,26 +1872,32 @@ def Sankey(data, outputFilename, var1, lengthvar1, var2, lengthvar2, three_way_S
         for i in sorted(list(set(finalframe[var1]))):
             tempvec = []
             tempframe = finalframe[finalframe[var1] == i]
-            wantedframe = pd.DataFrame(tempframe[var2].value_counts()).reset_index().rename(
-                columns={'index': var2, var2: 'Frequency'})
+            wantedframe = (
+                pd.DataFrame(tempframe[var2].value_counts())
+                .reset_index()
+                .rename(columns={"index": var2, var2: "Frequency"})
+            )
             for j in sorted(list(set(finalframe[var2]))):
                 if j not in list(wantedframe[var2]):
                     tempvec.append(0)
                 else:
-                    tempvec.append(list(wantedframe[wantedframe[var2] == j]['Frequency'])[0])
+                    tempvec.append(list(wantedframe[wantedframe[var2] == j]["Frequency"])[0])
             tempvec = tempvec + list(np.repeat(0, len(target2) - len(tempvec)))
             valuevector = valuevector + tempvec
         for i in sorted(list(set(finalframe[var2]))):
             tempvec = []
             tempframe = finalframe[finalframe[var2] == i]
-            wantedframe = pd.DataFrame(tempframe[var3].value_counts()).reset_index().rename(
-                columns={'index': var3, var3: 'Frequency'})
+            wantedframe = (
+                pd.DataFrame(tempframe[var3].value_counts())
+                .reset_index()
+                .rename(columns={"index": var3, var3: "Frequency"})
+            )
             tempvec = list(np.repeat(0, len(set(finalframe[var2]))))
             for j in sorted(list(set(finalframe[var3]))):
                 if j not in list(wantedframe[var3]):
                     tempvec.append(0)
                 else:
-                    tempvec.append(list(wantedframe[wantedframe[var3] == j]['Frequency'])[0])
+                    tempvec.append(list(wantedframe[wantedframe[var3] == j]["Frequency"])[0])
             valuevector = valuevector + tempvec
 
     else:
@@ -1647,9 +1921,7 @@ def Sankey(data, outputFilename, var1, lengthvar1, var2, lengthvar2, three_way_S
             for j, val2 in enumerate(finalframe[var2].unique()):
                 source.append(i)
                 target.append(j + len(finalframe[var1].unique()))
-                valuevector.append(
-                    len(finalframe[(finalframe[var1] == val1) & (finalframe[var2] == val2)])
-                )
+                valuevector.append(len(finalframe[(finalframe[var1] == val1) & (finalframe[var2] == val2)]))
 
         labelvector = list(finalframe[var1].unique()) + list(finalframe[var2].unique())
 
@@ -1690,8 +1962,12 @@ def Sankey(data, outputFilename, var1, lengthvar1, var2, lengthvar2, three_way_S
         #     tempvec = tempvec + list(np.repeat(0, len(target2) - len(tempvec)))
         #     valuevector = valuevector + tempvec
 
-    fig = go.Figure(go.Sankey(link=dict(source=source, target=target, value=valuevector),
-                              node=dict(label=labelvector, pad=35, thickness=10)))
+    fig = go.Figure(
+        go.Sankey(
+            link=dict(source=source, target=target, value=valuevector),
+            node=dict(label=labelvector, pad=35, thickness=10),
+        )
+    )
     fig.write_html(outputFilename)
 
     return outputFilename
@@ -1702,27 +1978,34 @@ def Sankey(data, outputFilename, var1, lengthvar1, var2, lengthvar2, three_way_S
 # Function creates a new column that identifies the documents based on a specific interest variable
 # two inputs taken: data is the dataset in question, interest is a vector that the user will have to define, as it changes depending on the corpus
 
+
 def separator(data, interest, algorithm):
     interestvector = []  # empty interest vector
     id_list = []  # empty id list in which we record every entry in the dataset that contains one of the interest inputs
 
     for i in range(0, len(data)):  # check every entry in dataset
         for j in range(0, len(interest)):  # check every interest vector
-            if re.search('.*' + interest[j] + '[^.]', data['Document'][
-                i]):  # if the name of the document contains a word of intersest, we append that word to a vector
+            if re.search(
+                ".*" + interest[j] + "[^.]", data["Document"][i]
+            ):  # if the name of the document contains a word of intersest, we append that word to a vector
                 interestvector.append(interest[j])
                 id_list.append(i)  # append the index of the row that contains the interest value
 
     # finaldata=data.loc[id_list] #filter dataset by row with interest values
     finaldata = data.loc[id_list, :]  # filter dataset by row with interest values
-    finaldata['interest'] = interestvector  # add interest column
+    finaldata["interest"] = interestvector  # add interest column
     if finaldata.empty:
-        mb.showwarning("Warning",
-                       "The " + algorithm + " algorithm has produced an empty dataframe.\n\nPlease, make sure that the 'Filename label/part' you have entered are in the document name under the Document field of your input file.\n\nREMEMBER THAT SEARCH WORDS ARE CASE SENSITIVE.\n\nPlease, try again.")
+        mb.showwarning(
+            "Warning",
+            "The "
+            + algorithm
+            + " algorithm has produced an empty dataframe.\n\nPlease, make sure that the 'Filename label/part' you have entered are in the document name under the Document field of your input file.\n\nREMEMBER THAT SEARCH WORDS ARE CASE SENSITIVE.\n\nPlease, try again.",
+        )
     return finaldata
 
 
 # written by Samir Kaddoura, March 2023
+
 
 # Returns sunburst piechart. Input a dataframe provided by the NLP suite as data, interest is a vector including interest separation based on separator (as defined above)
 # label is a categorical variable we're interested in
@@ -1730,93 +2013,112 @@ def separator(data, interest, algorithm):
 # last_sentences is the n last sentences
 # half_text is a boolean defining whether to split the text in half or not
 # beginning_and_end is a boolean that dictates if its a two-level or three level Sunburst
-def Sunburst(data, outputFilename, outputDir, case_sensitive, interest, label, beginning_and_end=False,
-             first_sentences=None, last_sentences=None, half_text=None):
+def Sunburst(
+    data,
+    outputFilename,
+    outputDir,
+    case_sensitive,
+    interest,
+    label,
+    beginning_and_end=False,
+    first_sentences=None,
+    last_sentences=None,
+    half_text=None,
+):
     if type(data) == str:
-        data = pd.read_csv(data, encoding='utf-8', on_bad_lines='skip')
+        data = pd.read_csv(data, encoding="utf-8", on_bad_lines="skip")
         # @@@ nan values will break the code
-        data = data.fillna('Blank/missing value')
+        data = data.fillna("Blank/missing value")
     # The presence of a Nan value will classify the object as float
     if type(data[label][0]) != str:
-        mb.showwarning("Warning",
-                       "The csv file field selected should be categorical.\n\nYou should select a categorical field, rather than a continuous numeric field, and try again.")
+        mb.showwarning(
+            "Warning",
+            "The csv file field selected should be categorical.\n\nYou should select a categorical field, rather than a continuous numeric field, and try again.",
+        )
         # return
     # the last 3 arguments are optional. If first_sentences is specified and last_sentences is not or vice versa, we return a message stating they must both be specified or absent at the same time
     if (first_sentences == None and last_sentences != None) or (first_sentences != None and last_sentences == None):
-        return 'both number of first sentences and number of last sentences have to be specified or absent at the same time'
+        return "both number of first sentences and number of last sentences have to be specified or absent at the same time"
     else:  # Otherwise, we run the Sunburst
-
         tempdata = separator(data, interest, "Sunburst")  # Create "interest" variable
         if beginning_and_end == False:
-            if half_text == True or (
-                    first_sentences == None and last_sentences == None):  # If half text is true or both number of first sentences and last sentences is absent, we split each text in half and attribute a "beginning" half and "end" half
+            if (
+                half_text == True or (first_sentences == None and last_sentences == None)
+            ):  # If half text is true or both number of first sentences and last sentences is absent, we split each text in half and attribute a "beginning" half and "end" half
+                first_docID = tempdata["Document ID"].iloc[0]
+                ogdata = tempdata[tempdata["Document ID"] == first_docID]  # take the first document
 
-                first_docID = tempdata['Document ID'].iloc[0]
-                ogdata = tempdata[tempdata['Document ID'] == first_docID]  # take the first document
+                ogdata1 = ogdata[ogdata["Sentence ID"] <= len(ogdata) / 2]  # split the document by first half
+                oglist1 = list(np.repeat("Beginning", len(ogdata1)))
+                ogdata1["Beginning or End"] = oglist1  # add list "Beginning" the length of the first half
 
-                ogdata1 = ogdata[ogdata['Sentence ID'] <= len(ogdata) / 2]  # split the document by first half
-                oglist1 = list(np.repeat('Beginning', len(ogdata1)))
-                ogdata1['Beginning or End'] = oglist1  # add list "Beginning" the length of the first half
-
-                ogdata2 = ogdata[ogdata['Sentence ID'] > len(ogdata) / 2]  # split the document by first half
-                oglist2 = list(np.repeat('End', len(ogdata2)))
-                ogdata2['Beginning or End'] = oglist2  # add list "End" the length of the first half
+                ogdata2 = ogdata[ogdata["Sentence ID"] > len(ogdata) / 2]  # split the document by first half
+                oglist2 = list(np.repeat("End", len(ogdata2)))
+                ogdata2["Beginning or End"] = oglist2  # add list "End" the length of the first half
 
                 finaldata = pd.concat([ogdata1, ogdata2])  # merge dataframes
                 if not finaldata.empty:
-                    for i in range(2, max(data['Document ID']) + 1):  # iterate same process for each document
-                        intermediatedata = tempdata[tempdata['Document ID'] == i]
+                    for i in range(2, max(data["Document ID"]) + 1):  # iterate same process for each document
+                        intermediatedata = tempdata[tempdata["Document ID"] == i]
 
                         intermediatedata1 = intermediatedata[
-                            intermediatedata['Sentence ID'] <= len(intermediatedata) / 2]
-                        intermediatelist1 = list(np.repeat('Beginning', len(intermediatedata1)))
-                        intermediatedata1['Beginning or End'] = intermediatelist1
+                            intermediatedata["Sentence ID"] <= len(intermediatedata) / 2
+                        ]
+                        intermediatelist1 = list(np.repeat("Beginning", len(intermediatedata1)))
+                        intermediatedata1["Beginning or End"] = intermediatelist1
 
                         finaldata = pd.concat([finaldata, intermediatedata1])
 
                         intermediatedata2 = intermediatedata[
-                            intermediatedata['Sentence ID'] > len(intermediatedata) / 2]
-                        intermediatelist2 = list(np.repeat('End', len(intermediatedata2)))
-                        intermediatedata2['Beginning or End'] = intermediatelist2
+                            intermediatedata["Sentence ID"] > len(intermediatedata) / 2
+                        ]
+                        intermediatelist2 = list(np.repeat("End", len(intermediatedata2)))
+                        intermediatedata2["Beginning or End"] = intermediatelist2
 
                         finaldata = pd.concat([finaldata, intermediatedata2])
                     # finaldata not empty
                     # @@@ nan values will break the code
-                    finaldata = finaldata.fillna('Blank/missing value')
-                    fig = px.sunburst(finaldata, path=['interest', 'Beginning or End', label])  # return Sunburst
-                else:
-                    if finaldata.empty:
-                        mb.showwarning("Warning",
-                                       "The Sunburst algorithm has produced an empty dataframe.\n\nPlease, make sure that the 'Filename label/part' you have entered are in the document name under the Document field of your input file.\n\nREMEMBER THAT SEARCH WORDS ARE CASE SENSITIVE.\n\nPlease, try again.")
+                    finaldata = finaldata.fillna("Blank/missing value")
+                    fig = px.sunburst(finaldata, path=["interest", "Beginning or End", label])  # return Sunburst
+                elif finaldata.empty:
+                    mb.showwarning(
+                        "Warning",
+                        "The Sunburst algorithm has produced an empty dataframe.\n\nPlease, make sure that the 'Filename label/part' you have entered are in the document name under the Document field of your input file.\n\nREMEMBER THAT SEARCH WORDS ARE CASE SENSITIVE.\n\nPlease, try again.",
+                    )
                 # return Plotly.offline.plot(fig)
 
             else:
                 tempdata1 = tempdata[
-                    tempdata['Sentence ID'] <= first_sentences]  # all observations with the first n sentences
+                    tempdata["Sentence ID"] <= first_sentences
+                ]  # all observations with the first n sentences
 
-                list1 = list(np.repeat('Beginning', len(tempdata1)))  # List repeating 'Beginning'
+                list1 = list(np.repeat("Beginning", len(tempdata1)))  # List repeating 'Beginning'
 
-                for i in range(1, max(data['Document ID']) + 1):
-                    intermediatedata1 = tempdata[tempdata['Document ID'] == i]
+                for i in range(1, max(data["Document ID"]) + 1):
+                    intermediatedata1 = tempdata[tempdata["Document ID"] == i]
                     intermediatedata2 = intermediatedata1[
-                        intermediatedata1['Sentence ID'] > (len(intermediatedata1) - last_sentences)]
-                    tempdata1 = pd.concat([tempdata1, intermediatedata2]).reset_index().drop(
-                        columns={'index'})  # all observations with last n sentences
+                        intermediatedata1["Sentence ID"] > (len(intermediatedata1) - last_sentences)
+                    ]
+                    tempdata1 = (
+                        pd.concat([tempdata1, intermediatedata2]).reset_index().drop(columns={"index"})
+                    )  # all observations with last n sentences
                     if len(tempdata1) == 0:
-                        mb.showwarning(title='Warning',
-                                       message='The dataframe computed by theSunburst chart algorithm is empty.\n\nIt is likely that you are using a version of pandas > 1.5.2. If so, in command line please, pip unistall pandas and pip install pandas==1.5.2')
+                        mb.showwarning(
+                            title="Warning",
+                            message="The dataframe computed by theSunburst chart algorithm is empty.\n\nIt is likely that you are using a version of pandas > 1.5.2. If so, in command line please, pip unistall pandas and pip install pandas==1.5.2",
+                        )
                         return
 
-                list2 = list(np.repeat('End', len(tempdata1) - len(list1)))  # List repeating 'End'
+                list2 = list(np.repeat("End", len(tempdata1) - len(list1)))  # List repeating 'End'
                 finallist = list1 + list2  # Create a vector defining if the sentence is at the beginning or the end
                 finaldata = tempdata1
-                finaldata['Beginning or End'] = finallist
+                finaldata["Beginning or End"] = finallist
 
-                fig = px.sunburst(finaldata, path=['interest', 'Beginning or End', label])  # create sunburst chart
+                fig = px.sunburst(finaldata, path=["interest", "Beginning or End", label])  # create sunburst chart
         else:
             # @@@ nan values will break the code
-            tempdata = tempdata.fillna('Blank/missing value')
-            fig = px.sunburst(tempdata, path=['interest', label])
+            tempdata = tempdata.fillna("Blank/missing value")
+            fig = px.sunburst(tempdata, path=["interest", label])
             finaldata = tempdata
         if finaldata.empty:
             outputFilename = None
@@ -1833,28 +2135,37 @@ def Sunburst(data, outputFilename, outputDir, case_sensitive, interest, label, b
 #   a boolean variable to dictate if the user wants to observe an additional variable with "extra_dimension_average",
 #   the numerical variable of choice average_variable
 
+
 # The graph shows the frequencies of each group by default depending on the interest vector and the initial variable of choice. If specified, it shows the average of average_variable per group
 def Treemap(data, outputFilename, interest, csv_file_field, extra_dimension_average, average_variable=None):
     if type(data) == str:  # convert data to dataframe
-        data = pd.read_csv(data, encoding='utf-8', on_bad_lines='skip')
+        data = pd.read_csv(data, encoding="utf-8", on_bad_lines="skip")
     # The presence of a Nan value will classify the object as float
     if type(data[csv_file_field][0]) != str:
-        mb.showwarning("Warning",
-                       "The csv file field selected should be categorical.\n\nYou should select a categorical field, rather than a continuous numeric field, and try again.")
+        mb.showwarning(
+            "Warning",
+            "The csv file field selected should be categorical.\n\nYou should select a categorical field, rather than a continuous numeric field, and try again.",
+        )
         # return
     if extra_dimension_average and type(data[average_variable][0]) != np.float64:
-        mb.showwarning("Warning",
-                       "The csv file field selected should be numeric.\n\nYou should select a numeric field, rather than an alphabetic field, and try again.")
+        mb.showwarning(
+            "Warning",
+            "The csv file field selected should be numeric.\n\nYou should select a numeric field, rather than an alphabetic field, and try again.",
+        )
         return
     data = separator(data, interest, "Treemap")  # use separator function to create interest vector
     if data.empty:
         outputFilename = None
     else:
         if extra_dimension_average == False:  # return regular 2 variable graph if false
-            fig = px.treemap(data, path=[px.Constant('Total Frequency'), 'interest', csv_file_field])
+            fig = px.treemap(data, path=[px.Constant("Total Frequency"), "interest", csv_file_field])
         else:  # return graph with extra variable if true
-            fig = px.treemap(data, path=[px.Constant('Total Frequency'), 'interest', csv_file_field],
-                             color=average_variable, color_continuous_scale='RdBu')
+            fig = px.treemap(
+                data,
+                path=[px.Constant("Total Frequency"), "interest", csv_file_field],
+                color=average_variable,
+                color_continuous_scale="RdBu",
+            )
         fig.write_html(outputFilename)
     return outputFilename
 
@@ -1871,105 +2182,108 @@ def Treemap(data, outputFilename, interest, csv_file_field, extra_dimension_aver
 # import numpy as np
 # import Plotly.express as px
 
+
 def TimeMapper(data, outputFilename, var, date_format_var, cumulative, monthly=None, yearly=None, date_col=None):
     headers = IO_csv_util.get_csvfile_headers(data)
     if date_col and date_col in headers:
         date_field = date_col
-    elif 'Date' in headers:
-        date_field = 'Date'
-    elif 'Document' in headers:
-        date_field = 'Document'
+    elif "Date" in headers:
+        date_field = "Date"
+    elif "Document" in headers:
+        date_field = "Document"
     else:
-        mb.showwarning(title="Warning",
-                       message="The time mapper algorithm requires a csv input file with a date column.\n\nYou can select the date column using the 'csv file field for dynamic graph' dropdown, or the csv file must have a 'Date' or 'Document' column.\n\nPlease, try again.")
+        mb.showwarning(
+            title="Warning",
+            message="The time mapper algorithm requires a csv input file with a date column.\n\nYou can select the date column using the 'csv file field for dynamic graph' dropdown, or the csv file must have a 'Date' or 'Document' column.\n\nPlease, try again.",
+        )
         return
     if type(data) == str:
-        data = pd.read_csv(data, encoding='utf-8', on_bad_lines='skip')
+        data = pd.read_csv(data, encoding="utf-8", on_bad_lines="skip")
     date = []
     year = []
     month = []
     day = []
 
-    if date_format_var == 'yyyy':  # creates year variable based on yyyy format
+    if date_format_var == "yyyy":  # creates year variable based on yyyy format
         for i in range(0, len(data[date_field])):
-            year.append(re.search(r'\d{4}', data[date_field][i])[0])
-            data['year'] = year
-    elif date_format_var == 'mm-yyyy':  # creates year and month variable in yyyy-mm format
+            year.append(re.search(r"\d{4}", data[date_field][i])[0])
+            data["year"] = year
+    elif date_format_var == "mm-yyyy":  # creates year and month variable in yyyy-mm format
         for i in range(0, len(data[date_field])):
-            date.append(re.search(r'\d.*\d', data[date_field][i])[0])
+            date.append(re.search(r"\d.*\d", data[date_field][i])[0])
         for i in range(0, len(data[date_field])):
-            year.append(re.search(r'\d{4}', date[i])[0])
+            year.append(re.search(r"\d{4}", date[i])[0])
         for i in range(0, len(data[date_field])):
-            month.append(year[i] + '-' + date[i][0:2])
-        data['year'] = year
-        data['month'] = month
-    elif date_format_var == 'yyyy-mm':  # creates year and month variable in yyyy-mm format
+            month.append(year[i] + "-" + date[i][0:2])
+        data["year"] = year
+        data["month"] = month
+    elif date_format_var == "yyyy-mm":  # creates year and month variable in yyyy-mm format
         for i in range(0, len(data[date_field])):
-            date.append(re.search(r'\d.*\d', data[date_field][i])[0])
+            date.append(re.search(r"\d.*\d", data[date_field][i])[0])
         for i in range(0, len(data[date_field])):
-            year.append(re.search(r'\d{4}', date[i])[0])
+            year.append(re.search(r"\d{4}", date[i])[0])
         for i in range(0, len(data[date_field])):
-            month.append(year[i] + '-' + date[i][-2:])
-        data['year'] = year
-        data['month'] = month
-    elif date_format_var == 'dd-mm-yyyy':  # creates year,month and day variable in yyyy-mm-dd format
+            month.append(year[i] + "-" + date[i][-2:])
+        data["year"] = year
+        data["month"] = month
+    elif date_format_var == "dd-mm-yyyy":  # creates year,month and day variable in yyyy-mm-dd format
         for i in range(0, len(data[date_field])):
-            date.append(re.search(r'\d.*\d', data[date_field][i])[0])
+            date.append(re.search(r"\d.*\d", data[date_field][i])[0])
         for i in range(0, len(data[date_field])):
-            year.append(re.search(r'\d{4}', date[i])[0])
+            year.append(re.search(r"\d{4}", date[i])[0])
         for i in range(0, len(data[date_field])):
-            month.append(year[i] + '-' + date[i][3:5])
+            month.append(year[i] + "-" + date[i][3:5])
         for i in range(0, len(data[date_field])):
-            day.append(month[i] + '-' + date[i][0:2])
-        data['day'] = day
-        data['year'] = year
-        data['month'] = month
-    elif date_format_var == 'mm-dd-yyyy':  # creates year,month and day variable in yyyy-mm-dd format
+            day.append(month[i] + "-" + date[i][0:2])
+        data["day"] = day
+        data["year"] = year
+        data["month"] = month
+    elif date_format_var == "mm-dd-yyyy":  # creates year,month and day variable in yyyy-mm-dd format
         for i in range(0, len(data[date_field])):
             try:
-                date.append(re.search(r'\d.*\d', data[date_field][i])[0])
+                date.append(re.search(r"\d.*\d", data[date_field][i])[0])
             except:
                 continue
         for i in range(0, len(data[date_field])):
             try:
-                year.append(re.search(r'\d{4}', date[i])[0])
+                year.append(re.search(r"\d{4}", date[i])[0])
             except:
                 continue
         for i in range(0, len(data[date_field])):
             try:
-                month.append(year[i] + '-' + date[i][0:2])
+                month.append(year[i] + "-" + date[i][0:2])
             except:
                 continue
         for i in range(0, len(data[date_field])):
             try:
-                day.append(month[i] + '-' + date[i][3:5])
+                day.append(month[i] + "-" + date[i][3:5])
             except:
                 continue
-        data['year'] = year
-        data['month'] = month
-        data['day'] = day
-    elif date_format_var == 'yyyy-mm-dd':  # creates year,month and day variable in yyyy-mm-dd format
+        data["year"] = year
+        data["month"] = month
+        data["day"] = day
+    elif date_format_var == "yyyy-mm-dd":  # creates year,month and day variable in yyyy-mm-dd format
         for i in range(0, len(data[date_field])):
-            date.append(re.search(r'\d.*\d', data[date_field][i])[0])
+            date.append(re.search(r"\d.*\d", data[date_field][i])[0])
         for i in range(0, len(data[date_field])):
-            year.append(re.search(r'\d{4}', date[i])[0])
+            year.append(re.search(r"\d{4}", date[i])[0])
         for i in range(0, len(data[date_field])):
-            month.append(year[i] + '-' + date[i][5:7])
-        data['year'] = year
-        data['month'] = month
-        data['day'] = date
-    elif date_format_var == 'yyyy-dd-mm':  # creates year,month and day variable in yyyy-mm-dd format
+            month.append(year[i] + "-" + date[i][5:7])
+        data["year"] = year
+        data["month"] = month
+        data["day"] = date
+    elif date_format_var == "yyyy-dd-mm":  # creates year,month and day variable in yyyy-mm-dd format
         for i in range(0, len(data[date_field])):
-            date.append(re.search(r'\d.*\d', data[date_field][i])[0])
+            date.append(re.search(r"\d.*\d", data[date_field][i])[0])
         for i in range(0, len(data[date_field])):
-            year.append(re.search(r'\d{4}', date[i])[0])
+            year.append(re.search(r"\d{4}", date[i])[0])
         for i in range(0, len(data[date_field])):
-            month.append(year[i] + '-' + date[i][-2:])
+            month.append(year[i] + "-" + date[i][-2:])
         for i in range(0, len(data[date_field])):
-            day.append(month[i] + '-' + date[i][5:7])
-        data['year'] = year
-        data['month'] = month
-        data['day'] = day
+            day.append(month[i] + "-" + date[i][5:7])
+        data["year"] = year
+        data["month"] = month
+        data["day"] = day
 
     # Compute a fixed Y-axis category order from the full dataset so that
     # bar positions stay stable as the animation slider moves.
@@ -1985,27 +2299,24 @@ def TimeMapper(data, outputFilename, var, date_format_var, cumulative, monthly=N
                 subset = data[data[time_col] <= period]
             else:
                 subset = data[data[time_col] == period]
-            tester = pd.DataFrame(
-                subset[var].value_counts()
-            ).reset_index().rename(columns={'index': var, var: 'Frequency'})
+            tester = (
+                pd.DataFrame(subset[var].value_counts()).reset_index().rename(columns={"index": var, var: "Frequency"})
+            )
             # Ensure all categories are present in every frame
             for j in set(data[var]):
                 if j not in set(tester[var]):
-                    temp = pd.DataFrame(
-                        [[j, 0]], columns=[var, 'Frequency'])
+                    temp = pd.DataFrame([[j, 0]], columns=[var, "Frequency"])
                     tester = pd.concat([tester, temp])
             tester = tester.sort_values(var).reset_index(drop=True)
-            tester['date'] = period
+            tester["date"] = period
             finalframe = pd.concat([finalframe, tester])
         return finalframe
 
     def _make_fig(finalframe, var, fixed_cats):
         """Create the animated bar chart with a locked Y-axis."""
-        max_freq = finalframe['Frequency'].max() if len(finalframe) > 0 else 1
-        fig = px.bar(finalframe, y=var, x='Frequency',
-                     animation_frame='date', orientation='h',
-                     range_x=[0, max_freq])
-        fig.update_yaxes(categoryorder='array', categoryarray=fixed_cats)
+        max_freq = finalframe["Frequency"].max() if len(finalframe) > 0 else 1
+        fig = px.bar(finalframe, y=var, x="Frequency", animation_frame="date", orientation="h", range_x=[0, max_freq])
+        fig.update_yaxes(categoryorder="array", categoryarray=fixed_cats)
         return fig
 
     # Plot corresponding graph depending on the options
@@ -2013,26 +2324,25 @@ def TimeMapper(data, outputFilename, var, date_format_var, cumulative, monthly=N
         if monthly == True and yearly == True:
             return "Choose one of the following: daily graph, monthly graph, yearly graph"
         elif monthly == True:
-            finalframe = _build_finalframe(data, var, 'month', False)
+            finalframe = _build_finalframe(data, var, "month", False)
             fig = _make_fig(finalframe, var, _fixed_categories)
         elif yearly == True:
-            finalframe = _build_finalframe(data, var, 'year', False)
+            finalframe = _build_finalframe(data, var, "year", False)
             fig = _make_fig(finalframe, var, _fixed_categories)
         else:
-            finalframe = _build_finalframe(data, var, 'day', False)
+            finalframe = _build_finalframe(data, var, "day", False)
             fig = _make_fig(finalframe, var, _fixed_categories)
+    elif monthly == True and yearly == True:
+        return "Choose one of the following: daily graph, monthly graph, yearly graph"
+    elif yearly == True:
+        finalframe = _build_finalframe(data, var, "year", True)
+        fig = _make_fig(finalframe, var, _fixed_categories)
+    elif monthly == True:
+        finalframe = _build_finalframe(data, var, "month", True)
+        fig = _make_fig(finalframe, var, _fixed_categories)
     else:
-        if monthly == True and yearly == True:
-            return "Choose one of the following: daily graph, monthly graph, yearly graph"
-        elif yearly == True:
-            finalframe = _build_finalframe(data, var, 'year', True)
-            fig = _make_fig(finalframe, var, _fixed_categories)
-        elif monthly == True:
-            finalframe = _build_finalframe(data, var, 'month', True)
-            fig = _make_fig(finalframe, var, _fixed_categories)
-        else:
-            finalframe = _build_finalframe(data, var, 'day', True)
-            fig = _make_fig(finalframe, var, _fixed_categories)
+        finalframe = _build_finalframe(data, var, "day", True)
+        fig = _make_fig(finalframe, var, _fixed_categories)
     fig = fig.update_geos(projection_type="equirectangular", visible=True, resolution=110)
     fig.write_html(outputFilename)
 
@@ -2042,10 +2352,11 @@ def TimeMapper(data, outputFilename, var, date_format_var, cumulative, monthly=N
 # written by Simon Bian
 # September 2023
 
+
 def process_and_aggregate_data(data, **kwargs):
-    conditions = kwargs.get('where_column', {})  # WHERE conditions
-    agg_column = kwargs.get('groupby_column')  # GROUP BY column
-    select_columns = kwargs.get('select_column', [])  # SELECT columns
+    conditions = kwargs.get("where_column", {})  # WHERE conditions
+    agg_column = kwargs.get("groupby_column")  # GROUP BY column
+    select_columns = kwargs.get("select_column", [])  # SELECT columns
     for col, value in conditions.items():
         if isinstance(value, (list, tuple)):
             data = data[data[col].isin(value)]
@@ -2061,26 +2372,26 @@ def process_and_aggregate_data(data, **kwargs):
         return
 
     # Group by the specified column along with select_columns and calculate the count
-    agg_data = data.groupby([agg_column, select_columns]).size().reset_index(name='Count')
+    agg_data = data.groupby([agg_column, select_columns]).size().reset_index(name="Count")
     # Pivot the table. If select_columns is empty, this will consider all other columns.
-    pivot_data = agg_data.pivot_table(index=select_columns, columns=agg_column, values='Count', fill_value=0)
+    pivot_data = agg_data.pivot_table(index=select_columns, columns=agg_column, values="Count", fill_value=0)
     return pivot_data
 
 
-def transform_data(pivot_data, transformation='min-max'):
-    if transformation == 'min-max':
+def transform_data(pivot_data, transformation="min-max"):
+    if transformation == "min-max":
         min_val = pivot_data.min().min()
         max_val = pivot_data.max().max()
         return (pivot_data - min_val) / (max_val - min_val)
-    elif transformation == 'square-root':
+    elif transformation == "square-root":
         return np.sqrt(pivot_data)
-    elif transformation == 'log':
+    elif transformation == "log":
         return np.log1p(pivot_data)
-    elif transformation == 'z-score':
+    elif transformation == "z-score":
         means = pivot_data.mean()
         stds = pivot_data.std()
         # Skip columns with std very close to zero
-        z_scores = pivot_data.subtract(means, axis='columns').divide(stds.where(stds > 1e-5, 1), axis='columns')
+        z_scores = pivot_data.subtract(means, axis="columns").divide(stds.where(stds > 1e-5, 1), axis="columns")
         # Replace inf and -inf values with NaN for safety
         z_scores.replace([np.inf, -np.inf], np.nan, inplace=True)
         return z_scores
@@ -2088,11 +2399,19 @@ def transform_data(pivot_data, transformation='min-max'):
         return pivot_data  # return original data if no recognized transformation is given
 
 
-def visualize_colormap_data(data, top_n=60, figsize=(15, 10), y_label='Lemma', x_label='Document', normalize='log',
-                   color='YlOrBr', outputname='output_figure'):
-    import seaborn as sns
+def visualize_colormap_data(
+    data,
+    top_n=60,
+    figsize=(15, 10),
+    y_label="Lemma",
+    x_label="Document",
+    normalize="log",
+    color="YlOrBr",
+    outputname="output_figure",
+):
     import matplotlib.pyplot as plt
     import numpy as np
+    import seaborn as sns
 
     numeric_data = data.select_dtypes(include=[np.number])
     sorted_columns = numeric_data.columns.sort_values()
@@ -2103,28 +2422,34 @@ def visualize_colormap_data(data, top_n=60, figsize=(15, 10), y_label='Lemma', x
     # print("doing calculations...complete!")
     plt.figure(figsize=figsize)
     try:
-        sns.heatmap(transposed_data, annot=False, fmt='.2f', cmap=color, cbar_kws={'label': normalize})
+        sns.heatmap(transposed_data, annot=False, fmt=".2f", cmap=color, cbar_kws={"label": normalize})
     except:
         print("There appears to be ann error with cmap; we revert to default ")
-        sns.heatmap(transposed_data, annot=False, fmt='.2f', cmap='YlOrBr', cbar_kws={'label': normalize})
+        sns.heatmap(transposed_data, annot=False, fmt=".2f", cmap="YlOrBr", cbar_kws={"label": normalize})
     ax = plt.gca()
     ax.set_yticks(np.arange(len(transposed_data.index)))
     ax.set_yticklabels(transposed_data.index)
     ax.set_xticks(np.arange(len(transposed_data.columns)))
     ax.set_xticklabels(transposed_data.columns, rotation=90)
     ax.set_ylabel(y_label)
-    x_label = x_label.replace('Real_','')
+    x_label = x_label.replace("Real_", "")
     ax.set_xlabel(x_label)
-    ax.set_title('Colormap/heatmap of ' + y_label + ' Frequency by ' + x_label + ' Values (' + normalize + ' Scale)')
-    plt.savefig(outputname + '.png')
+    ax.set_title("Colormap/heatmap of " + y_label + " Frequency by " + x_label + " Values (" + normalize + " Scale)")
+    plt.savefig(outputname + ".png")
     print(f"Data visualization saved as {outputname}.png.")
     # plt.show() // we don't need to show it because we have that other option
 
 
-def visualize_stacked_bar(crosstab_data, top_n=20, figsize=(12, 6),
-                          x_label='Category', y_label='Count',
-                          title='Stacked bar chart', outputname='output_stacked_bar',
-                          grouped=False):
+def visualize_stacked_bar(
+    crosstab_data,
+    top_n=20,
+    figsize=(12, 6),
+    x_label="Category",
+    y_label="Count",
+    title="Stacked bar chart",
+    outputname="output_stacked_bar",
+    grouped=False,
+):
     """Horizontal stacked or grouped bar chart from a crosstab DataFrame.
 
     Parameters
@@ -2140,7 +2465,8 @@ def visualize_stacked_bar(crosstab_data, top_n=20, figsize=(12, 6),
         If True, draw side-by-side (grouped) bars instead of stacked.
     """
     import matplotlib
-    matplotlib.use('Agg')
+
+    matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
     totals = crosstab_data.sum(axis=1).sort_values(ascending=False)
@@ -2152,19 +2478,20 @@ def visualize_stacked_bar(crosstab_data, top_n=20, figsize=(12, 6),
     ax.set_xlabel(y_label)
     ax.set_ylabel(x_label)
     ax.set_title(title)
-    ax.legend(title=crosstab_data.columns.name or '',
-              bbox_to_anchor=(1.02, 1), loc='upper left',
-              fontsize=7, title_fontsize=8)
+    ax.legend(
+        title=crosstab_data.columns.name or "", bbox_to_anchor=(1.02, 1), loc="upper left", fontsize=7, title_fontsize=8
+    )
     plt.tight_layout()
     fig_obj = ax.get_figure()
-    fig_obj.savefig(outputname + '.png', dpi=150, bbox_inches='tight')
+    fig_obj.savefig(outputname + ".png", dpi=150, bbox_inches="tight")
     plt.close(fig_obj)
     print(f"Data visualization saved as {outputname}.png.")
 
 
 def extract_file_name(link_string):
     import re
-    match = re.search(r'\/([^\/]+)\.txt', link_string)
+
+    match = re.search(r"\/([^\/]+)\.txt", link_string)
     return match.group(1) if match else link_string
 
 
@@ -2177,6 +2504,7 @@ def renamedf(df):
 # csv_file_categorical_field_list is a double list with each list containing the combination csv field & search values
 #   for example, [[Document | Mao, Deng, Xi][NER | PERSON][WORD|'']
 # params is a single lst with the max number of rows and RGB color, e.g., [20, 255 166 0]
+
 
 def read_filename_color(inputFilename):
     try:
@@ -2217,13 +2545,7 @@ def read_filename_color(inputFilename):
 
 
 def get_transformation_choice(choice=5):
-    transformations = {
-        1: 'min-max',
-        2: 'square-root',
-        3: 'log',
-        4: 'z-score',
-        5: None
-    }
+    transformations = {1: "min-max", 2: "square-root", 3: "log", 4: "z-score", 5: None}
     return transformations.get(choice, None)
 
 
@@ -2234,45 +2556,51 @@ def further_group(df, major_parm, small_prm):
     mps_suffix = {}
     for i in col:
         for j in small_prm:
-            if re.search('.*' + str(j) + '.*', str(i)):
+            if re.search(".*" + str(j) + ".*", str(i)):
                 mps_suffix[str(i)] = str(j)
-    df['Real_' + major_parm] = df[major_parm].map(mps_suffix)
+    df["Real_" + major_parm] = df[major_parm].map(mps_suffix)
 
 
 def sql_commands(s, dataFrame):
-    '''
+    """
     In sql, we all know the famous quote, SELECT * FROM any_sort_of_datatable WHERE * GROUP BY *
     This command is in effect doing that.
     The  WHERE command, in which you know at which point ROWS you'd like to filter fow
     The  GROUP BY command, in which COLUMN's FIELDS you know you would like to aggregate the RESULT upon
     The SELECT command, in which you know which COLUMNS you'd like to present to the viewers
     The return is, in essence, a pythonic database searching command that achieves this effect
-    '''
+    """
     WHERE_s = s[1:-1]
-    GROUPBY_s = s[0][0].split('|')
+    GROUPBY_s = s[0][0].split("|")
     GROUPBY = GROUPBY_s[0]
     add = GROUPBY_s[1]
     if add:
-        all_values = add.split(', ')
+        all_values = add.split(", ")
         further_group(dataFrame, GROUPBY, all_values)
         print("The function detected string values in input, and they were mapped accordingly")
-        GROUPBY = 'Real_' + GROUPBY
-    SELECT = s[-1][0].split('|')
-    if SELECT[1]!='':
-        mb.showwarning(title='Search values ignored',
-                       message='The search values\n   ' + str(SELECT[1]) + '\nentered for the last selected csv file field ' + str(SELECT[0]) + ' will be ignored.\n\nThe field values for a last selected field of a colormap should be left blank.')
+        GROUPBY = "Real_" + GROUPBY
+    SELECT = s[-1][0].split("|")
+    if SELECT[1] != "":
+        mb.showwarning(
+            title="Search values ignored",
+            message="The search values\n   "
+            + str(SELECT[1])
+            + "\nentered for the last selected csv file field "
+            + str(SELECT[0])
+            + " will be ignored.\n\nThe field values for a last selected field of a colormap should be left blank.",
+        )
     SELECT = SELECT[0]
     WHERE = {}
     if WHERE_s:
         for condition in WHERE_s:
-            cmd = condition[0].split('|')
-            mtc = cmd[1].split(', ')
+            cmd = condition[0].split("|")
+            mtc = cmd[1].split(", ")
             WHERE[cmd[0]] = mtc
     return WHERE, GROUPBY, SELECT
 
 
 def special_sql_commands(s, dataFrame):
-    '''
+    """
     THIS IS FOR sunburst / treemaps only
     For the first parameter, it should be fixed to be partial match or none
     For all other parameters, it should be fixed to fixed match or none
@@ -2283,31 +2611,30 @@ def special_sql_commands(s, dataFrame):
     Example2:
         In NER, entering O would yield partial match: PERSON, ORGANIZATION, IDEOLOGY, O....
         Entering O would yield fixed match: O only.
-    '''
+    """
     WHERE_s = s[1:]
-    GROUPBY_s = s[0][0].split('|')
+    GROUPBY_s = s[0][0].split("|")
     GROUPBY = GROUPBY_s[0]
     add = GROUPBY_s[1]
     if add:
-        all_values = add.split(', ')
+        all_values = add.split(", ")
         further_group(dataFrame, GROUPBY, all_values)
         print("The function detected string values in input, and they were mapped accordingly")
-        GROUPBY = 'Real_' + GROUPBY
+        GROUPBY = "Real_" + GROUPBY
     WHERE = {}
     if WHERE_s:
         for condition in WHERE_s:
-            cmd = condition[0].split('|')
-            mtc = cmd[1].split(', ')
+            cmd = condition[0].split("|")
+            mtc = cmd[1].split(", ")
             WHERE[cmd[0]] = mtc
     return WHERE, GROUPBY
 
 
-import numpy as np
 from matplotlib.colors import LinearSegmentedColormap
 
 
 def interpolate_colors(color1, color2, num_colors):
-    color1, color2 = [x / 255. for x in color1], [x / 255. for x in color2]
+    color1, color2 = [x / 255.0 for x in color1], [x / 255.0 for x in color2]
     return [np.array(color1) * (1 - ratio) + np.array(color2) * ratio for ratio in np.linspace(0, 1, num_colors)]
 
 
@@ -2317,7 +2644,7 @@ def cmaps(start_color, end_color):
     try:
         return cmap_custom
     except:
-        return 'YlOrBr'
+        return "YlOrBr"
 
 
 def colormap(inputFilename, outputDir, csv_file_categorical_field_list, params):
@@ -2328,60 +2655,72 @@ def colormap(inputFilename, outputDir, csv_file_categorical_field_list, params):
     # step1 is a dataframe
     step1 = process_and_aggregate_data(dataFrame, where_column=WHERE, groupby_column=GROUPBY, select_column=SELECT)
     if step1.empty:
-        mb.showwarning(title='No search values found',
-                       message='No combination of csv file fields and search values were found in your input file.\n\n' + str(csv_file_categorical_field_list) + '\n\nPlease, make sure to check whether\n   1. you have not entered the same field twice;\n   2. you are using a case sensitive search option.\n\nPlease, click on the Reset button and start again.')
+        mb.showwarning(
+            title="No search values found",
+            message="No combination of csv file fields and search values were found in your input file.\n\n"
+            + str(csv_file_categorical_field_list)
+            + "\n\nPlease, make sure to check whether\n   1. you have not entered the same field twice;\n   2. you are using a case sensitive search option.\n\nPlease, click on the Reset button and start again.",
+        )
         return
-    colormap_dataframe_csv_filename =outputDir + os.sep + "colormap_dataframe.csv"
+    colormap_dataframe_csv_filename = outputDir + os.sep + "colormap_dataframe.csv"
     filesToOpen.append(colormap_dataframe_csv_filename)
     # add headers to dataframe
-    if GROUPBY == 'Document':
-        if len(WHERE)==0:
+    if GROUPBY == "Document":
+        if len(WHERE) == 0:
             for i in range(len(list(step1.columns.values))):
                 header = list(step1.columns.values)[i]
                 head, tail = os.path.split(header)
-                step1 = step1.rename(columns={header: 'Frequency in: ' + tail})
+                step1 = step1.rename(columns={header: "Frequency in: " + tail})
     step1.to_csv(colormap_dataframe_csv_filename, index=True)
 
     # val = 1 #get_transformation_choice(), but we will connect it....
     step2 = transform_data(step1)  # There needs to be a GUI to allow transformation, but...
     # We proceed with default instead perhaps...
-    if GROUPBY == 'Document':
+    if GROUPBY == "Document":
         # if len(WHERE)==0:
-            # when a specific document part (e.g., Book1 for Harry Potter) is not entered by the user
-            #   the document will contain the entire path along with an hypewrlink and this may be very cumbersome to display in the X axis
-            #   must remove hyperlink and display document tail only
-            # print('Must REMOVE hyperlink and display document tail only, not path')
-            # for i in range(len(list(step2.columns.values))):
-            #     header=list(step2.columns.values)[i]
-            #     head, tail = os.path.split(header)
-            #     step2 = step2.rename(columns = {header:tail})
+        # when a specific document part (e.g., Book1 for Harry Potter) is not entered by the user
+        #   the document will contain the entire path along with an hypewrlink and this may be very cumbersome to display in the X axis
+        #   must remove hyperlink and display document tail only
+        # print('Must REMOVE hyperlink and display document tail only, not path')
+        # for i in range(len(list(step2.columns.values))):
+        #     header=list(step2.columns.values)[i]
+        #     head, tail = os.path.split(header)
+        #     step2 = step2.rename(columns = {header:tail})
         renamedf(step2)  # We rename to file relative location, not absolute location
     try:
         cmap = cmaps(eval(params[1]), eval(params[2]))
     except:
         cmap = cmaps((135, 207, 236), (0, 0, 255))
     import IO_files_util
-    outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.html', 'colormap')
 
-    visualize_colormap_data(step2, top_n=params[0], y_label = SELECT, x_label = GROUPBY,
-                   normalize=params[-1], color=cmap, outputname=outputFilename)  # There is no GUI yet...
+    outputFilename = IO_files_util.generate_output_file_name(inputFilename, "", outputDir, ".html", "colormap")
+
+    visualize_colormap_data(
+        step2,
+        top_n=params[0],
+        y_label=SELECT,
+        x_label=GROUPBY,
+        normalize=params[-1],
+        color=cmap,
+        outputname=outputFilename,
+    )  # There is no GUI yet...
     filesToOpen.append(outputFilename)
     return filesToOpen
 
 
 def select_and_counting(df, select_and_count):
     grouped = df.groupby(select_and_count).size()
-    counts_df = grouped.reset_index(name='values')
-    new_df = pd.merge(df, counts_df, on=select_and_count, how='left')
+    counts_df = grouped.reset_index(name="values")
+    new_df = pd.merge(df, counts_df, on=select_and_count, how="left")
     return new_df
     # This one tells us for each word, how many times it appear
     # THIS IS FOR SUNBURST ? TREE MAP
 
 
 def where_data(data, **kwargs):
-    conditions = kwargs.get('where_column', {})  # WHERE conditions
+    conditions = kwargs.get("where_column", {})  # WHERE conditions
     for col, values in conditions.items():
-        if values == '' or values == ['']:
+        if values == "" or values == [""]:
             continue
         if isinstance(values, (list, tuple)):
             data = data[data[col].isin(values)]
@@ -2398,7 +2737,7 @@ def fixed_transform_helper(df, prt, nms):
 
 def fixed_transform(df, fixed_value):
     for col in df.columns:
-        if col != 'counts':
+        if col != "counts":
             df = fixed_transform_helper(df, col, fixed_value)
     return df
 
@@ -2412,7 +2751,7 @@ def rate_prop_helper(df, prt, nms):
 
 def rate_prop(df, rt, base):
     for col in df.columns:
-        if col != 'counts':
+        if col != "counts":
             df = rate_prop_helper(df, col, base)
             base = base * rt
     return df
@@ -2426,8 +2765,18 @@ def rate_prop(df, rt, base):
 # THIS IS AN ABBREVIATED VERSION FOR The sunburst / treemap
 # suntree = 1 for sunburst 0 for treemap
 # returns two files: a csv fle of intermediate results and an html file for the Sunburst_Treemap chart
-def Sunburst_Treemap(inputFilename, outputFilename, outputDir, csv_file_categorical_field_list, suntree,
-                     fixed_param_var, rate_param_var, base_param_var, filter_options_var, case_sensitive=False):
+def Sunburst_Treemap(
+    inputFilename,
+    outputFilename,
+    outputDir,
+    csv_file_categorical_field_list,
+    suntree,
+    fixed_param_var,
+    rate_param_var,
+    base_param_var,
+    filter_options_var,
+    case_sensitive=False,
+):
     filesToOpen = []
 
     print(fixed_param_var, rate_param_var, base_param_var, filter_options_var, case_sensitive)
@@ -2445,37 +2794,39 @@ def Sunburst_Treemap(inputFilename, outputFilename, outputDir, csv_file_categori
     select_and_count = [GROUPBY]
     select_and_count.extend(list(WHERE.keys()))
     df = select_and_counting(data, select_and_count)
-    df_grouped = df.groupby(select_and_count).size().reset_index(name='counts')
-    intermediate_csv_filename =outputDir + os.sep + "sunburst_treemap_intermediate.csv"
+    df_grouped = df.groupby(select_and_count).size().reset_index(name="counts")
+    intermediate_csv_filename = outputDir + os.sep + "sunburst_treemap_intermediate.csv"
     filesToOpen.append(intermediate_csv_filename)
     df_grouped.to_csv(intermediate_csv_filename, index=False)
     # df_grouped.head(5)
-    if filter_options_var == 'Fixed parameter':
+    if filter_options_var == "Fixed parameter":
         df_grouped = fixed_transform(df_grouped, int(fixed_param_var))
         print("Fixed parameter applied")
-    if filter_options_var == 'Propagating parameter':
+    if filter_options_var == "Propagating parameter":
         df_grouped = rate_prop(df_grouped, int(rate_param_var), int(base_param_var))
         print("Propagating parameter applied")
-    print('df_grouped:',df_grouped)
+    print("df_grouped:", df_grouped)
     if df_grouped.empty:
-        mb.showwarning(title='No search values found',
-                       message='No combination of csv file fields and search values were found in your input file.\n\nPlease, make sure to check whether you are using a case sensitive search option.')
+        mb.showwarning(
+            title="No search values found",
+            message="No combination of csv file fields and search values were found in your input file.\n\nPlease, make sure to check whether you are using a case sensitive search option.",
+        )
         return
-    if suntree == 0 or suntree == 3: # treemap
-        fig = px.treemap(df_grouped, path=select_and_count, values='counts')
-        if outputFilename == '':
+    if suntree == 0 or suntree == 3:  # treemap
+        fig = px.treemap(df_grouped, path=select_and_count, values="counts")
+        if outputFilename == "":
             import IO_files_util
-            outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir,
-                                                                 '.html', 'treemap')
+
+            outputFilename = IO_files_util.generate_output_file_name(inputFilename, "", outputDir, ".html", "treemap")
         fig.write_html(outputFilename)
         filesToOpen.append(outputFilename)
-        outputFilename = ''
-    if suntree==1 or suntree == 3: # sunburst
-        fig = px.sunburst(df_grouped, path=select_and_count, values='counts')  # Ensure the hierarchy levels are correct
-        if outputFilename == '':
+        outputFilename = ""
+    if suntree == 1 or suntree == 3:  # sunburst
+        fig = px.sunburst(df_grouped, path=select_and_count, values="counts")  # Ensure the hierarchy levels are correct
+        if outputFilename == "":
             import IO_files_util
-            outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir,
-                                                                 '.html', 'sunburst')
+
+            outputFilename = IO_files_util.generate_output_file_name(inputFilename, "", outputDir, ".html", "sunburst")
         fig.write_html(outputFilename)
         filesToOpen.append(outputFilename)
     return filesToOpen
@@ -2485,6 +2836,7 @@ def Sunburst_Treemap(inputFilename, outputFilename, outputDir, csv_file_categori
 # Standalone visualization functions
 # Extracted from auto_chart_cross_complex for use in data_visualization GUIs
 # ═══════════════════════════════════════════════════════════════════════
+
 
 def parse_archive_date(value):
     """A date as the family archive writes it, or pd.NaT.
@@ -2499,19 +2851,19 @@ def parse_archive_date(value):
         return pd.NaT
     if isinstance(value, (pd.Timestamp,)):
         return value
-    if hasattr(value, 'year') and hasattr(value, 'month'):
+    if hasattr(value, "year") and hasattr(value, "month"):
         return pd.Timestamp(value)
     if isinstance(value, (int, float)) and not pd.isna(value):
         value = str(int(value))
-    text = str(value).strip().lstrip('@').strip()
-    text = re.sub(r'^(ca|c\.|about|abt|b|d|fl)\.?\s+', '', text, flags=re.I)
-    m = re.match(r'^(\d{4})(?:[-/](\d{1,2}))?(?:[-/](\d{1,2}))?(?!\d)', text)
-    if not m or m.group(1) == '0000':
-        return pd.to_datetime(text, errors='coerce') if text and not text[:4].isdigit() else pd.NaT
+    text = str(value).strip().lstrip("@").strip()
+    text = re.sub(r"^(ca|c\.|about|abt|b|d|fl)\.?\s+", "", text, flags=re.I)
+    m = re.match(r"^(\d{4})(?:[-/](\d{1,2}))?(?:[-/](\d{1,2}))?(?!\d)", text)
+    if not m or m.group(1) == "0000":
+        return pd.to_datetime(text, errors="coerce") if text and not text[:4].isdigit() else pd.NaT
     year = int(m.group(1))
-    if not 1678 <= year <= 2261:                      # outside what a pandas Timestamp can hold
+    if not 1678 <= year <= 2261:  # outside what a pandas Timestamp can hold
         return pd.NaT
-    month = int(m.group(2)) if m.group(2) and not re.match(r'^\d{4}-\d{4}', text) else 1
+    month = int(m.group(2)) if m.group(2) and not re.match(r"^\d{4}-\d{4}", text) else 1
     day = int(m.group(3)) if m.group(3) else 1
     month = month if 1 <= month <= 12 else 1
     day = day if 1 <= day <= 31 else 1
@@ -2521,8 +2873,7 @@ def parse_archive_date(value):
         return pd.Timestamp(year=year, month=1, day=1)
 
 
-def network_graph_visjs(inputFilename, outputDir, col1, col2, col3,
-                        date_col=None, top_n_per_role=15):
+def network_graph_visjs(inputFilename, outputDir, col1, col2, col3, date_col=None, top_n_per_role=15):
     """Build an interactive vis.js network graph from three relational CSV columns.
 
     Parameters
@@ -2541,7 +2892,7 @@ def network_graph_visjs(inputFilename, outputDir, col1, col2, col3,
     import math as _math
 
     try:
-        df = pd.read_csv(inputFilename, encoding='utf-8', on_bad_lines='skip')
+        df = pd.read_csv(inputFilename, encoding="utf-8", on_bad_lines="skip")
     except Exception as e:
         print(f"  WARNING: Could not read CSV: {e}")
         return []
@@ -2557,14 +2908,14 @@ def network_graph_visjs(inputFilename, outputDir, col1, col2, col3,
     if _has_dates:
         _net_cols.append(date_col)
 
-    net_df = df[_net_cols].dropna(subset=svo_cols, how='all').copy()
+    net_df = df[_net_cols].dropna(subset=svo_cols, how="all").copy()
     for sc in svo_cols:
-        net_df[sc] = net_df[sc].fillna('').astype(str)
+        net_df[sc] = net_df[sc].fillna("").astype(str)
     if net_df.empty:
         return []
 
-    palette = {'S': '#E04040', 'V': '#4060E0', 'O': '#30A030'}
-    role_keys = ['S', 'V', 'O']
+    palette = {"S": "#E04040", "V": "#4060E0", "O": "#30A030"}
+    role_keys = ["S", "V", "O"]
     role_labels = [col1, col2, col3]
     role_of = {}
     top_per_role = {}
@@ -2576,9 +2927,7 @@ def network_graph_visjs(inputFilename, outputDir, col1, col2, col3,
             if v and v not in role_of:
                 role_of[v] = rk
 
-    mask = net_df.apply(
-        lambda row: all(row[c] in top_per_role[c] or row[c] == ''
-                        for c in svo_cols), axis=1)
+    mask = net_df.apply(lambda row: all(row[c] in top_per_role[c] or row[c] == "" for c in svo_cols), axis=1)
     net_df = net_df[mask]
     if net_df.empty:
         return []
@@ -2608,7 +2957,7 @@ def network_graph_visjs(inputFilename, outputDir, col1, col2, col3,
     triplet_counts = {}
     for _, row in net_df.iterrows():
         vals = tuple(row[c] for c in svo_cols)
-        if any(v == '' for v in vals):
+        if any(v == "" for v in vals):
             continue
         triplet_counts[vals] = triplet_counts.get(vals, 0) + 1
 
@@ -2618,7 +2967,7 @@ def network_graph_visjs(inputFilename, outputDir, col1, col2, col3,
             node_triplets.setdefault(val, []).append(list(triplet) + [cnt])
 
     all_nodes = set()
-    for (s, t) in edges:
+    for s, t in edges:
         all_nodes.add(s)
         all_nodes.add(t)
 
@@ -2651,20 +3000,42 @@ def network_graph_visjs(inputFilename, outputDir, col1, col2, col3,
         freq = node_freq.get(n, 1)
         sz = round(_node_size(freq), 1)
         fsz = max(10, min(22, int(10 + (sz - SIZE_MIN) / (SIZE_MAX - SIZE_MIN) * 12)))
-        vis_nodes.append({
-            'id': nid, 'label': n,
-            'color': palette.get(rk, '#888'),
-            'font': {'size': fsz},
-            'shape': 'dot', 'size': sz,
-            'title': '{} (freq: {})'.format(n, freq),
-            'role': rk})
+        vis_nodes.append(
+            {
+                "id": nid,
+                "label": n,
+                "color": palette.get(rk, "#888"),
+                "font": {"size": fsz},
+                "shape": "dot",
+                "size": sz,
+                "title": f"{n} (freq: {freq})",
+                "role": rk,
+            }
+        )
 
     all_verbs = sorted(set(v for labels in edge_labels.values() for v in labels))
     edge_color_palette = [
-        '#E04040', '#4060E0', '#30A030', '#E0A020', '#9040C0',
-        '#20B0B0', '#E06090', '#808000', '#FF6020', '#6080FF',
-        '#A05030', '#00A060', '#C04080', '#5090A0', '#D0D030',
-        '#8060C0', '#40C080', '#E08040', '#6060A0', '#B04040']
+        "#E04040",
+        "#4060E0",
+        "#30A030",
+        "#E0A020",
+        "#9040C0",
+        "#20B0B0",
+        "#E06090",
+        "#808000",
+        "#FF6020",
+        "#6080FF",
+        "#A05030",
+        "#00A060",
+        "#C04080",
+        "#5090A0",
+        "#D0D030",
+        "#8060C0",
+        "#40C080",
+        "#E08040",
+        "#6060A0",
+        "#B04040",
+    ]
     verb_color_map = {}
     for i, v in enumerate(all_verbs):
         verb_color_map[v] = edge_color_palette[i % len(edge_color_palette)]
@@ -2675,39 +3046,40 @@ def network_graph_visjs(inputFilename, outputDir, col1, col2, col3,
         if len(labels_for_edge) == 1:
             ec = verb_color_map[next(iter(labels_for_edge))]
         else:
-            ec = '#aaaaaa'
-        label_str = ', '.join(sorted(labels_for_edge)) if labels_for_edge else ''
-        title_parts = ['{} → {}'.format(s, t)]
+            ec = "#aaaaaa"
+        label_str = ", ".join(sorted(labels_for_edge)) if labels_for_edge else ""
+        title_parts = [f"{s} → {t}"]
         if label_str:
-            title_parts.append('via: {}'.format(label_str))
-        title_parts.append('count: {}'.format(w))
+            title_parts.append(f"via: {label_str}")
+        title_parts.append(f"count: {w}")
         e_entry = {
-            'from': node_id_map[s], 'to': node_id_map[t],
-            'value': w,
-            'title': ' | '.join(title_parts),
-            'label': label_str if len(labels_for_edge) == 1 else '',
-            'color': {'color': ec, 'highlight': '#333333'},
-            'edgeVerb': label_str}
+            "from": node_id_map[s],
+            "to": node_id_map[t],
+            "value": w,
+            "title": " | ".join(title_parts),
+            "label": label_str if len(labels_for_edge) == 1 else "",
+            "color": {"color": ec, "highlight": "#333333"},
+            "edgeVerb": label_str,
+        }
         if _has_dates and (s, t) in edge_dates:
-            e_entry['dates'] = sorted(set(
-                d.strftime('%Y-%m-%d') for d in edge_dates[(s, t)]))
+            e_entry["dates"] = sorted(set(d.strftime("%Y-%m-%d") for d in edge_dates[(s, t)]))
         vis_edges.append(e_entry)
 
     _all_dates_set = set()
     if _has_dates:
         for dlist in edge_dates.values():
             for d in dlist:
-                _all_dates_set.add(d.strftime('%Y-%m-%d'))
+                _all_dates_set.add(d.strftime("%Y-%m-%d"))
         node_dates = {}
         for (s, t), dlist in edge_dates.items():
             for d in dlist:
-                ds = d.strftime('%Y-%m-%d')
+                ds = d.strftime("%Y-%m-%d")
                 node_dates.setdefault(node_id_map[s], set()).add(ds)
                 node_dates.setdefault(node_id_map[t], set()).add(ds)
         for vn in vis_nodes:
-            nid = vn['id']
+            nid = vn["id"]
             if nid in node_dates:
-                vn['dates'] = sorted(node_dates[nid])
+                vn["dates"] = sorted(node_dates[nid])
     _all_dates_sorted = sorted(_all_dates_set) if _all_dates_set else []
 
     js_node_triplets = {}
@@ -2717,10 +3089,10 @@ def network_graph_visjs(inputFilename, outputDir, col1, col2, col3,
             trips_sorted = sorted(trips, key=lambda x: -x[-1])[:30]
             js_node_triplets[nid] = trips_sorted
 
-    _role_initials = {'S': 'S', 'V': 'V', 'O': 'O'}
-    _svo_label = 'Network'
-    _role_arrow_label = ' → '.join(role_labels)
-    _role_arrow_short = ' → '.join(role_keys)
+    _role_initials = {"S": "S", "V": "V", "O": "O"}
+    _svo_label = "Network"
+    _role_arrow_label = " → ".join(role_labels)
+    _role_arrow_short = " → ".join(role_keys)
 
     _role_css = {}
     for idx_r, rl in enumerate(role_labels):
@@ -2729,35 +3101,33 @@ def network_graph_visjs(inputFilename, outputDir, col1, col2, col3,
     _th = []
     for _i, _rc in enumerate(role_labels):
         if _i > 0:
-            _th.append('<th></th>')
-        _th.append('<th>{}</th>'.format(_rc))
-    _th.append('<th>Count</th>')
-    _table_header_html = ''.join(_th)
+            _th.append("<th></th>")
+        _th.append(f"<th>{_rc}</th>")
+    _th.append("<th>Count</th>")
+    _table_header_html = "".join(_th)
 
     _td = []
     for _i, _rc in enumerate(role_labels):
-        _css = _role_css.get(_rc, '')
+        _css = _role_css.get(_rc, "")
         if _i > 0:
             _td.append("'<td>&rarr;</td>'")
-        _td.append("'<td class=\"{}\">' + t[{}] + '</td>'".format(_css, _i))
-    _td.append("'<td>' + t[{}] + '</td>'".format(len(svo_cols)))
-    _table_row_js = ' + '.join(_td)
+        _td.append(f"'<td class=\"{_css}\">' + t[{_i}] + '</td>'")
+    _td.append(f"'<td>' + t[{len(svo_cols)}] + '</td>'")
+    _table_row_js = " + ".join(_td)
 
-    _info_click = ' &rarr; '.join(role_keys)
-    _no_triplets = ' → '.join(role_keys)
+    _info_click = " &rarr; ".join(role_keys)
+    _no_triplets = " → ".join(role_keys)
 
     legend_parts = []
     for rk, rl in zip(role_keys, role_labels):
-        legend_parts.append(
-            '<span class="leg" style="background:{}"></span>{}'.format(palette[rk], rl))
+        legend_parts.append(f'<span class="leg" style="background:{palette[rk]}"></span>{rl}')
     if all_verbs:
-        legend_parts.append('&nbsp;&nbsp;|&nbsp;&nbsp;<b>Edges:</b>')
+        legend_parts.append("&nbsp;&nbsp;|&nbsp;&nbsp;<b>Edges:</b>")
         for v in all_verbs[:12]:
-            legend_parts.append(
-                '<span class="leg-e" style="background:{}"></span>{}'.format(verb_color_map[v], v))
+            legend_parts.append(f'<span class="leg-e" style="background:{verb_color_map[v]}"></span>{v}')
         if len(all_verbs) > 12:
-            legend_parts.append('… +{} more'.format(len(all_verbs) - 12))
-    legend_html = '  '.join(legend_parts)
+            legend_parts.append(f"… +{len(all_verbs) - 12} more")
+    legend_html = "  ".join(legend_parts)
 
     html = """<!DOCTYPE html>
 <html><head><meta charset="utf-8">
@@ -2976,17 +3346,19 @@ network.on("click", function(params) {{
         edges_json=_json.dumps(vis_edges),
         triplets_json=_json.dumps(js_node_triplets),
         all_dates_json=_json.dumps(_all_dates_sorted),
-        network_height='70vh' if _all_dates_sorted else '75vh',
-        slider_display='block' if _all_dates_sorted else 'none')
+        network_height="70vh" if _all_dates_sorted else "75vh",
+        slider_display="block" if _all_dates_sorted else "none",
+    )
 
     import re as _re
+
     def _safe_fn(s):
-        return _re.sub(r'[<>:"/\\|?*]', '_', s).replace(' ', '_')
+        return _re.sub(r'[<>:"/\\|?*]', "_", s).replace(" ", "_")
 
     base = _safe_fn(os.path.splitext(os.path.basename(inputFilename))[0])
     output_files = []
-    network_file = os.path.join(outputDir, '{}_network.html'.format(base))
-    with open(network_file, 'w', encoding='utf-8') as fh:
+    network_file = os.path.join(outputDir, f"{base}_network.html")
+    with open(network_file, "w", encoding="utf-8") as fh:
         fh.write(html)
     output_files.append(network_file)
     print(f"  Network saved: {network_file}")
@@ -2995,7 +3367,7 @@ network.on("click", function(params) {{
     try:
         import Gephi_util as _gephi
 
-        rgb_map = {'S': (224, 64, 64), 'V': (64, 96, 224), 'O': (48, 160, 48)}
+        rgb_map = {"S": (224, 64, 64), "V": (64, 96, 224), "O": (48, 160, 48)}
         _gexf_dynamic = _has_dates and len(edge_dates) > 0
         _gexf_mode = "dynamic" if _gexf_dynamic else "static"
         _gexf_tf = "date" if _gexf_dynamic else ""
@@ -3008,7 +3380,7 @@ network.on("click", function(params) {{
         if _gexf_dynamic:
             for (s, t), dlist in edge_dates.items():
                 for d in dlist:
-                    ds = d.strftime('%Y-%m-%d')
+                    ds = d.strftime("%Y-%m-%d")
                     _node_spells.setdefault(s, []).append({"start": ds, "end": ds})
                     _node_spells.setdefault(t, []).append({"start": ds, "end": ds})
 
@@ -3017,22 +3389,26 @@ network.on("click", function(params) {{
             freq = node_freq.get(n, 1)
             r, g_c, b = rgb_map.get(rk, (128, 128, 128))
             spells = _node_spells.get(n, []) if _gexf_dynamic else []
-            node = graph.addNode(str(nid), n,
-                                 r=str(r), g=str(g_c), b=str(b),
-                                 size=str(max(10, freq)), spells=spells)
+            node = graph.addNode(str(nid), n, r=str(r), g=str(g_c), b=str(b), size=str(max(10, freq)), spells=spells)
             node.addAttribute(role_attr_id, rk)
 
         for eidx, ((s, t), w) in enumerate(edges.items()):
             espells = []
             if _gexf_dynamic and (s, t) in edge_dates:
                 for d in edge_dates[(s, t)]:
-                    ds = d.strftime('%Y-%m-%d')
+                    ds = d.strftime("%Y-%m-%d")
                     espells.append({"start": ds, "end": ds})
-            graph.addEdge(str(eidx), str(node_id_map[s]), str(node_id_map[t]),
-                          weight=str(w), label='{} → {}'.format(s, t), spells=espells)
+            graph.addEdge(
+                str(eidx),
+                str(node_id_map[s]),
+                str(node_id_map[t]),
+                weight=str(w),
+                label=f"{s} → {t}",
+                spells=espells,
+            )
 
-        gexf_file = os.path.join(outputDir, '{}_network.gexf'.format(base))
-        with open(gexf_file, 'wb') as gf:
+        gexf_file = os.path.join(outputDir, f"{base}_network.gexf")
+        with open(gexf_file, "wb") as gf:
             gexf.write(gf, print_stat=False)
         output_files.append(gexf_file)
         print(f"  Gephi .gexf saved: {gexf_file}")
@@ -3044,8 +3420,7 @@ network.on("click", function(params) {{
     return output_files
 
 
-def hierarchical_tree(inputFilename, outputDir, parent_col, child_col,
-                      label_col=None, info_col=None, color_col=None):
+def hierarchical_tree(inputFilename, outputDir, parent_col, child_col, label_col=None, info_col=None, color_col=None):
     """Build an interactive D3.js hierarchical tree from parent-child CSV columns.
 
     Parameters
@@ -3066,9 +3441,9 @@ def hierarchical_tree(inputFilename, outputDir, parent_col, child_col,
     import re as _re
 
     try:
-        df = pd.read_csv(inputFilename, encoding='utf-8', on_bad_lines='skip')
+        df = pd.read_csv(inputFilename, encoding="utf-8", on_bad_lines="skip")
     except UnicodeDecodeError:
-        df = pd.read_csv(inputFilename, encoding='ISO-8859-1', on_bad_lines='skip')
+        df = pd.read_csv(inputFilename, encoding="ISO-8859-1", on_bad_lines="skip")
     except Exception as e:
         print(f"  WARNING: Could not read CSV: {e}")
         return []
@@ -3077,8 +3452,10 @@ def hierarchical_tree(inputFilename, outputDir, parent_col, child_col,
         print(f"  WARNING: Required columns '{parent_col}' and/or '{child_col}' not found.")
         return []
 
-    df = df[[c for c in [parent_col, child_col, label_col, info_col, color_col] if c and c in df.columns]].dropna(subset=[child_col])
-    df[parent_col] = df[parent_col].fillna('').astype(str).str.strip()
+    df = df[[c for c in [parent_col, child_col, label_col, info_col, color_col] if c and c in df.columns]].dropna(
+        subset=[child_col]
+    )
+    df[parent_col] = df[parent_col].fillna("").astype(str).str.strip()
     df[child_col] = df[child_col].astype(str).str.strip()
 
     children_of = {}
@@ -3101,16 +3478,25 @@ def hierarchical_tree(inputFilename, outputDir, parent_col, child_col,
         if color_col and color_col in df.columns and pd.notna(row.get(color_col)):
             node_group[child] = str(row[color_col])
 
-    all_parents = set(children_of.keys()) - {''}
-    roots = (all_parents - all_children) | ({''} if '' in children_of else set())
+    all_parents = set(children_of.keys()) - {""}
+    roots = (all_parents - all_children) | ({""} if "" in children_of else set())
     if not roots:
         roots = all_parents - all_children
     if not roots:
         roots = {next(iter(children_of))} if children_of else set()
 
     group_palette = [
-        '#5B8C6E', '#8B6B4E', '#4A7B9D', '#C17C4E', '#7B6B8D',
-        '#5A9E8F', '#B85C5C', '#6E8B3D', '#9B7DB8', '#CC9E4F']
+        "#5B8C6E",
+        "#8B6B4E",
+        "#4A7B9D",
+        "#C17C4E",
+        "#7B6B8D",
+        "#5A9E8F",
+        "#B85C5C",
+        "#6E8B3D",
+        "#9B7DB8",
+        "#CC9E4F",
+    ]
     all_groups = sorted(set(node_group.values()))
     group_color = {g: group_palette[i % len(group_palette)] for i, g in enumerate(all_groups)}
 
@@ -3121,40 +3507,50 @@ def hierarchical_tree(inputFilename, outputDir, parent_col, child_col,
             return None
         _visited.add(node_name)
         label = node_label.get(node_name, node_name)
-        info = node_info.get(node_name, '')
-        grp = node_group.get(node_name, '')
-        color = group_color.get(grp, '#5B8C6E')
-        initials = ''.join(w[0].upper() for w in label.split() if w)[:2]
-        result = {
-            'name': label, 'initials': initials,
-            'info': info, 'group': grp, 'color': color}
+        info = node_info.get(node_name, "")
+        grp = node_group.get(node_name, "")
+        color = group_color.get(grp, "#5B8C6E")
+        initials = "".join(w[0].upper() for w in label.split() if w)[:2]
+        result = {"name": label, "initials": initials, "info": info, "group": grp, "color": color}
         kids = children_of.get(node_name, [])
         if kids:
             child_nodes = [build_tree(c, _visited.copy()) for c in kids]
-            result['children'] = [c for c in child_nodes if c is not None]
+            result["children"] = [c for c in child_nodes if c is not None]
         return result
 
     if len(roots) == 1:
         root_name = next(iter(roots))
-        if root_name == '':
-            direct_children = children_of.get('', [])
+        if root_name == "":
+            direct_children = children_of.get("", [])
             if len(direct_children) == 1:
                 tree_data = build_tree(direct_children[0])
             else:
-                tree_data = {'name': 'Root', 'initials': 'R', 'info': '', 'group': '', 'color': '#888',
-                             'children': [build_tree(c) for c in direct_children]}
+                tree_data = {
+                    "name": "Root",
+                    "initials": "R",
+                    "info": "",
+                    "group": "",
+                    "color": "#888",
+                    "children": [build_tree(c) for c in direct_children],
+                }
         else:
             tree_data = build_tree(root_name)
     else:
-        tree_data = {'name': 'Root', 'initials': 'R', 'info': '', 'group': '', 'color': '#888',
-                     'children': [build_tree(r) for r in sorted(roots) if r]}
+        tree_data = {
+            "name": "Root",
+            "initials": "R",
+            "info": "",
+            "group": "",
+            "color": "#888",
+            "children": [build_tree(r) for r in sorted(roots) if r],
+        }
 
-    legend_html = ''
+    legend_html = ""
     if all_groups:
         parts = []
         for g in all_groups:
-            parts.append('<span class="leg" style="background:{}"></span>{}'.format(group_color[g], g))
-        legend_html = '  '.join(parts)
+            parts.append(f'<span class="leg" style="background:{group_color[g]}"></span>{g}')
+        legend_html = "  ".join(parts)
 
     html = """<!DOCTYPE html>
 <html><head><meta charset="utf-8">
@@ -3405,27 +3801,32 @@ update(root);
 </script>
 </body></html>"""
 
-    title = os.path.splitext(os.path.basename(inputFilename))[0].replace('_', ' ')
+    title = os.path.splitext(os.path.basename(inputFilename))[0].replace("_", " ")
 
-    html = html.format(
-        title=title,
-        legend_html=legend_html,
-        tree_json=_json.dumps(tree_data))
+    html = html.format(title=title, legend_html=legend_html, tree_json=_json.dumps(tree_data))
 
     def _safe_fn(s):
-        return _re.sub(r'[<>:"/\\|?*]', '_', s).replace(' ', '_')
+        return _re.sub(r'[<>:"/\\|?*]', "_", s).replace(" ", "_")
 
     base = _safe_fn(os.path.splitext(os.path.basename(inputFilename))[0])
-    output_file = os.path.join(outputDir, '{}_tree.html'.format(base))
-    with open(output_file, 'w', encoding='utf-8') as fh:
+    output_file = os.path.join(outputDir, f"{base}_tree.html")
+    with open(output_file, "w", encoding="utf-8") as fh:
         fh.write(html)
     print(f"  Hierarchical tree saved: {output_file}")
     return [output_file]
 
 
-def animated_migration_map(inputFilename, outputDir, entity_col, location_col,
-                           date_col=None, sequence_col=None, lat_col=None, lon_col=None,
-                           doc_col=None):
+def animated_migration_map(
+    inputFilename,
+    outputDir,
+    entity_col,
+    location_col,
+    date_col=None,
+    sequence_col=None,
+    lat_col=None,
+    lon_col=None,
+    doc_col=None,
+):
     """Build an animated Leaflet migration map with timeline slider.
 
     Parameters
@@ -3448,9 +3849,9 @@ def animated_migration_map(inputFilename, outputDir, entity_col, location_col,
     import re as _re
 
     try:
-        df = pd.read_csv(inputFilename, encoding='utf-8', on_bad_lines='skip')
+        df = pd.read_csv(inputFilename, encoding="utf-8", on_bad_lines="skip")
     except UnicodeDecodeError:
-        df = pd.read_csv(inputFilename, encoding='ISO-8859-1', on_bad_lines='skip')
+        df = pd.read_csv(inputFilename, encoding="ISO-8859-1", on_bad_lines="skip")
     except Exception as e:
         print(f"  WARNING: Could not read CSV: {e}")
         return []
@@ -3462,8 +3863,8 @@ def animated_migration_map(inputFilename, outputDir, entity_col, location_col,
 
     has_coords = lat_col and lon_col and lat_col in df.columns and lon_col in df.columns
 
-    if not doc_col and 'Document' in df.columns:
-        doc_col = 'Document'
+    if not doc_col and "Document" in df.columns:
+        doc_col = "Document"
     has_doc = doc_col and doc_col in df.columns
 
     keep_cols = [entity_col, location_col]
@@ -3481,18 +3882,19 @@ def animated_migration_map(inputFilename, outputDir, entity_col, location_col,
 
     if sequence_col and sequence_col in df.columns:
         df = df.sort_values(sequence_col)
-        df['_order_label'] = df[sequence_col].astype(str)
+        df["_order_label"] = df[sequence_col].astype(str)
     elif date_col and date_col in df.columns:
-        df['_parsed_date'] = df[date_col].map(parse_archive_date)
-        df = df.sort_values('_parsed_date')
-        df['_order_label'] = df[date_col].astype(str)
+        df["_parsed_date"] = df[date_col].map(parse_archive_date)
+        df = df.sort_values("_parsed_date")
+        df["_order_label"] = df[date_col].astype(str)
     else:
-        df['_order_label'] = [str(i) for i in range(len(df))]
+        df["_order_label"] = [str(i) for i in range(len(df))]
 
     if not has_coords:
         try:
-            from geopy.geocoders import Nominatim
             import time as _time
+
+            from geopy.geocoders import Nominatim
         except ImportError:
             print("  WARNING: geopy not available for geocoding. Provide lat/lon columns or install geopy.")
             return []
@@ -3514,20 +3916,29 @@ def animated_migration_map(inputFilename, outputDir, entity_col, location_col,
                 print(f"    Geocoding error for '{loc}': {ge}")
             _time.sleep(1.1)
 
-        df['_lat'] = df[location_col].map(lambda x: loc_coords.get(x, (None, None))[0])
-        df['_lon'] = df[location_col].map(lambda x: loc_coords.get(x, (None, None))[1])
+        df["_lat"] = df[location_col].map(lambda x: loc_coords.get(x, (None, None))[0])
+        df["_lon"] = df[location_col].map(lambda x: loc_coords.get(x, (None, None))[1])
     else:
-        df['_lat'] = pd.to_numeric(df[lat_col], errors='coerce')
-        df['_lon'] = pd.to_numeric(df[lon_col], errors='coerce')
+        df["_lat"] = pd.to_numeric(df[lat_col], errors="coerce")
+        df["_lon"] = pd.to_numeric(df[lon_col], errors="coerce")
 
-    df = df.dropna(subset=['_lat', '_lon'])
+    df = df.dropna(subset=["_lat", "_lon"])
     if df.empty:
         print("  WARNING: No geocoded locations found.")
         return []
 
     entity_palette = [
-        '#2E8B57', '#8B4513', '#4682B4', '#CD853F', '#6A5ACD',
-        '#20B2AA', '#DC143C', '#6B8E23', '#9370DB', '#DAA520']
+        "#2E8B57",
+        "#8B4513",
+        "#4682B4",
+        "#CD853F",
+        "#6A5ACD",
+        "#20B2AA",
+        "#DC143C",
+        "#6B8E23",
+        "#9370DB",
+        "#DAA520",
+    ]
     all_entities = sorted(df[entity_col].unique())
     entity_color = {e: entity_palette[i % len(entity_palette)] for i, e in enumerate(all_entities)}
 
@@ -3539,34 +3950,31 @@ def animated_migration_map(inputFilename, outputDir, entity_col, location_col,
         stops = []
         for _, row in edf.iterrows():
             stop = {
-                'location': row[location_col],
-                'lat': round(float(row['_lat']), 6),
-                'lon': round(float(row['_lon']), 6),
-                'label': row['_order_label']
+                "location": row[location_col],
+                "lat": round(float(row["_lat"]), 6),
+                "lon": round(float(row["_lon"]), 6),
+                "label": row["_order_label"],
             }
             if has_doc:
-                stop['doc'] = str(row[doc_col])
+                stop["doc"] = str(row[doc_col])
             stops.append(stop)
         seen = set()
         unique_stops = []
         for s in stops:
-            key = (s['location'], s['label'])
+            key = (s["location"], s["label"])
             if key not in seen:
                 seen.add(key)
                 unique_stops.append(s)
-        migration_data[entity] = {
-            'color': entity_color[entity],
-            'stops': unique_stops
-        }
+        migration_data[entity] = {"color": entity_color[entity], "stops": unique_stops}
 
     all_labels = []
     for entity in all_entities:
-        for s in migration_data[entity]['stops']:
-            if s['label'] not in all_labels:
-                all_labels.append(s['label'])
+        for s in migration_data[entity]["stops"]:
+            if s["label"] not in all_labels:
+                all_labels.append(s["label"])
 
-    all_lats = df['_lat'].tolist()
-    all_lons = df['_lon'].tolist()
+    all_lats = df["_lat"].tolist()
+    all_lons = df["_lon"].tolist()
     center_lat = sum(all_lats) / len(all_lats)
     center_lon = sum(all_lons) / len(all_lons)
     # bounding box of all geocoded points, so the map can fit-to-bounds (see JS) and never
@@ -3575,9 +3983,8 @@ def animated_migration_map(inputFilename, outputDir, entity_col, location_col,
 
     legend_parts = []
     for e in all_entities:
-        legend_parts.append(
-            '<span class="leg-dot" style="background:{}"></span>{}'.format(entity_color[e], e))
-    legend_html = '  '.join(legend_parts)
+        legend_parts.append(f'<span class="leg-dot" style="background:{entity_color[e]}"></span>{e}')
+    legend_html = "  ".join(legend_parts)
 
     html = """<!DOCTYPE html>
 <html><head><meta charset="utf-8">
@@ -3788,16 +4195,16 @@ showStep(0);
 </script>
 </body></html>"""
 
-    title = os.path.splitext(os.path.basename(inputFilename))[0].replace('_', ' ')
-    first_label = all_labels[0] if all_labels else ''
+    title = os.path.splitext(os.path.basename(inputFilename))[0].replace("_", " ")
+    first_label = all_labels[0] if all_labels else ""
 
     if all_docs:
         doc_options = '<option value="">All documents</option>'
         for d in all_docs:
-            doc_options += '<option value="{0}">{0}</option>'.format(d)
-        doc_filter_html = '<div id="filter-bar">Document: <select id="doc-filter">{}</select></div>'.format(doc_options)
+            doc_options += f'<option value="{d}">{d}</option>'
+        doc_filter_html = f'<div id="filter-bar">Document: <select id="doc-filter">{doc_options}</select></div>'
     else:
-        doc_filter_html = ''
+        doc_filter_html = ""
 
     html = html.format(
         title=title,
@@ -3811,21 +4218,22 @@ showStep(0);
         center_lon=round(center_lon, 4),
         bounds_json=_json.dumps(map_bounds),
         max_step=max(0, len(all_labels) - 1),
-        first_label=first_label)
+        first_label=first_label,
+    )
 
     def _safe_fn(s):
-        return _re.sub(r'[<>:"/\\|?*]', '_', s).replace(' ', '_')
+        return _re.sub(r'[<>:"/\\|?*]', "_", s).replace(" ", "_")
 
     base = _safe_fn(os.path.splitext(os.path.basename(inputFilename))[0])
-    output_file = os.path.join(outputDir, '{}_migration_map.html'.format(base))
-    with open(output_file, 'w', encoding='utf-8') as fh:
+    output_file = os.path.join(outputDir, f"{base}_migration_map.html")
+    with open(output_file, "w", encoding="utf-8") as fh:
         fh.write(html)
     print(f"  Migration map saved: {output_file}")
 
     return [output_file]
 
 
-def proportional_circle_map(inputFilename, outputDir, location_col, Google_API='', top_n=50):
+def proportional_circle_map(inputFilename, outputDir, location_col, Google_API="", top_n=50):
     """Build a folium proportional circle map for a location column.
 
     Parameters
@@ -3845,30 +4253,31 @@ def proportional_circle_map(inputFilename, outputDir, location_col, Google_API='
     str or ''   Path to output HTML file, or empty string on failure.
     """
     try:
+        import time as _time
+
         import folium
         from geopy.geocoders import Nominatim
-        import time as _time
     except ImportError as e:
         print(f"  Note: folium/geopy not available for map generation: {e}")
-        return ''
+        return ""
 
     try:
-        df = pd.read_csv(inputFilename, encoding='utf-8', on_bad_lines='skip')
+        df = pd.read_csv(inputFilename, encoding="utf-8", on_bad_lines="skip")
     except Exception as e:
         print(f"  WARNING: Could not read CSV: {e}")
-        return ''
+        return ""
 
     if location_col not in df.columns:
         print(f"  WARNING: Column '{location_col}' not found")
-        return ''
+        return ""
 
     lat_col = None
     lon_col = None
     for c in df.columns:
         cl = c.lower().strip()
-        if cl in ('latitude', 'lat'):
+        if cl in ("latitude", "lat"):
             lat_col = c
-        elif cl in ('longitude', 'lon', 'lng'):
+        elif cl in ("longitude", "lon", "lng"):
             lon_col = c
 
     geo_rows = []
@@ -3876,7 +4285,7 @@ def proportional_circle_map(inputFilename, outputDir, location_col, Google_API='
     if lat_col and lon_col:
         subset = df[[location_col, lat_col, lon_col]].dropna()
         if subset.empty:
-            return ''
+            return ""
         freq = subset[location_col].value_counts().head(top_n)
         for loc_name, count in freq.items():
             row = subset[subset[location_col] == loc_name].iloc[0]
@@ -3888,10 +4297,10 @@ def proportional_circle_map(inputFilename, outputDir, location_col, Google_API='
     else:
         loc_data = df[location_col].dropna().astype(str)
         if loc_data.empty:
-            return ''
+            return ""
         freq = loc_data.value_counts().head(top_n)
         if freq.empty:
-            return ''
+            return ""
         # Prefer Google when an API key is supplied (fast, high quota); otherwise Nominatim. If Google
         # can't be constructed, or its FIRST call fails (bad key / quota), fall back silently to
         # Nominatim -- so the map still renders with no key and no user intervention.
@@ -3900,11 +4309,12 @@ def proportional_circle_map(inputFilename, outputDir, location_col, Google_API='
         if use_google:
             try:
                 from geopy.geocoders import GoogleV3
+
                 geolocator = GoogleV3(api_key=Google_API)
             except Exception:
                 use_google = False
         if geolocator is None:
-            geolocator = Nominatim(user_agent='NLP_Suite_visualization')
+            geolocator = Nominatim(user_agent="NLP_Suite_visualization")
         _geo_cache = {}
         for loc_name, count in freq.items():
             if loc_name in _geo_cache:
@@ -3918,12 +4328,12 @@ def proportional_circle_map(inputFilename, outputDir, location_col, Google_API='
                     else:
                         continue
                     if not use_google:
-                        _time.sleep(1.1)   # Nominatim enforces ~1 request/sec; Google has no such cap
+                        _time.sleep(1.1)  # Nominatim enforces ~1 request/sec; Google has no such cap
                 except Exception:
                     # a Google failure on the very first location -> switch to Nominatim and retry once
                     if use_google and not _geo_cache:
                         use_google = False
-                        geolocator = Nominatim(user_agent='NLP_Suite_visualization')
+                        geolocator = Nominatim(user_agent="NLP_Suite_visualization")
                         try:
                             result = geolocator.geocode(loc_name, timeout=5)
                             if not result:
@@ -3939,30 +4349,33 @@ def proportional_circle_map(inputFilename, outputDir, location_col, Google_API='
 
     if not geo_rows:
         print("  No locations could be geocoded")
-        return ''
+        return ""
 
     avg_lat = sum(r[1] for r in geo_rows) / len(geo_rows)
     avg_lon = sum(r[2] for r in geo_rows) / len(geo_rows)
-    m = folium.Map(location=[avg_lat, avg_lon], zoom_start=4,
-                   **map_tiles_util.folium_tiles())
+    m = folium.Map(location=[avg_lat, avg_lon], zoom_start=4, **map_tiles_util.folium_tiles())
     max_count = max(r[3] for r in geo_rows)
     for loc_name, lat, lon, count in geo_rows:
         radius = max(5, (count / max_count) * 40)
         folium.CircleMarker(
-            location=[lat, lon], radius=radius,
-            color='#3388ff', fill=True,
-            fill_color='#3388ff', fill_opacity=0.6,
-            popup='{}: {}'.format(loc_name, count),
-            tooltip='{} ({})'.format(loc_name, count)
+            location=[lat, lon],
+            radius=radius,
+            color="#3388ff",
+            fill=True,
+            fill_color="#3388ff",
+            fill_opacity=0.6,
+            popup=f"{loc_name}: {count}",
+            tooltip=f"{loc_name} ({count})",
         ).add_to(m)
 
     import re as _re
+
     def _safe_fn(s):
-        return _re.sub(r'[<>:"/\\|?*]', '_', s).replace(' ', '_')
+        return _re.sub(r'[<>:"/\\|?*]', "_", s).replace(" ", "_")
 
     base = _safe_fn(os.path.splitext(os.path.basename(inputFilename))[0])
     safe_col = _safe_fn(location_col)
-    map_file = os.path.join(outputDir, '{}_{}_map.html'.format(base, safe_col))
+    map_file = os.path.join(outputDir, f"{base}_{safe_col}_map.html")
     m.save(map_file)
     print(f"  Proportional circle map: {len(geo_rows)} locations geocoded for {location_col}")
     return map_file
@@ -3984,48 +4397,48 @@ def stacked_bar_from_csv(inputFilename, outputDir, group_col, segment_col, top_n
     str or ''   Path to output PNG file, or empty string on failure.
     """
     try:
-        df = pd.read_csv(inputFilename, encoding='utf-8', on_bad_lines='skip')
+        df = pd.read_csv(inputFilename, encoding="utf-8", on_bad_lines="skip")
     except Exception as e:
         print(f"  WARNING: Could not read CSV: {e}")
-        return ''
+        return ""
 
     for c in [group_col, segment_col]:
         if c not in df.columns:
             print(f"  WARNING: Column '{c}' not found")
-            return ''
+            return ""
 
     pairs = df[[group_col, segment_col]].dropna()
     if pairs.empty:
-        return ''
+        return ""
 
     ct = pd.crosstab(pairs[group_col], pairs[segment_col])
     ct.columns.name = segment_col
 
     import re as _re
+
     def _safe_fn(s):
-        return _re.sub(r'[<>:"/\\|?*]', '_', s).replace(' ', '_')
+        return _re.sub(r'[<>:"/\\|?*]', "_", s).replace(" ", "_")
 
     base = _safe_fn(os.path.splitext(os.path.basename(inputFilename))[0])
     safe_g = _safe_fn(group_col)
     safe_s = _safe_fn(segment_col)
-    mode = 'grouped' if grouped else 'stacked'
-    out_base = os.path.join(outputDir,
-        '{}_{}_{}_{}'.format(base, mode, safe_g, safe_s))
-    chart_title = '{} bar: {} by {}'.format('Grouped' if grouped else 'Stacked', group_col, segment_col)
-    visualize_stacked_bar(ct, top_n=top_n,
-                          x_label=group_col, y_label='Count',
-                          title=chart_title,
-                          outputname=out_base, grouped=grouped)
-    png_file = out_base + '.png'
+    mode = "grouped" if grouped else "stacked"
+    out_base = os.path.join(outputDir, f"{base}_{mode}_{safe_g}_{safe_s}")
+    chart_title = "{} bar: {} by {}".format("Grouped" if grouped else "Stacked", group_col, segment_col)
+    visualize_stacked_bar(
+        ct, top_n=top_n, x_label=group_col, y_label="Count", title=chart_title, outputname=out_base, grouped=grouped
+    )
+    png_file = out_base + ".png"
     if os.path.isfile(png_file):
         return png_file
-    return ''
+    return ""
 
 
 # ═══════════════════════════════════════════════════════════════════════
 # Auto-charting for cross-complex / SVO query results
 # Shared by DB_SQL_main.py and DB_PCACE_data_analysis_main.py
 # ═══════════════════════════════════════════════════════════════════════
+
 
 def auto_chart_cross_complex(csv_path, outputDir, chartPackage, filesToOpen):
     """Auto-generate charts from cross-complex or SVO query CSV results.
@@ -4034,9 +4447,10 @@ def auto_chart_cross_complex(csv_path, outputDir, chartPackage, filesToOpen):
     heatmap, word clouds, and proportional circle map.
     """
     import re as _re
+
     def _safe_filename(s):
         """Sanitize a string for use in Windows filenames."""
-        return _re.sub(r'[<>:"/\\|?*]', '_', s).replace(' ', '_')
+        return _re.sub(r'[<>:"/\\|?*]', "_", s).replace(" ", "_")
 
     try:
         _px = px
@@ -4044,7 +4458,7 @@ def auto_chart_cross_complex(csv_path, outputDir, chartPackage, filesToOpen):
         _px = None
 
     try:
-        df = pd.read_csv(csv_path, encoding='utf-8', on_bad_lines='skip')
+        df = pd.read_csv(csv_path, encoding="utf-8", on_bad_lines="skip")
     except Exception as e:
         print(f"  WARNING: Could not read CSV for charting: {e}")
         return
@@ -4056,13 +4470,13 @@ def auto_chart_cross_complex(csv_path, outputDir, chartPackage, filesToOpen):
     # Exclude: _ID columns, _Simplex columns, Order columns, and purely numeric columns
     skip_cols = set()
     for c in df.columns:
-        if c.endswith('_ID') or c == 'Source_ID' or c == 'Target_ID':
+        if c.endswith("_ID") or c == "Source_ID" or c == "Target_ID":
             skip_cols.add(c)
-        elif c.endswith('_Simplex'):
+        elif c.endswith("_Simplex"):
             skip_cols.add(c)
-        elif c.endswith(' Order') or c == 'Order':
+        elif c.endswith(" Order") or c == "Order":
             skip_cols.add(c)
-        elif c.endswith(' Identifier'):
+        elif c.endswith(" Identifier"):
             skip_cols.add(c)
 
     candidate_cols = [c for c in df.columns if c not in skip_cols]
@@ -4084,7 +4498,7 @@ def auto_chart_cross_complex(csv_path, outputDir, chartPackage, filesToOpen):
             continue
         # Check if all non-null values are numeric
         str_vals = col_data.astype(str)
-        numeric_ratio = str_vals.str.match(r'^-?\d+\.?\d*$').mean()
+        numeric_ratio = str_vals.str.match(r"^-?\d+\.?\d*$").mean()
         if numeric_ratio < 0.9:  # keep column only if <90% numeric
             value_cols.append(c)
         else:
@@ -4098,15 +4512,15 @@ def auto_chart_cross_complex(csv_path, outputDir, chartPackage, filesToOpen):
     print(f"  Auto-charting {len(value_cols)} text columns")
 
     # Drop NaN rows for charting
-    df_clean = df.dropna(subset=value_cols, how='all').copy()
+    df_clean = df.dropna(subset=value_cols, how="all").copy()
     if df_clean.empty:
         return
 
     # Convert value columns to string for categorical charting
     for col in value_cols:
-        df_clean[col] = df_clean[col].fillna('').astype(str)
-        df_clean[col] = df_clean[col].replace('', pd.NA)
-    df_clean = df_clean.dropna(subset=value_cols, how='all')
+        df_clean[col] = df_clean[col].fillna("").astype(str)
+        df_clean[col] = df_clean[col].replace("", pd.NA)
+    df_clean = df_clean.dropna(subset=value_cols, how="all")
     if df_clean.empty:
         return
 
@@ -4120,9 +4534,25 @@ def auto_chart_cross_complex(csv_path, outputDir, chartPackage, filesToOpen):
     MAX_CHART_COLS = 6
     if len(value_cols) > MAX_CHART_COLS:
         # Prefer columns containing common simplex-value keywords (multi-language)
-        primary = [c for c in value_cols if any(kw.lower() in c.lower() for kw in
-                   ['Value', 'Verbal', 'verbale', 'Name', 'nome', 'Frase',
-                    'Participant', 'Partecipant', 'Process', 'Processo'])]
+        primary = [
+            c
+            for c in value_cols
+            if any(
+                kw.lower() in c.lower()
+                for kw in [
+                    "Value",
+                    "Verbal",
+                    "verbale",
+                    "Name",
+                    "nome",
+                    "Frase",
+                    "Participant",
+                    "Partecipant",
+                    "Process",
+                    "Processo",
+                ]
+            )
+        ]
         if not primary:
             primary = value_cols
         chart_cols = primary[:MAX_CHART_COLS]
@@ -4138,60 +4568,65 @@ def auto_chart_cross_complex(csv_path, outputDir, chartPackage, filesToOpen):
         """Create merged Subject, Verb, Object columns from sparse sub-cols.
         Returns (new_df, svo_col_names) where svo_col_names is a list of
         the 2-3 merged column names actually created."""
+
         # Match on column PREFIX (part before first '>') to avoid
         # false matches like 'Verbal phrase' matching 'Verb' patterns.
         # For columns without '>' (e.g., Source_Value), match the full name.
         def _prefix(col):
-            return col.split(' > ')[0].strip()
+            return col.split(" > ")[0].strip()
 
         # For each SVO role, prefer columns whose names suggest the "main" value:
         #   Subject/Object: Name, Nome, individual, individuo, actor, attore
         #   Verb: Verbal, verbale, Frase, phrase
         # Columns matching these keywords are sorted first so coalesce picks them.
-        _so_keywords = ['name', 'nome', 'individual', 'individuo', 'actor', 'attore', 'collective', 'collettivo']
-        _v_keywords = ['verbal', 'verbale', 'frase', 'phrase']
+        _so_keywords = ["name", "nome", "individual", "individuo", "actor", "attore", "collective", "collettivo"]
+        _v_keywords = ["verbal", "verbale", "frase", "phrase"]
 
         role_map = [
-            ('Subject', ['Participant-S', 'PARTECIPANTE-S', 'Partecipante-S',
-                         'Subject', 'Source_Value'], _so_keywords),
-            ('Verb',    ['Process', 'PROCESSO', 'Processo',
-                         'Simple process', 'Processo semplice'], _v_keywords),
-            ('Object',  ['Participant-O', 'PARTECIPANTE-O', 'Partecipante-O',
-                         'Object', 'Target_Value'], _so_keywords),
+            ("Subject", ["Participant-S", "PARTECIPANTE-S", "Partecipante-S", "Subject", "Source_Value"], _so_keywords),
+            ("Verb", ["Process", "PROCESSO", "Processo", "Simple process", "Processo semplice"], _v_keywords),
+            ("Object", ["Participant-O", "PARTECIPANTE-O", "Partecipante-O", "Object", "Target_Value"], _so_keywords),
         ]
         new_df = dataframe.copy()
         created = []
         for role_name, patterns, preferred_kw in role_map:
             # Case-insensitive prefix matching: startswith to handle
             # variants like "Processo semplice" matching "Processo"
-            role_cols = [c for c in all_cols
-                         if any(p.lower() == _prefix(c).lower()
-                                or _prefix(c).lower().startswith(p.lower())
-                                or p.lower() == c.lower()
-                                for p in patterns)]
+            role_cols = [
+                c
+                for c in all_cols
+                if any(
+                    p.lower() == _prefix(c).lower()
+                    or _prefix(c).lower().startswith(p.lower())
+                    or p.lower() == c.lower()
+                    for p in patterns
+                )
+            ]
             if not role_cols:
                 continue
+
             # Sort: columns matching preferred keywords first
             def _priority(col):
                 cl = col.lower()
                 return 0 if any(kw in cl for kw in preferred_kw) else 1
+
             role_cols.sort(key=_priority)
             print(f"    {role_name} columns (priority-sorted): {role_cols}")
             # Coalesce: first non-null across role_cols for each row
             merged = new_df[role_cols[0]].copy()
             for rc in role_cols[1:]:
                 merged = merged.fillna(new_df[rc])
-            merged = merged.astype(str).replace('nan', pd.NA)
+            merged = merged.astype(str).replace("nan", pd.NA)
             new_df[role_name] = merged
             created.append(role_name)
         return new_df, created
 
     df_svo, svo_cols = _merge_svo(df_clean, value_cols)
     # Dynamic label: "SV" when only Subject+Verb, "SVO" when all three
-    _role_initials = {'Subject': 'S', 'Verb': 'V', 'Object': 'O'}
-    _svo_label = ''.join(_role_initials.get(c, c[0]) for c in svo_cols) or 'SV'
-    _role_arrow_label = ' → '.join(svo_cols)               # "Subject → Verb" or "Subject → Verb → Object"
-    _role_arrow_short = ' → '.join(_role_initials.get(c, c[0]) for c in svo_cols)  # "S → V" or "S → V → O"
+    _role_initials = {"Subject": "S", "Verb": "V", "Object": "O"}
+    _svo_label = "".join(_role_initials.get(c, c[0]) for c in svo_cols) or "SV"
+    _role_arrow_label = " → ".join(svo_cols)  # "Subject → Verb" or "Subject → Verb → Object"
+    _role_arrow_short = " → ".join(_role_initials.get(c, c[0]) for c in svo_cols)  # "S → V" or "S → V → O"
     print(f"  Merged {_svo_label} columns: {svo_cols}")
     if svo_cols:
         for sc in svo_cols:
@@ -4208,15 +4643,14 @@ def auto_chart_cross_complex(csv_path, outputDir, chartPackage, filesToOpen):
             if freq.empty:
                 continue
             freq_df = freq.reset_index()
-            freq_df.columns = [col, 'Frequency']
+            freq_df.columns = [col, "Frequency"]
             safe_col = _safe_filename(col)
             try:
-                fig = _px.bar(freq_df, x=col, y='Frequency',
-                             title='Top 30 Frequency: {}'.format(col))
+                fig = _px.bar(freq_df, x=col, y="Frequency", title=f"Top 30 Frequency: {col}")
                 # Force categorical x-axis so Plotly doesn't auto-detect
                 # city names or other text as dates
-                fig.update_xaxes(type='category')
-                bar_file = os.path.join(outputDir, 'SQL_{}_bar.html'.format(safe_col))
+                fig.update_xaxes(type="category")
+                bar_file = os.path.join(outputDir, f"SQL_{safe_col}_bar.html")
                 fig.write_html(bar_file)
                 filesToOpen.append(bar_file)
             except Exception as e:
@@ -4224,19 +4658,19 @@ def auto_chart_cross_complex(csv_path, outputDir, chartPackage, filesToOpen):
 
     # ── 2. Sankey diagram: flow between merged S-V-O columns ─────────────
     if len(svo_cols) >= 2:
-        sankey_df = df_svo[svo_cols].dropna(how='all').copy()
+        sankey_df = df_svo[svo_cols].dropna(how="all").copy()
         for sc in svo_cols:
-            sankey_df[sc] = sankey_df[sc].fillna('(none)').astype(str)
+            sankey_df[sc] = sankey_df[sc].fillna("(none)").astype(str)
         # Limit to top N values per column for readability
         TOP_SANKEY = 10
         for sc in svo_cols:
             top_vals = sankey_df[sc].value_counts().head(TOP_SANKEY).index.tolist()
-            sankey_df = sankey_df[sankey_df[sc].isin(top_vals + ['(none)'])]
+            sankey_df = sankey_df[sankey_df[sc].isin(top_vals + ["(none)"])]
         sankey_df = sankey_df.reset_index(drop=True)
         if not sankey_df.empty and len(sankey_df) > 0:
             try:
                 three_way = len(svo_cols) >= 3
-                sankey_out = os.path.join(outputDir, '{}_sankey.html'.format(base_name))
+                sankey_out = os.path.join(outputDir, f"{base_name}_sankey.html")
                 print(f"  Sankey: using columns {svo_cols}, {len(sankey_df)} rows")
                 Sankey(
                     data=sankey_df,
@@ -4247,56 +4681,68 @@ def auto_chart_cross_complex(csv_path, outputDir, chartPackage, filesToOpen):
                     lengthvar2=10,
                     three_way_Sankey=three_way,
                     var3=svo_cols[2] if three_way else None,
-                    lengthvar3=10 if three_way else None)
+                    lengthvar3=10 if three_way else None,
+                )
                 if os.path.exists(sankey_out):
                     filesToOpen.append(sankey_out)
                     print(f"  Sankey saved: {sankey_out}")
             except Exception as e:
                 import traceback
+
                 print(f"  WARNING: Sankey chart failed: {e}")
                 traceback.print_exc()
 
     # ── 3. Sunburst & Treemap: hierarchical view of merged S-V-O ─────────
     if _px and len(svo_cols) >= 2:
-        hier_df = df_svo[svo_cols].dropna(how='all').copy()
+        hier_df = df_svo[svo_cols].dropna(how="all").copy()
         for sc in svo_cols:
-            hier_df[sc] = hier_df[sc].fillna('(none)').astype(str)
+            hier_df[sc] = hier_df[sc].fillna("(none)").astype(str)
         print(f"  Sunburst/Treemap: columns={svo_cols}, rows={len(hier_df)}")
         if not hier_df.empty:
             # Limit to top values per column to keep charts readable
             TOP_N = 20
             for sc in svo_cols:
                 top_vals = hier_df[sc].value_counts().head(TOP_N).index.tolist()
-                hier_df = hier_df[hier_df[sc].isin(top_vals + ['(none)'])]
-            grouped = hier_df.groupby(svo_cols).size().reset_index(name='Count')
+                hier_df = hier_df[hier_df[sc].isin(top_vals + ["(none)"])]
+            grouped = hier_df.groupby(svo_cols).size().reset_index(name="Count")
             if not grouped.empty and len(grouped) > 0:
                 # Sunburst — show all levels expanded
                 try:
-                    fig = _px.sunburst(grouped, path=svo_cols, values='Count',
-                                      title='Sunburst: {}'.format(' → '.join(svo_cols)),
-                                      maxdepth=-1)
+                    fig = _px.sunburst(
+                        grouped,
+                        path=svo_cols,
+                        values="Count",
+                        title="Sunburst: {}".format(" → ".join(svo_cols)),
+                        maxdepth=-1,
+                    )
                     fig.update_traces(maxdepth=-1)
-                    sunburst_file = os.path.join(outputDir, '{}_sunburst.html'.format(base_name))
+                    sunburst_file = os.path.join(outputDir, f"{base_name}_sunburst.html")
                     fig.write_html(sunburst_file)
                     filesToOpen.append(sunburst_file)
                     print(f"  Sunburst saved: {sunburst_file}")
                 except Exception as e:
                     import traceback
+
                     print(f"  WARNING: Sunburst chart: {e}")
                     traceback.print_exc()
 
                 # Treemap — show all levels expanded
                 try:
-                    fig = _px.treemap(grouped, path=svo_cols, values='Count',
-                                     title='Treemap: {}'.format(' → '.join(svo_cols)),
-                                     maxdepth=-1)
+                    fig = _px.treemap(
+                        grouped,
+                        path=svo_cols,
+                        values="Count",
+                        title="Treemap: {}".format(" → ".join(svo_cols)),
+                        maxdepth=-1,
+                    )
                     fig.update_traces(maxdepth=-1)
-                    treemap_file = os.path.join(outputDir, '{}_treemap.html'.format(base_name))
+                    treemap_file = os.path.join(outputDir, f"{base_name}_treemap.html")
                     fig.write_html(treemap_file)
                     filesToOpen.append(treemap_file)
                     print(f"  Treemap saved: {treemap_file}")
                 except Exception as e:
                     import traceback
+
                     print(f"  WARNING: Treemap chart: {e}")
                     traceback.print_exc()
         else:
@@ -4304,11 +4750,10 @@ def auto_chart_cross_complex(csv_path, outputDir, chartPackage, filesToOpen):
 
     # ── Detect a date column for time-dependent visualizations ───────────
     _date_col = None
-    _date_candidates = ['Date', 'Newspaper date', 'Newspaper Date',
-                        'Data giornale', 'Data del giornale', 'Action date']
+    _date_candidates = ["Date", "Newspaper date", "Newspaper Date", "Data giornale", "Data del giornale", "Action date"]
     for _dc in _date_candidates:
         if _dc in df.columns:
-            _parsed = pd.to_datetime(df[_dc], errors='coerce')
+            _parsed = pd.to_datetime(df[_dc], errors="coerce")
             if _parsed.notna().sum() > 0:
                 _date_col = _dc
                 break
@@ -4324,14 +4769,14 @@ def auto_chart_cross_complex(csv_path, outputDir, chartPackage, filesToOpen):
             _net_cols = list(svo_cols)
             if _date_col and _date_col in df_svo.columns:
                 _net_cols.append(_date_col)
-            net_df = df_svo[_net_cols].dropna(subset=svo_cols, how='all').copy()
+            net_df = df_svo[_net_cols].dropna(subset=svo_cols, how="all").copy()
             for _sc in svo_cols:
-                net_df[_sc] = net_df[_sc].fillna('').astype(str)
+                net_df[_sc] = net_df[_sc].fillna("").astype(str)
             if not net_df.empty:
-                palette = {'S': '#E04040', 'V': '#4060E0', 'O': '#30A030'}
+                palette = {"S": "#E04040", "V": "#4060E0", "O": "#30A030"}
                 role_of = {}
                 top_per_role = {}
-                role_keys = ['S', 'V', 'O']
+                role_keys = ["S", "V", "O"]
                 for idx_r, sc in enumerate(svo_cols):
                     rk = role_keys[idx_r] if idx_r < len(role_keys) else role_keys[-1]
                     top_vals = net_df[sc].value_counts().head(TOP_NET_PER_ROLE).index.tolist()
@@ -4341,8 +4786,8 @@ def auto_chart_cross_complex(csv_path, outputDir, chartPackage, filesToOpen):
                             role_of[v] = rk
 
                 mask = net_df.apply(
-                    lambda row: all(row[c] in top_per_role[c] or row[c] == ''
-                                    for c in svo_cols), axis=1)
+                    lambda row: all(row[c] in top_per_role[c] or row[c] == "" for c in svo_cols), axis=1
+                )
                 net_df = net_df[mask]
 
                 # Build edge dict with weights and date lists
@@ -4353,7 +4798,7 @@ def auto_chart_cross_complex(csv_path, outputDir, chartPackage, filesToOpen):
                     vals = [row[c] for c in svo_cols if row[c]]
                     row_date = None
                     if _has_dates and pd.notna(row.get(_date_col)):
-                        row_date = pd.to_datetime(row[_date_col], errors='coerce')
+                        row_date = pd.to_datetime(row[_date_col], errors="coerce")
                         if pd.isna(row_date):
                             row_date = None
                     for i in range(len(vals) - 1):
@@ -4368,13 +4813,13 @@ def auto_chart_cross_complex(csv_path, outputDir, chartPackage, filesToOpen):
                 triplet_dates = {}
                 for _, row in net_df.iterrows():
                     vals = tuple(row[c] for c in svo_cols)
-                    if any(v == '' for v in vals):
+                    if any(v == "" for v in vals):
                         continue
                     triplet_counts[vals] = triplet_counts.get(vals, 0) + 1
                     if _has_dates:
                         row_date = None
                         if pd.notna(row.get(_date_col)):
-                            row_date = pd.to_datetime(row[_date_col], errors='coerce')
+                            row_date = pd.to_datetime(row[_date_col], errors="coerce")
                             if pd.isna(row_date):
                                 row_date = None
                         if row_date is not None:
@@ -4388,19 +4833,22 @@ def auto_chart_cross_complex(csv_path, outputDir, chartPackage, filesToOpen):
                         node_triplets.setdefault(val, []).append(list(triplet) + [cnt])
 
                 all_nodes = set()
-                for (s, t) in edges:
+                for s, t in edges:
                     all_nodes.add(s)
                     all_nodes.add(t)
 
                 # Compute frequency per node value across all SVO columns
                 import math as _math
+
                 node_freq = {}
                 for sc in svo_cols:
                     for val, cnt in net_df[sc].value_counts().items():
                         if val:
                             node_freq[val] = node_freq.get(val, 0) + cnt
 
-                print(f"  Network graph: {len(all_nodes)} nodes, {len(edges)} edges, {len(triplet_counts)} unique triplets")
+                print(
+                    f"  Network graph: {len(all_nodes)} nodes, {len(edges)} edges, {len(triplet_counts)} unique triplets"
+                )
                 if all_nodes:
                     import json as _json
 
@@ -4425,25 +4873,29 @@ def auto_chart_cross_complex(csv_path, outputDir, chartPackage, filesToOpen):
                         sz = round(_node_size(freq), 1)
                         # Font size scales with node: bigger nodes get bigger labels
                         fsz = max(10, min(22, int(10 + (sz - SIZE_MIN) / (SIZE_MAX - SIZE_MIN) * 12)))
-                        vis_nodes.append({
-                            'id': nid, 'label': n,
-                            'color': palette.get(rk, '#888'),
-                            'font': {'size': fsz},
-                            'shape': 'dot',
-                            'size': sz,
-                            'title': '{} (freq: {})'.format(n, freq),
-                            'role': rk})
+                        vis_nodes.append(
+                            {
+                                "id": nid,
+                                "label": n,
+                                "color": palette.get(rk, "#888"),
+                                "font": {"size": fsz},
+                                "shape": "dot",
+                                "size": sz,
+                                "title": f"{n} (freq: {freq})",
+                                "role": rk,
+                            }
+                        )
                     vis_edges = []
                     for (s, t), w in edges.items():
                         e_entry = {
-                            'from': node_id_map[s],
-                            'to': node_id_map[t],
-                            'value': w,
-                            'title': '{} → {} ({})'.format(s, t, w),
-                            'color': {'color': '#aaaaaa', 'highlight': '#333333'}}
+                            "from": node_id_map[s],
+                            "to": node_id_map[t],
+                            "value": w,
+                            "title": f"{s} → {t} ({w})",
+                            "color": {"color": "#aaaaaa", "highlight": "#333333"},
+                        }
                         if _has_dates and (s, t) in edge_dates:
-                            e_entry['dates'] = sorted(set(
-                                d.strftime('%Y-%m-%d') for d in edge_dates[(s, t)]))
+                            e_entry["dates"] = sorted(set(d.strftime("%Y-%m-%d") for d in edge_dates[(s, t)]))
                         vis_edges.append(e_entry)
 
                     # Collect all unique dates across the dataset for the time slider
@@ -4451,18 +4903,18 @@ def auto_chart_cross_complex(csv_path, outputDir, chartPackage, filesToOpen):
                     if _has_dates:
                         for dlist in edge_dates.values():
                             for d in dlist:
-                                _all_dates_set.add(d.strftime('%Y-%m-%d'))
+                                _all_dates_set.add(d.strftime("%Y-%m-%d"))
                         # Also attach dates to nodes
                         node_dates = {}
                         for (s, t), dlist in edge_dates.items():
                             for d in dlist:
-                                ds = d.strftime('%Y-%m-%d')
+                                ds = d.strftime("%Y-%m-%d")
                                 node_dates.setdefault(node_id_map[s], set()).add(ds)
                                 node_dates.setdefault(node_id_map[t], set()).add(ds)
                         for vn in vis_nodes:
-                            nid = vn['id']
+                            nid = vn["id"]
                             if nid in node_dates:
-                                vn['dates'] = sorted(node_dates[nid])
+                                vn["dates"] = sorted(node_dates[nid])
                     _all_dates_sorted = sorted(_all_dates_set) if _all_dates_set else []
 
                     # Build JS-friendly triplet index keyed by node id
@@ -4475,7 +4927,7 @@ def auto_chart_cross_complex(csv_path, outputDir, chartPackage, filesToOpen):
                             trips_sorted = sorted(trips, key=lambda x: -x[-1])[:30]
                             js_node_triplets[nid] = trips_sorted
 
-                    role_labels = ['Subject', 'Verb', 'Object'][:len(svo_cols)]
+                    role_labels = ["Subject", "Verb", "Object"][: len(svo_cols)]
 
                     html = """<!DOCTYPE html>
 <html><head><meta charset="utf-8">
@@ -4696,36 +5148,32 @@ network.on("click", function(params) {{
 </body></html>"""
 
                     legend_parts = []
-                    for rk, rl in zip(['S', 'V', 'O'], role_labels):
-                        legend_parts.append(
-                            '<span class="leg" style="background:{}"></span>{}'.format(
-                                palette[rk], rl))
-                    legend_html = '  '.join(legend_parts)
+                    for rk, rl in zip(["S", "V", "O"], role_labels):
+                        legend_parts.append(f'<span class="leg" style="background:{palette[rk]}"></span>{rl}')
+                    legend_html = "  ".join(legend_parts)
 
                     # ── Build dynamic JS template fragments for the info panel ──
-                    _role_css = {'Subject': 's', 'Verb': 'v', 'Object': 'o'}
+                    _role_css = {"Subject": "s", "Verb": "v", "Object": "o"}
                     # Table header:  <th>Subject</th><th></th><th>Verb</th><th>Count</th>
                     _th = []
                     for _i, _rc in enumerate(svo_cols):
                         if _i > 0:
-                            _th.append('<th></th>')
-                        _th.append('<th>{}</th>'.format(_rc))
-                    _th.append('<th>Count</th>')
-                    _table_header_html = ''.join(_th)
+                            _th.append("<th></th>")
+                        _th.append(f"<th>{_rc}</th>")
+                    _th.append("<th>Count</th>")
+                    _table_header_html = "".join(_th)
                     # Row expression (JS): '<td class="s">' + t[0] + '</td><td>→</td>...'
                     _td = []
                     for _i, _rc in enumerate(svo_cols):
-                        _css = _role_css.get(_rc, '')
+                        _css = _role_css.get(_rc, "")
                         if _i > 0:
                             _td.append("'<td>&rarr;</td>'")
-                        _td.append("'<td class=\"{}\">' + t[{}] + '</td>'".format(_css, _i))
-                    _td.append("'<td>' + t[{}] + '</td>'".format(len(svo_cols)))
-                    _table_row_js = ' + '.join(_td)
+                        _td.append(f"'<td class=\"{_css}\">' + t[{_i}] + '</td>'")
+                    _td.append(f"'<td>' + t[{len(svo_cols)}] + '</td>'")
+                    _table_row_js = " + ".join(_td)
                     # Info-panel messages
-                    _info_click = ' &rarr; '.join(
-                        _role_initials.get(c, c[0]) for c in svo_cols)
-                    _no_triplets = ' → '.join(
-                        _role_initials.get(c, c[0]) for c in svo_cols)
+                    _info_click = " &rarr; ".join(_role_initials.get(c, c[0]) for c in svo_cols)
+                    _no_triplets = " → ".join(_role_initials.get(c, c[0]) for c in svo_cols)
 
                     html = html.format(
                         svo_label=_svo_label,
@@ -4741,11 +5189,12 @@ network.on("click", function(params) {{
                         edges_json=_json.dumps(vis_edges),
                         triplets_json=_json.dumps(js_node_triplets),
                         all_dates_json=_json.dumps(_all_dates_sorted),
-                        network_height='70vh' if _all_dates_sorted else '75vh',
-                        slider_display='block' if _all_dates_sorted else 'none')
+                        network_height="70vh" if _all_dates_sorted else "75vh",
+                        slider_display="block" if _all_dates_sorted else "none",
+                    )
 
-                    network_file = os.path.join(outputDir, '{}_network.html'.format(base_name))
-                    with open(network_file, 'w', encoding='utf-8') as fh:
+                    network_file = os.path.join(outputDir, f"{base_name}_network.html")
+                    with open(network_file, "w", encoding="utf-8") as fh:
                         fh.write(html)
                     filesToOpen.append(network_file)
                     print(f"  Network saved: {network_file}")
@@ -4758,21 +5207,19 @@ network.on("click", function(params) {{
                         import Gephi_util as _gephi
 
                         rgb_map = {
-                            'S': (224, 64, 64),    # red
-                            'V': (64, 96, 224),    # blue
-                            'O': (48, 160, 48),    # green
+                            "S": (224, 64, 64),  # red
+                            "V": (64, 96, 224),  # blue
+                            "O": (48, 160, 48),  # green
                         }
 
                         _gexf_dynamic = _has_dates and len(edge_dates) > 0
                         _gexf_mode = "dynamic" if _gexf_dynamic else "static"
                         _gexf_tf = "date" if _gexf_dynamic else ""
 
-                        gexf = _gephi.Gexf("NLP Suite", "{} Network".format(_svo_label))
-                        graph = gexf.addGraph("directed", _gexf_mode,
-                                              "{} Network".format(_svo_label),
-                                              timeformat=_gexf_tf)
+                        gexf = _gephi.Gexf("NLP Suite", f"{_svo_label} Network")
+                        graph = gexf.addGraph("directed", _gexf_mode, f"{_svo_label} Network", timeformat=_gexf_tf)
                         # Node attribute: role
-                        _default_role = role_keys[-1] if role_keys else 'S'
+                        _default_role = role_keys[-1] if role_keys else "S"
                         role_attr_id = graph.addNodeAttribute("Role", _default_role, "string", "static")
 
                         # Build node spells from edge_dates
@@ -4780,11 +5227,9 @@ network.on("click", function(params) {{
                         if _gexf_dynamic:
                             for (s, t), dlist in edge_dates.items():
                                 for d in dlist:
-                                    ds = d.strftime('%Y-%m-%d')
-                                    _node_spells.setdefault(s, []).append(
-                                        {"start": ds, "end": ds})
-                                    _node_spells.setdefault(t, []).append(
-                                        {"start": ds, "end": ds})
+                                    ds = d.strftime("%Y-%m-%d")
+                                    _node_spells.setdefault(s, []).append({"start": ds, "end": ds})
+                                    _node_spells.setdefault(t, []).append({"start": ds, "end": ds})
 
                         # Add nodes with role-colored dots and frequency-based size
                         for n, nid in node_id_map.items():
@@ -4792,10 +5237,9 @@ network.on("click", function(params) {{
                             freq = node_freq.get(n, 1)
                             r, g_c, b = rgb_map.get(rk, (128, 128, 128))
                             spells = _node_spells.get(n, []) if _gexf_dynamic else []
-                            node = graph.addNode(str(nid), n,
-                                                 r=str(r), g=str(g_c), b=str(b),
-                                                 size=str(max(10, freq)),
-                                                 spells=spells)
+                            node = graph.addNode(
+                                str(nid), n, r=str(r), g=str(g_c), b=str(b), size=str(max(10, freq)), spells=spells
+                            )
                             node.addAttribute(role_attr_id, rk)
 
                         # Add edges with weight and spells
@@ -4803,17 +5247,19 @@ network.on("click", function(params) {{
                             espells = []
                             if _gexf_dynamic and (s, t) in edge_dates:
                                 for d in edge_dates[(s, t)]:
-                                    ds = d.strftime('%Y-%m-%d')
+                                    ds = d.strftime("%Y-%m-%d")
                                     espells.append({"start": ds, "end": ds})
-                            graph.addEdge(str(eidx),
-                                          str(node_id_map[s]),
-                                          str(node_id_map[t]),
-                                          weight=str(w),
-                                          label='{} → {}'.format(s, t),
-                                          spells=espells)
+                            graph.addEdge(
+                                str(eidx),
+                                str(node_id_map[s]),
+                                str(node_id_map[t]),
+                                weight=str(w),
+                                label=f"{s} → {t}",
+                                spells=espells,
+                            )
 
-                        gexf_file = os.path.join(outputDir, '{}_network.gexf'.format(base_name))
-                        with open(gexf_file, 'wb') as gf:
+                        gexf_file = os.path.join(outputDir, f"{base_name}_network.gexf")
+                        with open(gexf_file, "wb") as gf:
                             gexf.write(gf, print_stat=False)
                         filesToOpen.append(gexf_file)
                         print(f"  Gephi .gexf saved: {gexf_file}")
@@ -4824,23 +5270,28 @@ network.on("click", function(params) {{
 
         except Exception as e:
             import traceback
+
             print(f"  WARNING: Network graph: {e}")
             traceback.print_exc()
 
     # ── 5. Heatmap: cross-tabulation of first two role columns ────────────
     if _px and len(svo_cols) >= 2:
         try:
-            heat_df = df_svo[[svo_cols[0], svo_cols[1]]].dropna(how='all').fillna('(none)').astype(str)
+            heat_df = df_svo[[svo_cols[0], svo_cols[1]]].dropna(how="all").fillna("(none)").astype(str)
             if not heat_df.empty:
                 ctab = pd.crosstab(heat_df[svo_cols[0]], heat_df[svo_cols[1]])
                 top_rows = ctab.sum(axis=1).nlargest(30).index
                 top_cols_ct = ctab.sum(axis=0).nlargest(30).index
                 ctab = ctab.loc[ctab.index.isin(top_rows), ctab.columns.isin(top_cols_ct)]
                 if not ctab.empty:
-                    fig = _px.imshow(ctab, text_auto=True, aspect='auto',
-                                    title='Heatmap: {} × {}'.format(svo_cols[0], svo_cols[1]),
-                                    labels=dict(x=svo_cols[1], y=svo_cols[0], color='Count'))
-                    heatmap_file = os.path.join(outputDir, '{}_heatmap.html'.format(base_name))
+                    fig = _px.imshow(
+                        ctab,
+                        text_auto=True,
+                        aspect="auto",
+                        title=f"Heatmap: {svo_cols[0]} × {svo_cols[1]}",
+                        labels=dict(x=svo_cols[1], y=svo_cols[0], color="Count"),
+                    )
+                    heatmap_file = os.path.join(outputDir, f"{base_name}_heatmap.html")
                     fig.write_html(heatmap_file)
                     filesToOpen.append(heatmap_file)
         except Exception as e:
@@ -4852,34 +5303,37 @@ network.on("click", function(params) {{
     svo_wc_done = False
     if len(svo_cols) >= 2:
         try:
-            from wordcloud import WordCloud as _WC
             from collections import Counter as _Counter
+
             import matplotlib
-            matplotlib.use('Agg')
+            from wordcloud import WordCloud as _WC
+
+            matplotlib.use("Agg")
             import matplotlib.pyplot as _plt
 
             # Grouped color function (same as wordclouds_util.GroupedColorFunc)
             class _GroupedColor:
                 def __init__(self, color_to_words, default_color):
                     self.mapping = [
-                        ('rgb({},{},{})'.format(*[int(x) for x in col.strip('()').split(',')]),
-                         set(words))
-                        for col, words in color_to_words.items()]
-                    dc = [int(x) for x in default_color.strip('()').split(',')]
-                    self.default = 'rgb({},{},{})'.format(*dc)
+                        ("rgb({},{},{})".format(*[int(x) for x in col.strip("()").split(",")]), set(words))
+                        for col, words in color_to_words.items()
+                    ]
+                    dc = [int(x) for x in default_color.strip("()").split(",")]
+                    self.default = "rgb({},{},{})".format(*dc)
+
                 def __call__(self, word, **kw):
                     for rgb, words in self.mapping:
                         if word in words:
                             return rgb
                     return self.default
 
-            red   = "(250, 0, 0)"     # Subject
-            blue  = "(0, 0, 250)"     # Verb
-            green = "(0, 250, 0)"     # Object
-            grey  = "(169, 169, 169)"
+            red = "(250, 0, 0)"  # Subject
+            blue = "(0, 0, 250)"  # Verb
+            green = "(0, 250, 0)"  # Object
+            grey = "(169, 169, 169)"
             color_map = {red: [], blue: [], green: []}
 
-            svo_wc_df = df_svo[svo_cols].dropna(how='all').fillna('').astype(str)
+            svo_wc_df = df_svo[svo_cols].dropna(how="all").fillna("").astype(str)
             words_list = []
 
             def _clean_phrase(val):
@@ -4888,15 +5342,15 @@ network.on("click", function(params) {{
                 Underscores are rendered visually as spaces via _normalize_underscores."""
                 words = []
                 for w in val.lower().split():
-                    cleaned = ''.join(filter(str.isalnum, w))
+                    cleaned = "".join(filter(str.isalnum, w))
                     if cleaned:
                         words.append(cleaned)
-                return '_'.join(words) if words else ''
+                return "_".join(words) if words else ""
 
             for _, row in svo_wc_df.iterrows():
-                s_val = row.get('Subject', '')
-                v_val = row.get('Verb', '')
-                o_val = row.get('Object', '')
+                s_val = row.get("Subject", "")
+                v_val = row.get("Verb", "")
+                o_val = row.get("Object", "")
                 if s_val:
                     clean = _clean_phrase(s_val)
                     if clean:
@@ -4919,30 +5373,35 @@ network.on("click", function(params) {{
                 # "white_woman" renders as "white woman" with minimal gap
                 # Use THIN SPACE (U+2009) to keep multi-word phrases
                 # visually tight — much narrower gap than a regular space
-                _THIN = ' '
-                freq_display = {k.replace('_', _THIN): v for k, v in freq.items()}
+                _THIN = " "
+                freq_display = {k.replace("_", _THIN): v for k, v in freq.items()}
                 # Update color_map keys to match the display form
                 color_map_display = {}
                 for color_key, wlist in color_map.items():
-                    color_map_display[color_key] = [w.replace('_', _THIN) for w in wlist]
+                    color_map_display[color_key] = [w.replace("_", _THIN) for w in wlist]
 
                 # regexp: include thin space (U+2009) so phrases stay as one token
-                wc = _WC(width=800, height=800, max_words=1000,
-                         prefer_horizontal=0.9, collocations=False,
-                         regexp=r"[\w][\w ]+",
-                         contour_width=3, background_color='white'
-                         ).generate_from_frequencies(freq_display)
+                wc = _WC(
+                    width=800,
+                    height=800,
+                    max_words=1000,
+                    prefer_horizontal=0.9,
+                    collocations=False,
+                    regexp=r"[\w][\w ]+",
+                    contour_width=3,
+                    background_color="white",
+                ).generate_from_frequencies(freq_display)
                 wc.recolor(color_func=_GroupedColor(color_map_display, grey))
                 _plt.figure(figsize=(8, 8), facecolor=None)
-                _plt.imshow(wc, interpolation='bilinear')
+                _plt.imshow(wc, interpolation="bilinear")
                 _wc_legend_parts = []
-                _wc_colors = {'Subject': 'red', 'Verb': 'blue', 'Object': 'green'}
+                _wc_colors = {"Subject": "red", "Verb": "blue", "Object": "green"}
                 for _rc in svo_cols:
-                    _wc_legend_parts.append('{} ({})'.format(_rc, _wc_colors.get(_rc, 'grey')))
-                _wc_title = '{} Word Cloud:  {}'.format(_svo_label, '  —  '.join(_wc_legend_parts))
-                _plt.title(_wc_title, fontsize=12, fontweight='bold', pad=20)
-                _plt.axis('off')
-                wc_file = os.path.join(outputDir, 'SQL_{}_wordcloud.png'.format(_svo_label))
+                    _wc_legend_parts.append("{} ({})".format(_rc, _wc_colors.get(_rc, "grey")))
+                _wc_title = "{} Word Cloud:  {}".format(_svo_label, "  —  ".join(_wc_legend_parts))
+                _plt.title(_wc_title, fontsize=12, fontweight="bold", pad=20)
+                _plt.axis("off")
+                wc_file = os.path.join(outputDir, f"SQL_{_svo_label}_wordcloud.png")
                 wc.to_file(wc_file)
                 filesToOpen.append(wc_file)
                 _plt.close()
@@ -4952,41 +5411,48 @@ network.on("click", function(params) {{
             pass
         except Exception as e:
             import traceback
+
             print(f"  WARNING: {_svo_label} Word Cloud failed: {e}")
             traceback.print_exc()
 
     # Fall back to plain word clouds if SVO word cloud was not produced
     if not svo_wc_done:
         try:
-            from wordcloud import WordCloud as _WC2
             import matplotlib
-            matplotlib.use('Agg')
+            from wordcloud import WordCloud as _WC2
+
+            matplotlib.use("Agg")
             import matplotlib.pyplot as _plt2
 
             for col in chart_cols:
                 col_data = df_clean[col].dropna().astype(str)
                 if col_data.empty or len(col_data) < 2:
                     continue
-                non_numeric = col_data[~col_data.str.match(r'^-?\d+\.?\d*$')]
+                non_numeric = col_data[~col_data.str.match(r"^-?\d+\.?\d*$")]
                 if non_numeric.empty:
                     continue
                 # Use generate_from_frequencies to keep multi-word phrases intact
                 # Replace regular spaces with THIN SPACE (U+2009) for tighter rendering
                 from collections import Counter as _Counter2
+
                 phrase_freq_raw = _Counter2(non_numeric.str.strip().str.lower().tolist())
-                phrase_freq = {k.replace(' ', ' '): v for k, v in phrase_freq_raw.items()}
+                phrase_freq = {k.replace(" ", " "): v for k, v in phrase_freq_raw.items()}
                 # Remove empty keys
-                phrase_freq.pop('', None)
-                phrase_freq.pop('nan', None)
+                phrase_freq.pop("", None)
+                phrase_freq.pop("nan", None)
                 if not phrase_freq:
                     continue
                 try:
-                    wc = _WC2(width=800, height=400, background_color='white',
-                              max_words=100, collocations=False,
-                              regexp=r"[\w][\w ]+"
-                              ).generate_from_frequencies(phrase_freq)
+                    wc = _WC2(
+                        width=800,
+                        height=400,
+                        background_color="white",
+                        max_words=100,
+                        collocations=False,
+                        regexp=r"[\w][\w ]+",
+                    ).generate_from_frequencies(phrase_freq)
                     safe_col = _safe_filename(col)
-                    wc_file = os.path.join(outputDir, 'SQL_{}_wordcloud.png'.format(safe_col))
+                    wc_file = os.path.join(outputDir, f"SQL_{safe_col}_wordcloud.png")
                     wc.to_file(wc_file)
                     filesToOpen.append(wc_file)
                 except Exception as e:
@@ -4995,17 +5461,27 @@ network.on("click", function(params) {{
             pass
 
     # ── 7. Proportional circle map (Leaflet.js via folium) ───────────────
-    _LOCATION_KEYWORDS = {'city', 'state', 'country', 'location', 'place', 'town',
-                          'province', 'region', 'county', 'municipality'}
-    location_cols = [c for c in value_cols
-                     if any(kw in c.lower() for kw in _LOCATION_KEYWORDS)]
+    _LOCATION_KEYWORDS = {
+        "city",
+        "state",
+        "country",
+        "location",
+        "place",
+        "town",
+        "province",
+        "region",
+        "county",
+        "municipality",
+    }
+    location_cols = [c for c in value_cols if any(kw in c.lower() for kw in _LOCATION_KEYWORDS)]
     if location_cols:
         try:
-            import folium
-            from geopy.geocoders import Nominatim
             import time as _time
 
-            geolocator = Nominatim(user_agent='NLP_Suite_cross_complex')
+            import folium
+            from geopy.geocoders import Nominatim
+
+            geolocator = Nominatim(user_agent="NLP_Suite_cross_complex")
             _geo_cache = {}
 
             for loc_col in location_cols:
@@ -5038,24 +5514,23 @@ network.on("click", function(params) {{
 
                 avg_lat = sum(r[1] for r in geo_rows) / len(geo_rows)
                 avg_lon = sum(r[2] for r in geo_rows) / len(geo_rows)
-                m = folium.Map(location=[avg_lat, avg_lon], zoom_start=4,
-                               **map_tiles_util.folium_tiles())
+                m = folium.Map(location=[avg_lat, avg_lon], zoom_start=4, **map_tiles_util.folium_tiles())
                 max_count = max(r[3] for r in geo_rows)
                 for loc_name, lat, lon, count in geo_rows:
                     radius = max(5, (count / max_count) * 40)
                     folium.CircleMarker(
                         location=[lat, lon],
                         radius=radius,
-                        color='#3388ff',
+                        color="#3388ff",
                         fill=True,
-                        fill_color='#3388ff',
+                        fill_color="#3388ff",
                         fill_opacity=0.6,
-                        popup='{}: {}'.format(loc_name, count),
-                        tooltip='{} ({})'.format(loc_name, count)
+                        popup=f"{loc_name}: {count}",
+                        tooltip=f"{loc_name} ({count})",
                     ).add_to(m)
 
                 safe_col = _safe_filename(loc_col)
-                map_file = os.path.join(outputDir, '{}_{}_map.html'.format(base_name, safe_col))
+                map_file = os.path.join(outputDir, f"{base_name}_{safe_col}_map.html")
                 m.save(map_file)
                 filesToOpen.append(map_file)
                 print(f"  Proportional circle map: {len(geo_rows)} locations geocoded for {loc_col}")
@@ -5066,8 +5541,9 @@ network.on("click", function(params) {{
             print(f"  WARNING: Proportional circle map: {e}")
 
 
-def MALLET_heatmap(composition_file, topics_file, outputDir, fig_set={"figure.figsize": (8, 6), "figure.dpi": 300},
-                   show_topics=True):
+def MALLET_heatmap(
+    composition_file, topics_file, outputDir, fig_set={"figure.figsize": (8, 6), "figure.dpi": 300}, show_topics=True
+):
     """
     Uses Seaborn to create a heatmap of topics generated using MALLET topic modeling
 
@@ -5080,39 +5556,40 @@ def MALLET_heatmap(composition_file, topics_file, outputDir, fig_set={"figure.fi
     Returns:
         heatmap (object): Seaborn heatmap plot object.
     """
-    import seaborn as sns
     import matplotlib.pyplot as plt
-
+    import seaborn as sns
 
     try:
-        topics = pd.read_csv(topics_file, encoding='utf-8', on_bad_lines='skip')
+        topics = pd.read_csv(topics_file, encoding="utf-8", on_bad_lines="skip")
     except:
-        topics = pd.read_csv(topics_file, encoding="ISO-8859-1", on_bad_lines='skip')
+        topics = pd.read_csv(topics_file, encoding="ISO-8859-1", on_bad_lines="skip")
     topics.columns = ["Topic", "Weight", "Keys"]
 
     try:
-        composition = pd.read_csv(composition_file, encoding='utf-8', on_bad_lines='skip')
+        composition = pd.read_csv(composition_file, encoding="utf-8", on_bad_lines="skip")
     except:
-        composition = pd.read_csv(composition_file, encoding="ISO-8859-1", on_bad_lines='skip')
+        composition = pd.read_csv(composition_file, encoding="ISO-8859-1", on_bad_lines="skip")
     num_topics = len(composition.columns) - 2
     composition.columns = ["Document ID", "Document"] + [f"Topic {i}" for i in range(1, num_topics + 1)]
 
     composition.drop(["Document ID"], axis=1, inplace=True)
     composition.reset_index(drop=True, inplace=True)
 
-    composition["Document"] = composition["Document"].apply(
-        lambda d: os.path.split(d.replace('file:' + os.sep, ''))[1])
+    composition["Document"] = composition["Document"].apply(lambda d: os.path.split(d.replace("file:" + os.sep, ""))[1])
 
     document_titles = composition["Document"]  # Clean hyperlinks function here
 
     sns.set(rc=fig_set)  # Set figure dimensions and resolution
 
-    heatmap = sns.heatmap(composition.iloc[:, 1:].apply(pd.to_numeric, errors='coerce').fillna(0),
-                          vmin=0, vmax=1,  # Range 0-1
-                          annot=True,  # Display values inside heatmap
-                          yticklabels=document_titles,  # Document name labels
-                          fmt='0.2f',  # Rounding
-                          annot_kws={"size": 8})
+    heatmap = sns.heatmap(
+        composition.iloc[:, 1:].apply(pd.to_numeric, errors="coerce").fillna(0),
+        vmin=0,
+        vmax=1,  # Range 0-1
+        annot=True,  # Display values inside heatmap
+        yticklabels=document_titles,  # Document name labels
+        fmt="0.2f",  # Rounding
+        annot_kws={"size": 8},
+    )
     plt.suptitle("Topic Composition and Keys", fontsize=18)  # Title
 
     # Add topics labels to heatmap x-axis
@@ -5130,16 +5607,20 @@ def MALLET_heatmap(composition_file, topics_file, outputDir, fig_set={"figure.fi
         size = plt.gcf().get_size_inches()  # Figure dimensions to align topics under chart
         topic_num = 1
         for keys in topics["Keys"]:
-            plt.text(min(size) - max(size),  # Left indent
-                     max(size) + (topic_num * 0.25),  # 0.25 spacing between topics
-                     f"Topic {topic_num}: {keys}",  # Naming topics on x-axis
-                     ha="left", va="bottom")  # Align text on left
+            plt.text(
+                min(size) - max(size),  # Left indent
+                max(size) + (topic_num * 0.25),  # 0.25 spacing between topics
+                f"Topic {topic_num}: {keys}",  # Naming topics on x-axis
+                ha="left",
+                va="bottom",
+            )  # Align text on left
             topic_num += 1
 
     outputFilename = os.path.join(outputDir, "MALLET_topics.png")
     plt.savefig(outputFilename, bbox_inches="tight")
     plt.close()
     return outputFilename
+
 
 # seaborn
 # https://seaborn.pydata.org/examples/different_scatter_variables.html

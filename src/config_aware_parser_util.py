@@ -27,36 +27,46 @@
 # Validated end-to-end against real Stanza 1.10 and spaCy 3.4 (identical noun / PERSON /
 # LOCATION / DATE output on the same text).
 
-import config_util
 import basic_NLP_util
+import config_util
 
 
 class ConfigParser:
     """Drop-in, config-aware replacement for a StanfordCoreNLP object."""
 
     # OntoNotes entity types (Stanza / spaCy) -> the CoreNLP-style tags legacy code checks
-    _NER_MAP = {'PERSON': 'PERSON', 'ORG': 'ORGANIZATION',
-                'GPE': 'LOCATION', 'LOC': 'LOCATION', 'FAC': 'LOCATION', 'DATE': 'DATE'}
+    _NER_MAP = {
+        "PERSON": "PERSON",
+        "ORG": "ORGANIZATION",
+        "GPE": "LOCATION",
+        "LOC": "LOCATION",
+        "FAC": "LOCATION",
+        "DATE": "DATE",
+    }
 
-    def __init__(self, package, language, CoreNLPDir=''):
-        p = (package or '').lower()
+    def __init__(self, package, language, CoreNLPDir=""):
+        p = (package or "").lower()
         self._corenlp = None
         self._pipe = None
         self._cache_text = None
         self._cache_doc = None
-        if 'spacy' in p:
-            self.kind = 'spacy'
+        if "spacy" in p:
+            self.kind = "spacy"
             import spacy
-            self._pipe = spacy.load(basic_NLP_util._lang_code(language) + '_core_web_sm')
-        elif 'stanford' in p or 'corenlp' in p:
-            self.kind = 'corenlp'
+
+            self._pipe = spacy.load(basic_NLP_util._lang_code(language) + "_core_web_sm")
+        elif "stanford" in p or "corenlp" in p:
+            self.kind = "corenlp"
             from stanfordcorenlp import StanfordCoreNLP  # python wrapper for Stanford CoreNLP
+
             self._corenlp = StanfordCoreNLP(CoreNLPDir)
         else:  # Stanza is the NLP Suite's default Python parser
-            self.kind = 'stanza'
+            self.kind = "stanza"
             import stanza
-            self._pipe = stanza.Pipeline(basic_NLP_util._lang_code(language),
-                                         processors='tokenize,pos,ner', verbose=False)
+
+            self._pipe = stanza.Pipeline(
+                basic_NLP_util._lang_code(language), processors="tokenize,pos,ner", verbose=False
+            )
 
     # cache the last parse so a pos_tag() + ner() pair on the same text only parses once
     def _doc(self, text):
@@ -66,33 +76,33 @@ class ConfigParser:
 
     def pos_tag(self, text):
         """[(word, PennPOS), ...] -- same shape as StanfordCoreNLP.pos_tag()."""
-        if self.kind == 'corenlp':
+        if self.kind == "corenlp":
             return self._corenlp.pos_tag(text)
-        if self.kind == 'stanza':
-            return [(w.text, w.xpos or '') for s in self._doc(text).sentences for w in s.words]
+        if self.kind == "stanza":
+            return [(w.text, w.xpos or "") for s in self._doc(text).sentences for w in s.words]
         return [(t.text, t.tag_) for t in self._doc(text)]  # spaCy tag_ = Penn
 
     def ner(self, text):
         """[(word, NERtag), ...] with CoreNLP-style tags; 'O' for non-entities."""
-        if self.kind == 'corenlp':
+        if self.kind == "corenlp":
             return self._corenlp.ner(text)
         out = []
-        if self.kind == 'stanza':
+        if self.kind == "stanza":
             for s in self._doc(text).sentences:
                 for t in s.tokens:
-                    tag = t.ner.split('-')[-1] if (t.ner and t.ner != 'O') else 'O'  # strip BIOES
+                    tag = t.ner.split("-")[-1] if (t.ner and t.ner != "O") else "O"  # strip BIOES
                     out.append((t.text, self._NER_MAP.get(tag, tag)))
         else:  # spaCy
             for t in self._doc(text):
-                tag = t.ent_type_ or 'O'
+                tag = t.ent_type_ or "O"
                 out.append((t.text, self._NER_MAP.get(tag, tag)))
         return out
 
     def word_tokenize(self, text):
         """[token, ...] -- same shape as StanfordCoreNLP.word_tokenize()."""
-        if self.kind == 'corenlp':
+        if self.kind == "corenlp":
             return self._corenlp.word_tokenize(text)
-        if self.kind == 'stanza':
+        if self.kind == "stanza":
             return [w.text for s in self._doc(text).sentences for w in s.words]
         return [t.text for t in self._doc(text)]
 
@@ -105,11 +115,11 @@ def configured_package_language():
     """(package, language) as selected in the NLP Suite setup; safe defaults if the config is unreadable."""
     try:
         cfg = config_util.read_NLP_package_language_config()
-        package = cfg[1] if (cfg and len(cfg) > 1 and cfg[1]) else 'Stanford CoreNLP'
-        language = cfg[4] if (cfg and len(cfg) > 4 and cfg[4]) else 'English'
+        package = cfg[1] if (cfg and len(cfg) > 1 and cfg[1]) else "Stanford CoreNLP"
+        language = cfg[4] if (cfg and len(cfg) > 4 and cfg[4]) else "English"
         return package, language
     except Exception:
-        return 'Stanford CoreNLP', 'English'
+        return "Stanford CoreNLP", "English"
 
 
 def requires_CoreNLP():
@@ -117,14 +127,14 @@ def requires_CoreNLP():
     GUIs use this to stop demanding a CoreNLP install from Stanza/spaCy users."""
     package, _ = configured_package_language()
     p = package.lower()
-    return ('stanford' in p) or ('corenlp' in p)
+    return ("stanford" in p) or ("corenlp" in p)
 
 
 # Stanford CoreNLP's model emits fine-grained location entities that the OntoNotes model behind Stanza
 # and spaCy simply does not have: there, a city, a state and a country are all GPE, which _NER_MAP folds
 # into LOCATION. Requesting one of these under Stanza/spaCy matches nothing whatsoever, so a caller must
 # say so rather than hand back an empty result and let the user read it as "no misspellings found".
-_CORENLP_ONLY_NER = {'CITY', 'COUNTRY', 'STATE_OR_PROVINCE'}
+_CORENLP_ONLY_NER = {"CITY", "COUNTRY", "STATE_OR_PROVINCE"}
 
 
 def unsupported_NER_tags(requested):
@@ -134,7 +144,7 @@ def unsupported_NER_tags(requested):
     return [t for t in requested if str(t).upper() in _CORENLP_ONLY_NER]
 
 
-def get_parser(CoreNLPDir=''):
+def get_parser(CoreNLPDir=""):
     """Convenience: build a ConfigParser for the configured package/language."""
     package, language = configured_package_language()
     return ConfigParser(package, language, CoreNLPDir)

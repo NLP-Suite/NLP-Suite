@@ -15,58 +15,66 @@ http://www.nltk.org/howto/sentiwordnet.html
 # neu: Neutral
 # pos: Positive
 # compound: Compound (i.e. aggregated score)
-#The "compound" score, ranging from -1 (most neg) to 1 (most pos)
+# The "compound" score, ranging from -1 (most neg) to 1 (most pos)
 #   would provide a single measure of polarity.
 
 import sys
+
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_Python_packages(GUI_util.window,"sentiment_analysis_SentiWordNet",['nltk','os','csv','argparse','tkinter','time'])==False:
+if (
+    IO_libraries_util.install_all_Python_packages(
+        GUI_util.window, "sentiment_analysis_SentiWordNet", ["nltk", "os", "csv", "argparse", "tkinter", "time"]
+    )
+    == False
+):
     sys.exit(0)
 
+import argparse
 import csv
 import os
 import time
-import argparse
 import tkinter.messagebox as mb
 
+import charts_util
 import IO_csv_util
 import IO_files_util
-import charts_util
 import statistics_statistical_tests_util
 
 # all nltk resources are stored in C:\Users\rfranzo\AppData\Roaming then nltk_data
 # check averaged_perceptron_tagger
-IO_libraries_util.import_nltk_resource(GUI_util.window,'taggers/averaged_perceptron_tagger','averaged_perceptron_tagger')
+IO_libraries_util.import_nltk_resource(
+    GUI_util.window, "taggers/averaged_perceptron_tagger", "averaged_perceptron_tagger"
+)
 # https://stackoverflow.com/questions/32039408/python-3-nltk-data-load-error
-IO_libraries_util.import_nltk_resource(GUI_util.window,'tokenizers/punkt','punkt')
+IO_libraries_util.import_nltk_resource(GUI_util.window, "tokenizers/punkt", "punkt")
 # check WordNet
-IO_libraries_util.import_nltk_resource(GUI_util.window,'corpora/wordnet','wordnet')
+IO_libraries_util.import_nltk_resource(GUI_util.window, "corpora/wordnet", "wordnet")
 # IO_libraries_util.import_nltk_resource(GUI_util.window,'corpora/wordnet','omw-1.4')
-IO_libraries_util.import_nltk_resource(GUI_util.window,'corpora/omw-1.4','omw-1.4')
-IO_libraries_util.import_nltk_resource(GUI_util.window,'corpora/sentiwordnet','sentiwordnet')
+IO_libraries_util.import_nltk_resource(GUI_util.window, "corpora/omw-1.4", "omw-1.4")
+IO_libraries_util.import_nltk_resource(GUI_util.window, "corpora/sentiwordnet", "sentiwordnet")
 
 
-from nltk.corpus import wordnet as wn
-from nltk.corpus import sentiwordnet as swn
-from nltk import word_tokenize, pos_tag
+from nltk import pos_tag, word_tokenize
+from nltk.corpus import sentiwordnet as swn, wordnet as wn
 
-fin = open('../lib/wordLists/stopwords.txt', 'r')
+fin = open("../lib/wordLists/stopwords.txt")
 stops = set(fin.read().splitlines())
+
 
 # from nltk.corpus import wordnet as wn
 def penn_to_wn(tag):
     """
     Convert between the PennTreebank tags to simple Wordnet tags
     """
-    if tag.startswith('J'):
+    if tag.startswith("J"):
         return wn.ADJ
-    elif tag.startswith('N'):
+    elif tag.startswith("N"):
         return wn.NOUN
-    elif tag.startswith('R'):
+    elif tag.startswith("R"):
         return wn.ADV
-    elif tag.startswith('V'):
+    elif tag.startswith("V"):
         return wn.VERB
     return None
 
@@ -82,22 +90,31 @@ def analyzefile(inputFilename, outputDir, output_file, mode, documentID, documen
     :return:
     """
 
-    #TODO
-    #the output filename is reset in the specific script; must be passed as a parameter
-    #cannot use time in the filename or when re-generated n the main sentimen_concreteness_analysis.py it will have a different time stamp and the file will not be found
-    if output_file == '':
-        output_file = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'SentiWordNet', '', '', '', '', False, True)
+    # TODO
+    # the output filename is reset in the specific script; must be passed as a parameter
+    # cannot use time in the filename or when re-generated n the main sentimen_concreteness_analysis.py it will have a different time stamp and the file will not be found
+    if output_file == "":
+        output_file = IO_files_util.generate_output_file_name(
+            inputFilename, "", outputDir, ".csv", "SentiWordNet", "", "", "", "", False, True
+        )
 
     # read file into string
-    with open(inputFilename, 'r',encoding='utf-8',errors='ignore') as myfile:
+    with open(inputFilename, encoding="utf-8", errors="ignore") as myfile:
         fulltext = myfile.read()
     # end method if file is empty
     if len(fulltext) < 1:
-        mb.showerror(title='File empty', message='The file ' + inputFilename + ' is empty.\n\nPlease, use another file and try again.')
-        print('Empty file ', inputFilename)
+        mb.showerror(
+            title="File empty",
+            message="The file " + inputFilename + " is empty.\n\nPlease, use another file and try again.",
+        )
+        print("Empty file ", inputFilename)
         return
 
-    from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text, tokenize_stanza_text, lemmatize_stanza_word
+    from Stanza_functions_util import (
+        lemmatize_stanza_word,
+        sentence_split_stanza_text,
+        stanzaPipeLine,
+    )
 
     # sentences = tokenize.sent_tokenize(fulltext)  # split text into sentences
     sentences = sentence_split_stanza_text(stanzaPipeLine(fulltext))
@@ -106,7 +123,6 @@ def analyzefile(inputFilename, outputDir, output_file, mode, documentID, documen
     # SentiSynsets
 
     i = 1  # to store sentence index
-
 
     # analyze each sentence s for sentiment
     sentenceID = 1
@@ -147,17 +163,31 @@ def analyzefile(inputFilename, outputDir, output_file, mode, documentID, documen
             sentiment = 1
             label = "negative"
 
-        writer.writerow({Sentiment_measure: sentiment,
-                            Sentiment_label: label,
-                         'Sentence ID': sentenceID,
-                         'Sentence': s,
-                         'Document ID': documentID, 'Document': IO_csv_util.dressFilenameForCSVHyperlink(documentName)})
+        writer.writerow(
+            {
+                Sentiment_measure: sentiment,
+                Sentiment_label: label,
+                "Sentence ID": sentenceID,
+                "Sentence": s,
+                "Document ID": documentID,
+                "Document": IO_csv_util.dressFilenameForCSVHyperlink(documentName),
+            }
+        )
 
         sentenceID += 1
     # csvfile.close()
     return output_file
 
-def main(inputFilename, inputDir, outputDir, configFileName, mode,  chartPackage='Excel', dataTransformation='No transformation'):
+
+def main(
+    inputFilename,
+    inputDir,
+    outputDir,
+    configFileName,
+    mode,
+    chartPackage="Excel",
+    dataTransformation="No transformation",
+):
     """
     Runs analyzefile on the appropriate files, provided that the input paths are valid.
     :param inputFilename:
@@ -170,26 +200,30 @@ def main(inputFilename, inputDir, outputDir, configFileName, mode,  chartPackage
     filesToOpen = []
 
     # create output subdirectory
-    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='sentiment_sentiWN',
-                                                       silent=True)
-    if outputDir == '':
+    outputDir = IO_files_util.make_output_subdirectory(
+        inputFilename, inputDir, outputDir, label="sentiment_sentiWN", silent=True
+    )
+    if outputDir == "":
         return
 
-    outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'SentiWordNet',
-                                                                 '', '', '', '', False, True)
+    outputFilename = IO_files_util.generate_output_file_name(
+        inputFilename, inputDir, outputDir, ".csv", "SentiWordNet", "", "", "", "", False, True
+    )
 
     if len(outputDir) < 0 or not os.path.exists(outputDir):
-        print('No output directory specified, or path does not exist.')
+        print("No output directory specified, or path does not exist.")
         sys.exit(1)
-    elif len(inputFilename) == 0 and len(inputDir)  == 0:
-        print('No input specified. Please, provide either a single file -- file or a directory of files to be analyzed --dir.')
+    elif len(inputFilename) == 0 and len(inputDir) == 0:
+        print(
+            "No input specified. Please, provide either a single file -- file or a directory of files to be analyzed --dir."
+        )
         sys.exit(1)
     # check each word in sentence for sentiment and write to output_file
-    with open(outputFilename, 'w', encoding='utf-8',errors='ignore', newline='') as csvfile:
+    with open(outputFilename, "w", encoding="utf-8", errors="ignore", newline="") as csvfile:
         global Sentiment_measure, Sentiment_label
-        Sentiment_measure='Sentiment score'
-        Sentiment_label='Sentiment label'
-        fieldnames = [Sentiment_measure, Sentiment_label,'Sentence ID', 'Sentence','Document ID', 'Document']
+        Sentiment_measure = "Sentiment score"
+        Sentiment_label = "Sentiment label"
+        fieldnames = [Sentiment_measure, Sentiment_label, "Sentence ID", "Sentence", "Document ID", "Document"]
         global writer
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
@@ -204,8 +238,9 @@ def main(inputFilename, inputDir, outputDir, configFileName, mode,  chartPackage
             documentID = 0
             if os.path.isdir(inputDir):
                 directory = os.fsencode(inputDir)
-                inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt', silent=False,
-                                                      configFileName=configFileName)
+                inputDocs = IO_files_util.getFileList(
+                    inputFilename, inputDir, fileType=".txt", silent=False, configFileName=configFileName
+                )
                 nFile = len(inputDocs)
                 if nFile == 0:
                     return
@@ -216,7 +251,7 @@ def main(inputFilename, inputDir, outputDir, configFileName, mode,  chartPackage
                         start_time = time.time()
                         # print("Started SentiWordNet sentiment analysis of " + filename + "...")
                         documentID += 1
-                        filesToOpen.append(analyzefile(filename, outputDir, outputFilename,mode, documentID, filename))
+                        filesToOpen.append(analyzefile(filename, outputDir, outputFilename, mode, documentID, filename))
                         # print("Finished SentiWordNet sentiment analysis of " + filename + " in " + str((time.time() - start_time)) + " seconds")
                         # print("Finished SentiWordNet sentiment analysis of " + filename + " in " + str((time.time() - start_time)) + " seconds")
             else:
@@ -224,39 +259,72 @@ def main(inputFilename, inputDir, outputDir, configFileName, mode,  chartPackage
                 # sys.exit(1)
     csvfile.close()
 
-    if chartPackage!='No charts':
+    if chartPackage != "No charts":
         # sentiWordNet computes a single sentiment score; does not compute separate mean and median values
 
-        outputFiles = charts_util.plot(outputFilename, outputDir, columns=['Sentiment score'], title='Frequency of SentiWordNet Sentiment Scores', x_label='Sentiment score', count=0, file_label='SentiWordNet', plot_list=['Sentiment score'], title_label='SentiWordNet Sentiment Scores', y_label='Scores')
+        outputFiles = charts_util.plot(
+            outputFilename,
+            outputDir,
+            columns=["Sentiment score"],
+            title="Frequency of SentiWordNet Sentiment Scores",
+            x_label="Sentiment score",
+            count=0,
+            file_label="SentiWordNet",
+            plot_list=["Sentiment score"],
+            title_label="SentiWordNet Sentiment Scores",
+            y_label="Scores",
+        )
 
-        if outputFiles!=None:
+        if outputFiles != None:
             if isinstance(outputFiles, str):
                 filesToOpen.append(outputFiles)
             else:
                 filesToOpen.extend(outputFiles)
 
     stat_files = statistics_statistical_tests_util.run_automatic_tests(
-        outputFilename, outputDir, chartPackage, dataTransformation)
+        outputFilename, outputDir, chartPackage, dataTransformation
+    )
     filesToOpen.extend(stat_files)
 
     return filesToOpen
 
-if __name__ == '__main__':
-    # get arguments from command line
-    parser = argparse.ArgumentParser(description='Sentiment analysis with SentiWordNet')
-    parser.add_argument('--file', type=str, dest='inputFilename', default='',
-                        help='a string to hold the INPUT path and filename if only ONE txt file is processed; enter --file "" or eliminate --file flag to process ALL txt files in input directory; use "" if path and filenames contain spaces')
-    parser.add_argument('--dir', type=str, dest='inputDir', default='',
-                        help='a string to hold the INPUT path of the directory of ALL txt files to be processed; use "" if path contains spaces')
-    parser.add_argument('--out', type=str, dest='outputDir', default='',
-                        help='a string to hold the path of the OUTPUT directory; use "" if path contains spaces')
-    parser.add_argument('--configFileName', type=str, dest='configFileName', default='',
-                        help='a string to hold the configFileName')
-    parser.add_argument('--outfile', type=str, dest='output_file', default='',
-                        help='output file')
 
-    parser.add_argument('--mode', type=str, dest='mode', default='mean',
-                        help='mode with which to calculate sentiment in the sentence: mean or median')
+if __name__ == "__main__":
+    # get arguments from command line
+    parser = argparse.ArgumentParser(description="Sentiment analysis with SentiWordNet")
+    parser.add_argument(
+        "--file",
+        type=str,
+        dest="inputFilename",
+        default="",
+        help='a string to hold the INPUT path and filename if only ONE txt file is processed; enter --file "" or eliminate --file flag to process ALL txt files in input directory; use "" if path and filenames contain spaces',
+    )
+    parser.add_argument(
+        "--dir",
+        type=str,
+        dest="inputDir",
+        default="",
+        help='a string to hold the INPUT path of the directory of ALL txt files to be processed; use "" if path contains spaces',
+    )
+    parser.add_argument(
+        "--out",
+        type=str,
+        dest="outputDir",
+        default="",
+        help='a string to hold the path of the OUTPUT directory; use "" if path contains spaces',
+    )
+    parser.add_argument(
+        "--configFileName", type=str, dest="configFileName", default="", help="a string to hold the configFileName"
+    )
+    parser.add_argument("--outfile", type=str, dest="output_file", default="", help="output file")
+
+    parser.add_argument(
+        "--mode",
+        type=str,
+        dest="mode",
+        default="mean",
+        help="mode with which to calculate sentiment in the sentence: mean or median",
+    )
     args = parser.parse_args()
 
     # run main

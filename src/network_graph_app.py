@@ -30,16 +30,24 @@ def _detect_columns(df):
     col1 = col2 = col3 = date_col = image_col = None
 
     for c, cl in col_lower.items():
-        if col1 is None and ('subject' in cl or cl in ('s', 'source', 'node1', 'from')):
+        if col1 is None and ("subject" in cl or cl in ("s", "source", "node1", "from")):
             col1 = c
-        elif col3 is None and ('object' in cl or cl in ('o', 'target', 'node2', 'to')):
+        elif col3 is None and ("object" in cl or cl in ("o", "target", "node2", "to")):
             col3 = c
-        elif col2 is None and ('verb' in cl or cl in ('v', 'edge', 'relation', 'link', 'relationship')):
+        elif col2 is None and ("verb" in cl or cl in ("v", "edge", "relation", "link", "relationship")):
             col2 = c
-        if date_col is None and ('date' in cl or 'time' in cl or 'year' in cl):
+        if date_col is None and ("date" in cl or "time" in cl or "year" in cl):
             date_col = c
-        if image_col is None and cl in ('image', 'photo', 'picture', 'img', 'portrait',
-                                         'image_url', 'photo_url', 'picture_url'):
+        if image_col is None and cl in (
+            "image",
+            "photo",
+            "picture",
+            "img",
+            "portrait",
+            "image_url",
+            "photo_url",
+            "picture_url",
+        ):
             image_col = c
 
     if not col1 and len(cols) >= 3:
@@ -52,16 +60,15 @@ def _detect_columns(df):
     return col1, col2, col3, date_col, image_col
 
 
-def _build_network_html(inputFilename, outputDir, col1, col2, col3,
-                        date_col=None, image_col=None, top_n_per_role=15):
+def _build_network_html(inputFilename, outputDir, col1, col2, col3, date_col=None, image_col=None, top_n_per_role=15):
     """Build an interactive vis.js network graph and return the HTML path."""
     import json as _json
     import math as _math
 
     try:
-        df = pd.read_csv(inputFilename, encoding='utf-8', on_bad_lines='skip')
+        df = pd.read_csv(inputFilename, encoding="utf-8", on_bad_lines="skip")
     except UnicodeDecodeError:
-        df = pd.read_csv(inputFilename, encoding='ISO-8859-1', on_bad_lines='skip')
+        df = pd.read_csv(inputFilename, encoding="ISO-8859-1", on_bad_lines="skip")
 
     svo_cols = [col1, col2, col3]
     for c in svo_cols:
@@ -75,25 +82,25 @@ def _build_network_html(inputFilename, outputDir, col1, col2, col3,
     node_image = {}
     if _has_images:
         for _, row in df.iterrows():
-            img = str(row.get(image_col, '')).strip()
-            if img and img != 'nan':
+            img = str(row.get(image_col, "")).strip()
+            if img and img != "nan":
                 for sc in [col1, col3]:
-                    val = str(row.get(sc, '')).strip()
-                    if val and val != 'nan' and val not in node_image:
+                    val = str(row.get(sc, "")).strip()
+                    if val and val != "nan" and val not in node_image:
                         node_image[val] = img
 
     _net_cols = list(svo_cols)
     if _has_dates:
         _net_cols.append(date_col)
 
-    net_df = df[_net_cols].dropna(subset=svo_cols, how='all').copy()
+    net_df = df[_net_cols].dropna(subset=svo_cols, how="all").copy()
     for sc in svo_cols:
-        net_df[sc] = net_df[sc].fillna('').astype(str)
+        net_df[sc] = net_df[sc].fillna("").astype(str)
     if net_df.empty:
         raise ValueError("No data rows after filtering")
 
-    palette = {'S': '#E04040', 'V': '#4060E0', 'O': '#30A030'}
-    role_keys = ['S', 'V', 'O']
+    palette = {"S": "#E04040", "V": "#4060E0", "O": "#30A030"}
+    role_keys = ["S", "V", "O"]
     role_labels = [col1, col2, col3]
     role_of = {}
     top_per_role = {}
@@ -105,9 +112,7 @@ def _build_network_html(inputFilename, outputDir, col1, col2, col3,
             if v and v not in role_of:
                 role_of[v] = rk
 
-    mask = net_df.apply(
-        lambda row: all(row[c] in top_per_role[c] or row[c] == ''
-                        for c in svo_cols), axis=1)
+    mask = net_df.apply(lambda row: all(row[c] in top_per_role[c] or row[c] == "" for c in svo_cols), axis=1)
     net_df = net_df[mask]
     if net_df.empty:
         raise ValueError("No data rows after top-N filtering")
@@ -119,7 +124,7 @@ def _build_network_html(inputFilename, outputDir, col1, col2, col3,
         vals = [row[c] for c in svo_cols if row[c]]
         row_date = None
         if _has_dates and pd.notna(row.get(date_col)):
-            row_date = pd.to_datetime(row[date_col], errors='coerce')
+            row_date = pd.to_datetime(row[date_col], errors="coerce")
             if pd.isna(row_date):
                 row_date = None
         for i in range(len(vals) - 1):
@@ -137,7 +142,7 @@ def _build_network_html(inputFilename, outputDir, col1, col2, col3,
     triplet_counts = {}
     for _, row in net_df.iterrows():
         vals = tuple(row[c] for c in svo_cols)
-        if any(v == '' for v in vals):
+        if any(v == "" for v in vals):
             continue
         triplet_counts[vals] = triplet_counts.get(vals, 0) + 1
 
@@ -147,7 +152,7 @@ def _build_network_html(inputFilename, outputDir, col1, col2, col3,
             node_triplets.setdefault(val, []).append(list(triplet) + [cnt])
 
     all_nodes = set()
-    for (s, t) in edges:
+    for s, t in edges:
         all_nodes.add(s)
         all_nodes.add(t)
 
@@ -179,29 +184,47 @@ def _build_network_html(inputFilename, outputDir, col1, col2, col3,
         sz = round(_node_size(freq), 1)
         fsz = max(10, min(22, int(10 + (sz - SIZE_MIN) / (SIZE_MAX - SIZE_MIN) * 12)))
         node_entry = {
-            'id': nid, 'label': n,
-            'color': palette.get(rk, '#888'),
-            'font': {'size': fsz},
-            'size': sz,
-            'title': '{} (freq: {})'.format(n, freq),
-            'role': rk}
+            "id": nid,
+            "label": n,
+            "color": palette.get(rk, "#888"),
+            "font": {"size": fsz},
+            "size": sz,
+            "title": f"{n} (freq: {freq})",
+            "role": rk,
+        }
         if n in node_image:
-            node_entry['shape'] = 'circularImage'
-            node_entry['image'] = node_image[n]
-            node_entry['brokenImage'] = ''
-            node_entry['borderWidth'] = 3
-            node_entry['color'] = {'border': palette.get(rk, '#888'),
-                                   'background': palette.get(rk, '#888')}
+            node_entry["shape"] = "circularImage"
+            node_entry["image"] = node_image[n]
+            node_entry["brokenImage"] = ""
+            node_entry["borderWidth"] = 3
+            node_entry["color"] = {"border": palette.get(rk, "#888"), "background": palette.get(rk, "#888")}
         else:
-            node_entry['shape'] = 'dot'
+            node_entry["shape"] = "dot"
         vis_nodes.append(node_entry)
 
     all_verbs = sorted(set(v for labels in edge_labels.values() for v in labels))
     edge_color_palette = [
-        '#E04040', '#4060E0', '#30A030', '#E0A020', '#9040C0',
-        '#20B0B0', '#E06090', '#808000', '#FF6020', '#6080FF',
-        '#A05030', '#00A060', '#C04080', '#5090A0', '#D0D030',
-        '#8060C0', '#40C080', '#E08040', '#6060A0', '#B04040']
+        "#E04040",
+        "#4060E0",
+        "#30A030",
+        "#E0A020",
+        "#9040C0",
+        "#20B0B0",
+        "#E06090",
+        "#808000",
+        "#FF6020",
+        "#6080FF",
+        "#A05030",
+        "#00A060",
+        "#C04080",
+        "#5090A0",
+        "#D0D030",
+        "#8060C0",
+        "#40C080",
+        "#E08040",
+        "#6060A0",
+        "#B04040",
+    ]
     verb_color_map = {}
     for i, v in enumerate(all_verbs):
         verb_color_map[v] = edge_color_palette[i % len(edge_color_palette)]
@@ -212,39 +235,40 @@ def _build_network_html(inputFilename, outputDir, col1, col2, col3,
         if len(labels_for_edge) == 1:
             ec = verb_color_map[next(iter(labels_for_edge))]
         else:
-            ec = '#aaaaaa'
-        label_str = ', '.join(sorted(labels_for_edge)) if labels_for_edge else ''
-        title_parts = ['{} → {}'.format(s, t)]
+            ec = "#aaaaaa"
+        label_str = ", ".join(sorted(labels_for_edge)) if labels_for_edge else ""
+        title_parts = [f"{s} → {t}"]
         if label_str:
-            title_parts.append('via: {}'.format(label_str))
-        title_parts.append('count: {}'.format(w))
+            title_parts.append(f"via: {label_str}")
+        title_parts.append(f"count: {w}")
         e_entry = {
-            'from': node_id_map[s], 'to': node_id_map[t],
-            'value': w,
-            'title': ' | '.join(title_parts),
-            'label': label_str if len(labels_for_edge) == 1 else '',
-            'color': {'color': ec, 'highlight': '#333333'},
-            'edgeVerb': label_str}
+            "from": node_id_map[s],
+            "to": node_id_map[t],
+            "value": w,
+            "title": " | ".join(title_parts),
+            "label": label_str if len(labels_for_edge) == 1 else "",
+            "color": {"color": ec, "highlight": "#333333"},
+            "edgeVerb": label_str,
+        }
         if _has_dates and (s, t) in edge_dates:
-            e_entry['dates'] = sorted(set(
-                d.strftime('%Y-%m-%d') for d in edge_dates[(s, t)]))
+            e_entry["dates"] = sorted(set(d.strftime("%Y-%m-%d") for d in edge_dates[(s, t)]))
         vis_edges.append(e_entry)
 
     _all_dates_set = set()
     if _has_dates:
         for dlist in edge_dates.values():
             for d in dlist:
-                _all_dates_set.add(d.strftime('%Y-%m-%d'))
+                _all_dates_set.add(d.strftime("%Y-%m-%d"))
         node_dates = {}
         for (s, t), dlist in edge_dates.items():
             for d in dlist:
-                ds = d.strftime('%Y-%m-%d')
+                ds = d.strftime("%Y-%m-%d")
                 node_dates.setdefault(node_id_map[s], set()).add(ds)
                 node_dates.setdefault(node_id_map[t], set()).add(ds)
         for vn in vis_nodes:
-            nid = vn['id']
+            nid = vn["id"]
             if nid in node_dates:
-                vn['dates'] = sorted(node_dates[nid])
+                vn["dates"] = sorted(node_dates[nid])
     _all_dates_sorted = sorted(_all_dates_set) if _all_dates_set else []
 
     js_node_triplets = {}
@@ -254,41 +278,39 @@ def _build_network_html(inputFilename, outputDir, col1, col2, col3,
             trips_sorted = sorted(trips, key=lambda x: -x[-1])[:30]
             js_node_triplets[nid] = trips_sorted
 
-    _role_arrow_label = ' → '.join(role_labels)
-    _role_arrow_short = ' → '.join(role_keys)
+    _role_arrow_label = " → ".join(role_labels)
+    _role_arrow_short = " → ".join(role_keys)
 
     legend_parts = []
     for rk, rl in zip(role_keys, role_labels):
-        legend_parts.append(
-            '<span class="leg" style="background:{}"></span>{}'.format(palette[rk], rl))
+        legend_parts.append(f'<span class="leg" style="background:{palette[rk]}"></span>{rl}')
     if all_verbs:
-        legend_parts.append('&nbsp;&nbsp;|&nbsp;&nbsp;<b>Edges:</b>')
+        legend_parts.append("&nbsp;&nbsp;|&nbsp;&nbsp;<b>Edges:</b>")
         for v in all_verbs[:12]:
-            legend_parts.append(
-                '<span class="leg-e" style="background:{}"></span>{}'.format(verb_color_map[v], v))
+            legend_parts.append(f'<span class="leg-e" style="background:{verb_color_map[v]}"></span>{v}')
         if len(all_verbs) > 12:
-            legend_parts.append('… +{} more'.format(len(all_verbs) - 12))
-    legend_html = '  '.join(legend_parts)
+            legend_parts.append(f"… +{len(all_verbs) - 12} more")
+    legend_html = "  ".join(legend_parts)
 
-    slider_display = 'block' if _has_dates else 'none'
-    network_height = '78vh' if not _has_dates else '70vh'
+    slider_display = "block" if _has_dates else "none"
+    network_height = "78vh" if not _has_dates else "70vh"
 
     _th = []
     for _i, _rc in enumerate(role_labels):
         if _i > 0:
-            _th.append('<th></th>')
-        _th.append('<th>{}</th>'.format(_rc))
-    _th.append('<th>Count</th>')
-    _table_header_html = ''.join(_th)
+            _th.append("<th></th>")
+        _th.append(f"<th>{_rc}</th>")
+    _th.append("<th>Count</th>")
+    _table_header_html = "".join(_th)
 
     _td = []
     for _i, _rc in enumerate(role_labels):
         _css = role_keys[_i].lower()
         if _i > 0:
             _td.append("'<td>&rarr;</td>'")
-        _td.append("'<td class=\"{}\">' + t[{}] + '</td>'".format(_css, _i))
-    _td.append("'<td>' + t[{}] + '</td>'".format(len(svo_cols)))
-    _table_row_js = ' + '.join(_td)
+        _td.append(f"'<td class=\"{_css}\">' + t[{_i}] + '</td>'")
+    _td.append(f"'<td>' + t[{len(svo_cols)}] + '</td>'")
+    _table_row_js = " + ".join(_td)
 
     csv_name = os.path.splitext(os.path.basename(inputFilename))[0]
 
@@ -487,11 +509,12 @@ network.on('click', function(params) {{
         edges_json=_json.dumps(vis_edges),
         triplets_json=_json.dumps(js_node_triplets),
         table_header=_table_header_html,
-        table_row_js=_table_row_js)
+        table_row_js=_table_row_js,
+    )
 
     base = os.path.splitext(os.path.basename(inputFilename))[0]
-    output_file = os.path.join(outputDir, f'{base}_network.html')
-    with open(output_file, 'w', encoding='utf-8') as fh:
+    output_file = os.path.join(outputDir, f"{base}_network.html")
+    with open(output_file, "w", encoding="utf-8") as fh:
         fh.write(html)
     return output_file
 
@@ -500,41 +523,43 @@ network.on('click', function(params) {{
 # Entry point — no GUI, just file picker → instant graph
 # ---------------------------------------------------------------------------
 
+
 def main():
     root = tk.Tk()
     root.withdraw()
 
     csv_path = filedialog.askopenfilename(
-        title='Select CSV file for Network Graph',
-        filetypes=[('CSV files', '*.csv'), ('All files', '*.*')])
+        title="Select CSV file for Network Graph", filetypes=[("CSV files", "*.csv"), ("All files", "*.*")]
+    )
 
     if not csv_path:
         sys.exit(0)
 
     try:
-        df = pd.read_csv(csv_path, encoding='utf-8', on_bad_lines='skip')
+        df = pd.read_csv(csv_path, encoding="utf-8", on_bad_lines="skip")
     except UnicodeDecodeError:
-        df = pd.read_csv(csv_path, encoding='ISO-8859-1', on_bad_lines='skip')
+        df = pd.read_csv(csv_path, encoding="ISO-8859-1", on_bad_lines="skip")
 
     col1, col2, col3, date_col, image_col = _detect_columns(df)
 
     if not col1 or not col2 or not col3:
         from tkinter import messagebox
-        messagebox.showerror('Error',
-            f'Could not detect 3 columns in CSV.\n'
-            f'Found columns: {list(df.columns)}\n\n'
-            f'Expected: Subject/S, Verb/V, Object/O (or at least 3 columns).')
+
+        messagebox.showerror(
+            "Error",
+            f"Could not detect 3 columns in CSV.\n"
+            f"Found columns: {list(df.columns)}\n\n"
+            f"Expected: Subject/S, Verb/V, Object/O (or at least 3 columns).",
+        )
         sys.exit(1)
 
     output_dir = os.path.dirname(csv_path)
 
-    html_path = _build_network_html(
-        csv_path, output_dir, col1, col2, col3,
-        date_col=date_col, image_col=image_col)
+    html_path = _build_network_html(csv_path, output_dir, col1, col2, col3, date_col=date_col, image_col=image_col)
 
-    webbrowser.open('file://' + os.path.abspath(html_path))
+    webbrowser.open("file://" + os.path.abspath(html_path))
     root.destroy()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

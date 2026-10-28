@@ -3,38 +3,38 @@ Author: David Dai December 22nd, 2021
 Edited Roberto Franzosi February/September 2022
 """
 
+import atexit  # a Python module
 import sys
+
 import GUI_util
 import IO_libraries_util
 
-import atexit  # a Python module
 # from NLP_setup_update_util import update_self
 try:
     from pygit2 import Repository
+
     _has_pygit2 = True
 except ImportError:
     _has_pygit2 = False
-import sys
 import os
-import stat
-import tkinter.messagebox as mb
 import shutil
+import stat
 import subprocess
-import tkinter as tk
+import tkinter.messagebox as mb
 
 import IO_user_interface_util
-import config_util
 
-window=GUI_util.window
+window = GUI_util.window
 
-#config_filename has no path;
+# config_filename has no path;
 # config_input_output_numeric_options is set to [0 0,0,0] for GUIs that are placeholders for more specialized GUIs
 #   in these cases (e.g., narrative_analysis_ALL_main, there are no I/O options to save
 # current_config_input_output_alphabetic_options value returned in GUI_util by config_util.read_config_file
 
+
 # called from GUI_util, NLP_welcome_main, and the 3 NLP_setup scripts since they handle their own CLOSE
 def exit_window():
-    global local_release_version, GitHub_release_version # so that it can be used in the sub-function exit_handler()
+    global local_release_version, GitHub_release_version  # so that it can be used in the sub-function exit_handler()
     local_release_version = GUI_util.get_local_release_version()
     GitHub_release_version = GUI_util.get_GitHub_release_version()
 
@@ -72,14 +72,19 @@ def exit_window():
                 # if not "NLP_setup_IO_main.py" in ScriptName:
                 #     print("ScriptName", ScriptName)
                 print(
-                    '\nYour NLP Suite is up-to-date with the latest release available on GitHub (' + GitHub_release_version + ').')
+                    "\nYour NLP Suite is up-to-date with the latest release available on GitHub ("
+                    + GitHub_release_version
+                    + ")."
+                )
         except Exception as e:
             print(str(e))
+
     # when closing NLP Suite via terminal
     atexit.register(exit_handler)
 
     window.destroy()
     sys.exit(0)
+
 
 # called by exit_window
 # returns True when error found
@@ -88,78 +93,113 @@ def update_self(GitHub_release_version):
     Update the current script to the latest version.
     """
 
-    if sys.platform == 'win32':  # Windows
-        url = 'https://git-scm.com/download/win'
-        Git_download = url + '\n\nThe Git website will automatically detect whether your machine is 32-bit or 64-bit on the top line Click here to download the latest...'
+    if sys.platform == "win32":  # Windows
+        url = "https://git-scm.com/download/win"
+        Git_download = (
+            url
+            + "\n\nThe Git website will automatically detect whether your machine is 32-bit or 64-bit on the top line Click here to download the latest..."
+        )
     else:
-        url = 'https://git-scm.com/download/mac'
-        Git_download = url + '\n\nInstall Xcode if you do not have disk space problems; otherwise download the Binary installer.'
+        url = "https://git-scm.com/download/mac"
+        Git_download = (
+            url + "\n\nInstall Xcode if you do not have disk space problems; otherwise download the Binary installer."
+        )
 
-    message_Git = 'The NLP Suite update function relies on Git.\n\nGit is not installed on your machine.\n\nGit can be downloaded at this link ' + Git_download + '\n\nAfter downloading Git, run the downloaded exe file. You need to do this only once.\n\nDo you want to open the Git website now and install it?'
-    message_update = "The NLP Suite was successfully updated to the latest release available on GitHub: " + str(
-        GitHub_release_version) + "\n\nThe next time you fire up the NLP Suite it will use this release."
-
+    message_Git = (
+        "The NLP Suite update function relies on Git.\n\nGit is not installed on your machine.\n\nGit can be downloaded at this link "
+        + Git_download
+        + "\n\nAfter downloading Git, run the downloaded exe file. You need to do this only once.\n\nDo you want to open the Git website now and install it?"
+    )
+    message_update = (
+        "The NLP Suite was successfully updated to the latest release available on GitHub: "
+        + str(GitHub_release_version)
+        + "\n\nThe next time you fire up the NLP Suite it will use this release."
+    )
 
     # testing for Git
     # https: // stackoverflow.com / questions / 11113896 / use - git - commands - within - python - code
     try:
-        subprocess.call(["git", "pull"]) # subprocess.call(["git", "pull"], check=True, stdout=subprocess.PIPE)
+        subprocess.call(["git", "pull"])  # subprocess.call(["git", "pull"], check=True, stdout=subprocess.PIPE)
     except:
-        if not IO_libraries_util.open_url('Git', url, ask_to_open=True, message_title='Git installation', message=message_Git):
+        if not IO_libraries_util.open_url(
+            "Git", url, ask_to_open=True, message_title="Git installation", message=message_Git
+        ):
             return True
     if not _has_pygit2:
-        answer = mb.askyesno(title='Warning',
-                       message="The pygit2 library is not available. Auto-update is disabled.\n\nYou can update the NLP Suite manually by downloading the latest release from GitHub.\n\nDo you want to see instructions on how to install pygit2?")
+        answer = mb.askyesno(
+            title="Warning",
+            message="The pygit2 library is not available. Auto-update is disabled.\n\nYou can update the NLP Suite manually by downloading the latest release from GitHub.\n\nDo you want to see instructions on how to install pygit2?",
+        )
         if answer:
-            mb.showinfo(title='How to install pygit2',
-                        message="To install pygit2:\n\n"
-                                "1. Open a command prompt / terminal\n"
-                                "2. Activate the NLP environment:\n"
-                                "       conda activate NLP\n"
-                                "3. Install pygit2:\n"
-                                "       pip install pygit2\n"
-                                "4. Restart the NLP Suite\n\n"
-                                "With pygit2 installed, the NLP Suite will automatically check for and pull updates from GitHub when you close the application.")
+            mb.showinfo(
+                title="How to install pygit2",
+                message="To install pygit2:\n\n"
+                "1. Open a command prompt / terminal\n"
+                "2. Activate the NLP environment:\n"
+                "       conda activate NLP\n"
+                "3. Install pygit2:\n"
+                "       pip install pygit2\n"
+                "4. Restart the NLP Suite\n\n"
+                "With pygit2 installed, the NLP Suite will automatically check for and pull updates from GitHub when you close the application.",
+            )
         return True
     try:
-        if Repository('.').head.shorthand == 'current-stable':
+        if Repository(".").head.shorthand == "current-stable":
             print("Updating the NLP Suite...")
             os.system("git add -A . ")
             os.system("git stash")
             os.system("git pull -f origin")
             print(message_update)
-            mb.showwarning(title='Warning',
-                           message=message_update)
+            mb.showwarning(title="Warning", message=message_update)
             return True
         else:
-            print("\nYou are not working on the 'current-stable' branch of the NLP Suite. You are on the '" + Repository('.').head.shorthand + "' branch. Update aborted to avoid overwriting your branch.")
+            print(
+                "\nYou are not working on the 'current-stable' branch of the NLP Suite. You are on the '"
+                + Repository(".").head.shorthand
+                + "' branch. Update aborted to avoid overwriting your branch."
+            )
             return True
     except Exception as e:
-        print('Git fatal error:' + str(e))
-        mb.showwarning(title='Git fatal error',
-                   message="Git encountered an error in executing the command 'Repository('.').head.shorthand.\n\nError: " + str(e) + "\n\nUpdate aborted.")
+        print("Git fatal error:" + str(e))
+        mb.showwarning(
+            title="Git fatal error",
+            message="Git encountered an error in executing the command 'Repository('.').head.shorthand.\n\nError: "
+            + str(e)
+            + "\n\nUpdate aborted.",
+        )
 
         # removes git
         NLPPath = os.path.normpath(os.path.dirname(os.path.abspath(__file__)) + os.sep + os.pardir)
-        git_folder = NLPPath + os.sep + '.git'
+        git_folder = NLPPath + os.sep + ".git"
         # check that .git folder exists
         if os.path.exists(git_folder):
             # .git is readonly need to change to avoid permission error
-            os.chmod(git_folder, stat.S_IRWXU) # O Others U Owner
+            os.chmod(git_folder, stat.S_IRWXU)  # O Others U Owner
             try:
                 shutil.rmtree(git_folder)
                 if os.path.exists(git_folder):
-                    print("The .git folder STILL exists after remove. The delete .git folder did not work.\n\nPlease, delete manually the .git folder and try again.\n\nUpdate aborted.")
+                    print(
+                        "The .git folder STILL exists after remove. The delete .git folder did not work.\n\nPlease, delete manually the .git folder and try again.\n\nUpdate aborted."
+                    )
                     return True
             except Exception as e:
-                if 'PermissionError' in str(e):
-                    message = "The algorithm encountered a permission error in deleting the .git subfolder of your main NLP Suite folder (" + NLPPath + ").\n\nPlease, make sure that you do not have the ,git folder open and try again.\n\nYou may also delete manually the .git folder and try again.\n\nUpdate aborted."
+                if "PermissionError" in str(e):
+                    message = (
+                        "The algorithm encountered a permission error in deleting the .git subfolder of your main NLP Suite folder ("
+                        + NLPPath
+                        + ").\n\nPlease, make sure that you do not have the ,git folder open and try again.\n\nYou may also delete manually the .git folder and try again.\n\nUpdate aborted."
+                    )
                     print(message)
-                    mb.showwarning(title='.git folder permission error',
-                                   message=message)
+                    mb.showwarning(title=".git folder permission error", message=message)
 
-        IO_user_interface_util.timed_alert('', 3000, '.git reinitialization and files update',
-                                           'Started running NLP Suite auto-update at', True, 'Please be patient...')
+        IO_user_interface_util.timed_alert(
+            "",
+            3000,
+            ".git reinitialization and files update",
+            "Started running NLP Suite auto-update at",
+            True,
+            "Please be patient...",
+        )
 
         try:
             # reinitializes git & pulls current-stable

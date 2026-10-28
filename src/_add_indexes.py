@@ -1,7 +1,10 @@
 """Add indexes to an existing PCACE SQLite database for query performance."""
-import sqlite3, sys, os
 
-db = sys.argv[1] if len(sys.argv) > 1 else 'C:/Users/rfranzo/Desktop/PCACE-lynching_xlsx/PCACE-lynching_xlsx.sqlite'
+import os
+import sqlite3
+import sys
+
+db = sys.argv[1] if len(sys.argv) > 1 else "C:/Users/rfranzo/Desktop/PCACE-lynching_xlsx/PCACE-lynching_xlsx.sqlite"
 if not os.path.exists(db):
     print("Database not found:", db)
     sys.exit(1)

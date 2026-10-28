@@ -5,12 +5,12 @@
 #
 # Usage:  python SRL_worker.py <input_file_or_dir> <output_csv> [model_path]
 
-import sys
-import os
 import csv
 import glob
 import html
+import os
 import re
+import sys
 import urllib.parse
 
 # NOTE: transformer_srl is imported LAZILY inside main() (not at module top), so this script stays
@@ -18,8 +18,9 @@ import urllib.parse
 # only loads when the worker is actually RUN as a subprocess in the isolated Python 3.8 SRL env.
 
 # Fallback only; SRL_util passes the resolved model path as argv[3]. Default to <NLP-Suite>/lib/SRL/.
-DEFAULT_MODEL = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-                             "lib", "SRL", "srl_bert_base_conll2012.tar.gz")
+DEFAULT_MODEL = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "lib", "SRL", "srl_bert_base_conll2012.tar.gz"
+)
 
 # Columns: PropBank label -> human-readable header
 ROLE_COLUMNS = [
@@ -31,32 +32,96 @@ ROLE_COLUMNS = [
     ("ARGM-MNR", "How (ARGM-MNR)"),
     ("ARGM-CAU", "Why (ARGM-CAU)"),
 ]
-HEADERS = ["Document", "Date", "Sentence ID", "Sentence", "Predicate", "Frame", "VerbNet class", "FrameNet frame"] + \
-          [h for _, h in ROLE_COLUMNS] + ["Refined roles", "Description"]
+HEADERS = (
+    ["Document", "Date", "Sentence ID", "Sentence", "Predicate", "Frame", "VerbNet class", "FrameNet frame"]
+    + [h for _, h in ROLE_COLUMNS]
+    + ["Refined roles", "Description"]
+)
 
 # --- Heuristic refined-role enrichment (PropBank numbered args -> fairly-accurate thematic-role
 # names, alongside the ARG columns). Not a substitute for VerbNet/VerbAtlas, but reliable for
 # preposition-marked roles (Recipient/Beneficiary/Source/Instrument/Location) and experiencer-subject
 # verbs. ARG0->Agent (Experiencer for psych/perception verbs); ARG1->Patient/Theme. ---
 PSYCH_VERBS = {
-    "see", "hear", "feel", "smell", "taste", "notice", "perceive", "sense", "observe", "watch",
-    "fear", "love", "hate", "like", "dislike", "want", "wish", "need", "know", "believe", "think",
-    "understand", "realize", "remember", "forget", "recognize", "doubt", "suspect", "enjoy",
-    "prefer", "admire", "envy", "pity", "regret", "miss", "appreciate", "dread", "hope", "expect",
-    "imagine", "suppose", "consider", "trust", "value", "resent", "adore", "loathe", "crave",
+    "see",
+    "hear",
+    "feel",
+    "smell",
+    "taste",
+    "notice",
+    "perceive",
+    "sense",
+    "observe",
+    "watch",
+    "fear",
+    "love",
+    "hate",
+    "like",
+    "dislike",
+    "want",
+    "wish",
+    "need",
+    "know",
+    "believe",
+    "think",
+    "understand",
+    "realize",
+    "remember",
+    "forget",
+    "recognize",
+    "doubt",
+    "suspect",
+    "enjoy",
+    "prefer",
+    "admire",
+    "envy",
+    "pity",
+    "regret",
+    "miss",
+    "appreciate",
+    "dread",
+    "hope",
+    "expect",
+    "imagine",
+    "suppose",
+    "consider",
+    "trust",
+    "value",
+    "resent",
+    "adore",
+    "loathe",
+    "crave",
 }
 PREP_ROLE = {
-    "to": "Recipient", "for": "Beneficiary", "from": "Source", "with": "Instrument",
-    "as": "Attribute", "into": "Goal", "onto": "Goal", "toward": "Goal", "towards": "Goal",
-    "in": "Location", "at": "Location", "on": "Location", "over": "Location", "under": "Location",
-    "near": "Location", "inside": "Location", "outside": "Location",
+    "to": "Recipient",
+    "for": "Beneficiary",
+    "from": "Source",
+    "with": "Instrument",
+    "as": "Attribute",
+    "into": "Goal",
+    "onto": "Goal",
+    "toward": "Goal",
+    "towards": "Goal",
+    "in": "Location",
+    "at": "Location",
+    "on": "Location",
+    "over": "Location",
+    "under": "Location",
+    "near": "Location",
+    "inside": "Location",
+    "outside": "Location",
 }
 ARGM_ROLE = {
-    "ARGM-LOC": "Location", "ARGM-TMP": "Time", "ARGM-MNR": "Manner", "ARGM-CAU": "Cause",
-    "ARGM-DIR": "Direction", "ARGM-GOL": "Goal", "ARGM-PRP": "Purpose", "ARGM-EXT": "Extent",
+    "ARGM-LOC": "Location",
+    "ARGM-TMP": "Time",
+    "ARGM-MNR": "Manner",
+    "ARGM-CAU": "Cause",
+    "ARGM-DIR": "Direction",
+    "ARGM-GOL": "Goal",
+    "ARGM-PRP": "Purpose",
+    "ARGM-EXT": "Extent",
 }
-REFINED_ORDER = ["ARG0", "ARG1", "ARG2", "ARG3", "ARG4",
-                 "ARGM-LOC", "ARGM-TMP", "ARGM-MNR", "ARGM-CAU"]
+REFINED_ORDER = ["ARG0", "ARG1", "ARG2", "ARG3", "ARG4", "ARGM-LOC", "ARGM-TMP", "ARGM-MNR", "ARGM-CAU"]
 
 
 def load_semlink_map(path):
@@ -69,9 +134,10 @@ def load_semlink_map(path):
         return role_map, class_map
     try:
         import json
+
         data = json.load(open(path, encoding="utf-8"))
         for sense, classes in data.items():
-            for vn_class, argmap in classes.items():     # take the first VerbNet class for this sense
+            for vn_class, argmap in classes.items():  # take the first VerbNet class for this sense
                 class_map[sense] = vn_class
                 for arg, role in argmap.items():
                     if role:
@@ -95,26 +161,27 @@ def build_sense_frame_map(pb_vn_path, vn_fn_path, fn_lemma_path):
         return frame_map, {}
     try:
         import json
+
         pb = json.load(open(pb_vn_path, encoding="utf-8"))
         vf = json.load(open(vn_fn_path, encoding="utf-8"))
         fl = json.load(open(fn_lemma_path, encoding="utf-8")) if fn_lemma_path and os.path.exists(fn_lemma_path) else {}
         for sense, classes in pb.items():
             lemma = sense.split(".")[0]
             frame = None
-            for vc in classes:                       # try ALL the sense's VerbNet classes
+            for vc in classes:  # try ALL the sense's VerbNet classes
                 frames = vf.get(vc + "-" + lemma)
                 if frames:
                     frame = frames[0]
                     break
             if not frame:
-                frame = fl.get(lemma)                # quality-gated unambiguous-lemma fallback
+                frame = fl.get(lemma)  # quality-gated unambiguous-lemma fallback
             if frame:
                 frame_map[sense] = frame
     except Exception as e:
         sys.stderr.write("Could not build FrameNet frame map: %s\n" % e)
         return {}, {}
     sys.stderr.write("Loaded %d FrameNet frame mappings\n" % len(frame_map))
-    return frame_map, fl   # fl (unambiguous lemma->frame) is used as a surface-lemma fallback at run time
+    return frame_map, fl  # fl (unambiguous lemma->frame) is used as a surface-lemma fallback at run time
 
 
 def _mapped_role(role_map, sense, label):
@@ -134,7 +201,7 @@ def refine_role(label, text, predicate_lemma, sense=None, role_map=None):
         prep_role = PREP_ROLE.get(text.strip().split()[0].lower())
     if mapped:
         if prep_role and prep_role.lower() != mapped.lower():
-            return "%s / %s" % (mapped, prep_role)   # both: VerbNet frame role + preposition cue
+            return "%s / %s" % (mapped, prep_role)  # both: VerbNet frame role + preposition cue
         return mapped
     if label == "ARG0":
         return "Experiencer" if predicate_lemma in PSYCH_VERBS else "Agent"
@@ -177,6 +244,7 @@ def _get_nlp():
     if _NLP is None:
         try:
             import spacy
+
             _NLP = spacy.load("en_core_web_sm", disable=["tagger", "ner", "parser"])
             _NLP.add_pipe(_NLP.create_pipe("sentencizer"))
         except Exception:
@@ -193,6 +261,7 @@ def sentence_split(text):
         except Exception:
             pass
     import re
+
     return [s.strip() for s in re.split(r"(?<=[.!?])\s+", text) if s.strip()]
 
 
@@ -220,10 +289,10 @@ def gather_input_files(input_path):
 def extract_date(filename):
     """Pull a date embedded in a filename (e.g. '..._02-13-2015.txt') and return it as mm-dd-yyyy,
     the format the Suite's network/Gephi date handling parses. Returns '' if no date is found."""
-    m = re.search(r'(\d{1,2})[-_/.](\d{1,2})[-_/.](\d{4})', filename)
+    m = re.search(r"(\d{1,2})[-_/.](\d{1,2})[-_/.](\d{4})", filename)
     if m:
         return "%s-%s-%s" % (m.group(1), m.group(2), m.group(3))
-    m = re.search(r'(\d{4})[-_/.](\d{1,2})[-_/.](\d{1,2})', filename)  # yyyy-mm-dd -> mm-dd-yyyy
+    m = re.search(r"(\d{4})[-_/.](\d{1,2})[-_/.](\d{1,2})", filename)  # yyyy-mm-dd -> mm-dd-yyyy
     if m:
         return "%s-%s-%s" % (m.group(2), m.group(3), m.group(1))
     return ""
@@ -243,7 +312,8 @@ def write_html_duplicate(html_dir, doc_name, sentences):
     Returns the html file path. The sentence ids (s1, s2, ...) match the Sentence ID in the CSV."""
     html_path = os.path.join(html_dir, doc_name + ".html")
     parts = [
-        "<!DOCTYPE html>", "<html><head><meta charset='utf-8'>",
+        "<!DOCTYPE html>",
+        "<html><head><meta charset='utf-8'>",
         "<title>" + html.escape(doc_name) + "</title>",
         "<style>",
         "body{font-family:Georgia,serif;line-height:1.7;max-width:820px;margin:2em auto;padding:0 1em;color:#222;}",
@@ -267,7 +337,8 @@ def write_html_duplicate(html_dir, doc_name, sentences):
         "if(!id)return;var e=document.getElementById(id);"
         "if(e){e.scrollIntoView({block:'center'});e.classList.remove('hl');"
         "void e.offsetWidth;e.classList.add('hl');}}"
-        "addEventListener('DOMContentLoaded',goS);addEventListener('load',goS);addEventListener('hashchange',goS);</script>")
+        "addEventListener('DOMContentLoaded',goS);addEventListener('load',goS);addEventListener('hashchange',goS);</script>"
+    )
     parts.append("</body></html>")
     with open(html_path, "w", encoding="utf-8") as out:
         out.write("\n".join(parts))
@@ -279,8 +350,7 @@ def write_html_duplicate(html_dir, doc_name, sentences):
     main_url = "file:///" + urllib.parse.quote(os.path.abspath(html_path).replace("\\", "/"), safe="/:")
     for i in range(1, len(sentences) + 1):
         with open(redirector_path(html_path, i), "w", encoding="utf-8") as r:
-            r.write('<!DOCTYPE html><meta charset="utf-8">'
-                    '<script>location.replace("%s#s%d")</script>' % (main_url, i))
+            r.write('<!DOCTYPE html><meta charset="utf-8"><script>location.replace("%s#s%d")</script>' % (main_url, i))
     return html_path
 
 
@@ -298,7 +368,8 @@ def dress_html_anchor_link(html_path, sid):
     strips '#' from links, and the browser ignores '?query' for local file:// pages - but a real
     in-browser navigation to #sN works."""
     url = "file:///" + urllib.parse.quote(
-        os.path.abspath(redirector_path(html_path, sid)).replace("\\", "/"), safe="/:")
+        os.path.abspath(redirector_path(html_path, sid)).replace("\\", "/"), safe="/:"
+    )
     link = '=hyperlink("' + url + '")'
     return link if len(link) <= 255 else os.path.basename(html_path)
 
@@ -320,9 +391,11 @@ def main():
     _model_dir = os.path.dirname(os.path.abspath(model_path))
     role_map, class_map = load_semlink_map(os.path.join(_model_dir, "pb-vn2.json"))
     # FrameNet frame per predicate: SemLink chain (pb-vn2 -> vn-fn2) + quality-gated lemma fallback.
-    frame_map, fl_map = build_sense_frame_map(os.path.join(_model_dir, "pb-vn2.json"),
-                                              os.path.join(_model_dir, "vn-fn2.json"),
-                                              os.path.join(_model_dir, "fn_lemma_frame.json"))
+    frame_map, fl_map = build_sense_frame_map(
+        os.path.join(_model_dir, "pb-vn2.json"),
+        os.path.join(_model_dir, "vn-fn2.json"),
+        os.path.join(_model_dir, "fn_lemma_frame.json"),
+    )
 
     files = gather_input_files(input_path)
     if not files:
@@ -344,13 +417,13 @@ def main():
     cuda_device = -1
     try:
         import torch
+
         if torch.cuda.is_available():
             cuda_device = 0
             sys.stderr.write("SRL: CUDA GPU detected -- running on GPU.\n")
     except Exception:
         pass
-    predictor = predictors.SrlTransformersPredictor.from_path(model_path, "transformer_srl",
-                                                              cuda_device=cuda_device)
+    predictor = predictors.SrlTransformersPredictor.from_path(model_path, "transformer_srl", cuda_device=cuda_device)
 
     def _rows_for(res, doc_link, doc_date, sid, sentence):
         # Build the CSV rows for ONE sentence's SRL result (one row per predicate/verb). Identical
@@ -393,7 +466,7 @@ def main():
     # PASS 1: split every document into sentences and write its HTML duplicate, collecting one
     # prediction "unit" per sentence. Batching the model over many sentences at once (PASS 2) is the
     # real speedup -- a per-sentence predict() call pays the full model + AllenNLP overhead every time.
-    units = []   # (doc_link, doc_date, sid, sentence)
+    units = []  # (doc_link, doc_date, sid, sentence)
     for f in files:
         doc_name = os.path.basename(f)
         doc_date = extract_date(doc_name)
@@ -415,11 +488,12 @@ def main():
     BATCH = 32
     total = len(units)
     can_batch = hasattr(predictor, "predict_batch_json")
-    sys.stderr.write("SRL: %d sentences to process%s...\n"
-                     % (total, "" if can_batch else " (per-sentence: batch API unavailable)"))
+    sys.stderr.write(
+        "SRL: %d sentences to process%s...\n" % (total, "" if can_batch else " (per-sentence: batch API unavailable)")
+    )
     rows = []
     for i in range(0, total, BATCH):
-        chunk = units[i:i + BATCH]
+        chunk = units[i : i + BATCH]
         preds = None
         if can_batch:
             try:

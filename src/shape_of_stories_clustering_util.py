@@ -1,16 +1,16 @@
 import csv
-from tqdm import tqdm
+import os.path
+import re  # ANGEL
+
+from matplotlib import pyplot as plt
 import numpy as np
+from scipy.cluster.hierarchy import dendrogram
 from scipy.linalg import svd as sp_svd
 from sklearn.cluster import AgglomerativeClustering
 from sklearn.decomposition import NMF
-from scipy.cluster.hierarchy import dendrogram, linkage
-from matplotlib import pyplot as plt
-import os.path
-import re #ANGEL
+from tqdm import tqdm
 
 import IO_csv_util
-import IO_user_interface_util
 import shape_of_stories_vectorizer_util as vec
 import shape_of_stories_visualization_util as viz
 
@@ -18,7 +18,6 @@ import shape_of_stories_visualization_util as viz
 class SVDClustering:
     def __init__(self, n_modes):
         self.n_modes = n_modes
-        return
 
     @staticmethod
     def reweigh_vecs(vecs, cluster_ids, weights):
@@ -36,8 +35,7 @@ class SVDClustering:
         mean_vector = np.array(vectors).mean(axis=1)
         assert mean_vector.shape[0] >= self.n_modes  # the number of modes MUST be <= the vector size!!
         # subtract the feature-wise mean to each of the vector so that each feature has mean 0
-        normalized_vecs = np.array(vectors) - np.tile(mean_vector,
-                                                      (vectors.shape[1], 1)).transpose()
+        normalized_vecs = np.array(vectors) - np.tile(mean_vector, (vectors.shape[1], 1)).transpose()
         # compute svd
         U, s, VT = sp_svd(normalized_vecs)
         # s is a vector containing the coefficients of the max number of modes in VT
@@ -47,12 +45,12 @@ class SVDClustering:
 
         # we can use a shortcut to reconstruct the initial matrix normalized_vecs using a number of components
         # (aka modes) which is less than the number of the original ones.
-        w = np.dot(U[:, :self.n_modes], np.diag(s[0:self.n_modes]))
+        w = np.dot(U[:, : self.n_modes], np.diag(s[0 : self.n_modes]))
         w_abs = np.abs(w)
-        w_normalized = np.multiply(w, np.tile(1. / w_abs.sum(axis=1), (self.n_modes, 1)).transpose())
+        w_normalized = np.multiply(w, np.tile(1.0 / w_abs.sum(axis=1), (self.n_modes, 1)).transpose())
 
-        pos_modes = VT[:self.n_modes]
-        neg_modes = -VT[:self.n_modes]
+        pos_modes = VT[: self.n_modes]
+        neg_modes = -VT[: self.n_modes]
 
         # here I (Andrew Reagan) group the normalized vectors since I plot them with the modes which are computed on them,
         # see Appendix E of reference paper. In particular, the legend of fig. S8.
@@ -64,7 +62,15 @@ class SVDClustering:
         # as said in the paper, normalize the vectors by the weights of the modes in W
         pos_vector_clusters = self.reweigh_vecs(normalized_vecs, pos_clusters_indices, w)
         neg_vector_clusters = self.reweigh_vecs(normalized_vecs, neg_clusters_indices, w)
-        return pos_vector_clusters, pos_clusters_indices, pos_modes, neg_vector_clusters, neg_clusters_indices, neg_modes
+        return (
+            pos_vector_clusters,
+            pos_clusters_indices,
+            pos_modes,
+            neg_vector_clusters,
+            neg_clusters_indices,
+            neg_modes,
+        )
+
 
 class NMFClustering:
     def __init__(self, n_clusters, max_iter_nmf=1000):
@@ -93,8 +99,9 @@ class NMFClustering:
         """
         assert self.n_clusters >= 1
         assert self.n_clusters < len(vectors)
-        model = NMF(n_components=self.n_clusters, init='random', random_state=0, max_iter=self.max_iter_nmf,
-                    solver='mu')
+        model = NMF(
+            n_components=self.n_clusters, init="random", random_state=0, max_iter=self.max_iter_nmf, solver="mu"
+        )
         W = model.fit_transform(vectors)
         # H = model.components_.T
 
@@ -102,7 +109,7 @@ class NMFClustering:
         clusters_indices = self.group_elements(W)
         cluster_ids = list(set(clusters_indices))
         # groups the vectors in their respective clusters
-        vector_clusters = [[] for _ in range(cluster_ids[0], cluster_ids[len(cluster_ids)-1]+1)]
+        vector_clusters = [[] for _ in range(cluster_ids[0], cluster_ids[len(cluster_ids) - 1] + 1)]
         for i in range(len(vectors)):
             cluster_idx = clusters_indices[i]
             vector_clusters[cluster_idx].append(vectors[i])
@@ -110,12 +117,12 @@ class NMFClustering:
 
 
 class Clustering:
-    def __init__(self, n_clust, clustering_alg='ward'):
+    def __init__(self, n_clust, clustering_alg="ward"):
         # self.dist_thr = dist_thr
         self.n_clust = n_clust
         self.clustering_alg = clustering_alg
 
-    def get_distances(self, X, model, mode='max'):
+    def get_distances(self, X, model, mode="max"):
         distances = []
         weights = []
         children = model.children_
@@ -143,15 +150,15 @@ class Clustering:
             newChild_id = X.shape[0] - 1
 
             # How to deal with a higher level cluster merge with lower distance:
-            if mode == 'l2':  # Increase the higher level cluster size suing an l2 norm
-                added_dist = (c1Dist ** 2 + c2Dist ** 2) ** 0.5
-                dNew = (d ** 2 + added_dist ** 2) ** 0.5
-            elif mode == 'max':  # If the previrous clusters had higher distance, use that one
+            if mode == "l2":  # Increase the higher level cluster size suing an l2 norm
+                added_dist = (c1Dist**2 + c2Dist**2) ** 0.5
+                dNew = (d**2 + added_dist**2) ** 0.5
+            elif mode == "max":  # If the previrous clusters had higher distance, use that one
                 dNew = max(d, c1Dist, c2Dist)
-            elif mode == 'actual':  # Plot the actual distance.
+            elif mode == "actual":  # Plot the actual distance.
                 dNew = d
 
-            wNew = (c1W + c2W)
+            wNew = c1W + c2W
             distCache[newChild_id] = dNew
             weightCache[newChild_id] = wNew
 
@@ -168,7 +175,7 @@ class Clustering:
         """
         assert self.n_clust >= 1
         assert self.n_clust < len(vectors)
-        cluster = AgglomerativeClustering(n_clusters=self.n_clust, affinity='euclidean', linkage = 'ward')
+        cluster = AgglomerativeClustering(n_clusters=self.n_clust, affinity="euclidean", linkage="ward")
         cluster.fit_predict(vectors)
         clusters_indices = cluster.labels_
         # computes the complete clustering of the vectors
@@ -179,13 +186,13 @@ class Clustering:
         """
 
         # visualize dendrogram
-        plt.title('Hierarchical Clustering Dendrogram')
+        plt.title("Hierarchical Clustering Dendrogram")
         distance, weight = self.get_distances(vectors, cluster)
         linkage_matrix = np.column_stack([cluster.children_, distance, weight]).astype(float)
         dendrogram(linkage_matrix)
         plt.xlabel("Index of Documents")
         plt.ylabel("Distance")
-        DendogramFilename=os.path.join(outputDir, "SOS_HC_dendrogram.png")
+        DendogramFilename = os.path.join(outputDir, "SOS_HC_dendrogram.png")
         plt.savefig(DendogramFilename)
         plt.close()
 
@@ -201,7 +208,7 @@ class Clustering:
 
 def get_v_clusters_from_cluster_indices(vectors, clusters_indices):
     cluster_ids = list(set(clusters_indices))
-    vector_clusters = [[] for _ in range(cluster_ids[0], cluster_ids[len(cluster_ids)-1]+1)]
+    vector_clusters = [[] for _ in range(cluster_ids[0], cluster_ids[len(cluster_ids) - 1] + 1)]
     for i in range(len(vectors)):
         cluster_idx = clusters_indices[i]
         vector_clusters[cluster_idx].append(vectors[i])
@@ -209,7 +216,9 @@ def get_v_clusters_from_cluster_indices(vectors, clusters_indices):
 
 
 # return cluster_file. key: cluster ID, value: (document name, sentiment vector)
-def processCluster(cluster_indices,scoresFile_list, file_list, sentiment_vectors, rec_n_clusters, outputFile, inputDir):#Angel
+def processCluster(
+    cluster_indices, scoresFile_list, file_list, sentiment_vectors, rec_n_clusters, outputFile, inputDir
+):  # Angel
     cluster_file = {}
     for i in range(len(cluster_indices)):
         if cluster_indices[i] in cluster_file:
@@ -217,7 +226,7 @@ def processCluster(cluster_indices,scoresFile_list, file_list, sentiment_vectors
         else:
             cluster_file[cluster_indices[i]] = [(file_list[i], sentiment_vectors[i])]
     # write to csv
-    with open(outputFile, 'w',newline='', encoding='utf-8',errors='ignore') as csvfile:
+    with open(outputFile, "w", newline="", encoding="utf-8", errors="ignore") as csvfile:
         fieldnames = ["Cluster ID", "Sentiment Score File Name", "Original File Name"]
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
@@ -227,16 +236,23 @@ def processCluster(cluster_indices,scoresFile_list, file_list, sentiment_vectors
                 documents = cluster_file[i]
             except:
                 continue
-            for each in documents: #each: (narratiefile, sentiment_vector)
-                #===============ANGEL==============
-                match=re.search("^=hyperlink", each[0])
+            for each in documents:  # each: (narratiefile, sentiment_vector)
+                # ===============ANGEL==============
+                match = re.search("^=hyperlink", each[0])
                 if match:
-                    orgFile=IO_csv_util.undressFilenameForCSVHyperlink(each[0])
+                    orgFile = IO_csv_util.undressFilenameForCSVHyperlink(each[0])
                 else:
-                    orgFile=each[0]
-                scFile=scoresFile_list[str(each[0])]
-                writer.writerow({'Cluster ID': "Cluster " + str(i + 1), "Sentiment Score File Name": IO_csv_util.dressFilenameForCSVHyperlink(scFile), "Original File Name": IO_csv_util.dressFilenameForCSVHyperlink(orgFile)})
+                    orgFile = each[0]
+                scFile = scoresFile_list[str(each[0])]
+                writer.writerow(
+                    {
+                        "Cluster ID": "Cluster " + str(i + 1),
+                        "Sentiment Score File Name": IO_csv_util.dressFilenameForCSVHyperlink(scFile),
+                        "Original File Name": IO_csv_util.dressFilenameForCSVHyperlink(orgFile),
+                    }
+                )
     return cluster_file
+
 
 def update_Ct_St(sample, H, C_t, S_t):
     for i in range(S_t.shape[0]):
@@ -257,8 +273,9 @@ def update_Ct_St(sample, H, C_t, S_t):
             for idx_2 in cluster:
                 C_t[idx_1][idx_2] += 1
                 if S_t[idx_1][idx_2] == 0:
-                    print('ERROR' + '\n')
+                    print("ERROR" + "\n")
     return C_t, S_t
+
 
 def group_elements(H):
     clusters = {}
@@ -276,6 +293,7 @@ def group_elements(H):
         clusters[best_cl].append(row)  # append document indexes in columns of A
     return clusters
 
+
 def compute_consensus_matrix(Ct_all, St_all):
     C = np.zeros(shape=(Ct_all.shape[0], Ct_all.shape[1]))
     for i in range(Ct_all.shape[0]):
@@ -289,13 +307,14 @@ def compute_consensus_matrix(Ct_all, St_all):
                 C[i][j] = c_ij_t / s_ij_t
     return C
 
+
 def compute_dispersion_coeff(consensus_matrix):
     n = consensus_matrix.shape[0]
     total = 0
     for i in range(n):
         for j in range(n):
             total += 4 * (consensus_matrix[i][j] - 0.5) ** 2
-    return total / (n ** 2)
+    return total / (n**2)
 
 
 def estimate_best_k(document_matrix, output_dir, filesToOpen):
@@ -328,7 +347,7 @@ def estimate_best_k(document_matrix, output_dir, filesToOpen):
                 tmp_A.append(A.T[d])
 
             tmp_A = np.array(tmp_A).T
-            model = NMF(n_components=groups_number, init='random', random_state=0, max_iter=max_iter_nmf, solver='mu')
+            model = NMF(n_components=groups_number, init="random", random_state=0, max_iter=max_iter_nmf, solver="mu")
             tmp_W = model.fit_transform(tmp_A)
             tmp_H = model.components_.T
 
@@ -346,7 +365,13 @@ def estimate_best_k(document_matrix, output_dir, filesToOpen):
     x_val = []
     d_coeff_vals = []
     avg_empty_cluster = []
-    with open(os.path.join(output_dir, 'best_topic_estimation_stats.csv'), "w", newline='', encoding='utf-8', errors='surrogateescape') as f:
+    with open(
+        os.path.join(output_dir, "best_topic_estimation_stats.csv"),
+        "w",
+        newline="",
+        encoding="utf-8",
+        errors="surrogateescape",
+    ) as f:
         field_names = ["topic number", "dispersion coefficient", "avg. number of empty clusters over total"]
         writer = csv.DictWriter(f, fieldnames=field_names)
         writer.writeheader()
@@ -354,22 +379,29 @@ def estimate_best_k(document_matrix, output_dir, filesToOpen):
             x_val.append(t_num)
             d_coeff_vals.append(d_coeff)
             avg_empty_cluster.append(avg_n_empty_clust_by_top_num[t_num] / t_num)
-            writer.writerow({"topic number": t_num, "dispersion coefficient": d_coeff, "avg. number of empty clusters over total": avg_n_empty_clust_by_top_num[t_num] / t_num})
+            writer.writerow(
+                {
+                    "topic number": t_num,
+                    "dispersion coefficient": d_coeff,
+                    "avg. number of empty clusters over total": avg_n_empty_clust_by_top_num[t_num] / t_num,
+                }
+            )
     # plot figures
-    plt.scatter(x_val, d_coeff_vals, color = "black", s=15)
+    plt.scatter(x_val, d_coeff_vals, color="black", s=15)
     plt.title("dispersion coefficient vs topic number")
-    plt.savefig(os.path.join(output_dir, 'dispersion coefficient vs topic number.png'))
-    filesToOpen.append(os.path.join(output_dir, 'dispersion coefficient vs topic number.png'))
+    plt.savefig(os.path.join(output_dir, "dispersion coefficient vs topic number.png"))
+    filesToOpen.append(os.path.join(output_dir, "dispersion coefficient vs topic number.png"))
     plt.close()
-    plt.scatter(x_val, avg_empty_cluster, color = "black", s=15)
+    plt.scatter(x_val, avg_empty_cluster, color="black", s=15)
     plt.title("avg. number of empty clusters over total")
-    plt.savefig(os.path.join(output_dir, 'avg. number of empty clusters over total.png'))
-    filesToOpen.append(os.path.join(output_dir, 'avg. number of empty clusters over total.png'))
+    plt.savefig(os.path.join(output_dir, "avg. number of empty clusters over total.png"))
+    filesToOpen.append(os.path.join(output_dir, "avg. number of empty clusters over total.png"))
     plt.close()
     return filesToOpen
 
+
 def test():
-    sentiment_scores_folder = './data/Sentiment_Health'
+    sentiment_scores_folder = "./data/Sentiment_Health"
     vectz = vec.Vectorizer(sentiment_scores_folder)
     sentiment_vectors = vectz.vectorize()
 
@@ -381,19 +413,18 @@ def test():
     # print('%d clusters' % len(grouped_vectors))
     # print('ok')
     #
-    vis = viz.Visualizer('./output')
+    vis = viz.Visualizer("./output")
     vis.visualize_clusters(grouped_vectors)
     exit(0)
-    pos_vector_clusters, pos_clusters_indices, pos_modes, neg_vector_clusters, neg_clusters_indices, neg_modes = \
+    pos_vector_clusters, pos_clusters_indices, pos_modes, neg_vector_clusters, neg_clusters_indices, neg_modes = (
         clustering.cluster(sentiment_vectors)
+    )
 
-    vis = viz.Visualizer('./output_pos')
+    vis = viz.Visualizer("./output_pos")
     vis.visualize_clusters(pos_vector_clusters, modes=pos_modes)
-    vis = viz.Visualizer('./output_neg')
+    vis = viz.Visualizer("./output_neg")
     vis.visualize_clusters(neg_vector_clusters, modes=neg_modes)
 
 
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     test()
-

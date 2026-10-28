@@ -1,39 +1,41 @@
-
-#written by Roberto Franzosi October 2021
+# written by Roberto Franzosi October 2021
 
 import sys
+
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_Python_packages(GUI_util.window, "coreference_main",
-                                          ['subprocess', 'os', 'tkinter', 'csv']) == False:
+if (
+    IO_libraries_util.install_all_Python_packages(
+        GUI_util.window, "coreference_main", ["subprocess", "os", "tkinter", "csv"]
+    )
+    == False
+):
     sys.exit(0)
 
-from collections import defaultdict
 import os
 import tkinter as tk
 import tkinter.messagebox as mb
-from subprocess import call
+
+import config_util
+import file_splitter_merged_txt_util
 
 # to install stanfordnlp, first install
 #   pip3 install torch===1.4.0 torchvision===0.5.0 -f https://download.pytorch.org/whl/torch_stable.html
 #   pip3 install stanfordnlp
 # import stanfordnlp
-
-
 import GUI_IO_util
-import IO_files_util
 import GUI_util
+import IO_files_util
+import reminders_util
+import run_script_util
 import Stanford_CoreNLP_coreference_util
 import Stanza_util
-import file_splitter_merged_txt_util
-import reminders_util
-import config_util
-import run_script_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
 files_to_open = []
+
 
 def run():
     # widget values read here at RUN time (was: run_script_command lambda + run() params)
@@ -45,8 +47,8 @@ def run():
     dataTransformation = GUI_util.data_transformation_options_widget.get()
     Coref = CoRef_var.get()
     Manual_Coref_var = manual_Coref_var.get()
-    split_coreferenced_files_var = globals()['split_coreferenced_files_var'].get()
-    continue_manual_Coref_var = globals()['continue_manual_Coref_var'].get()
+    split_coreferenced_files_var = globals()["split_coreferenced_files_var"].get()
+    continue_manual_Coref_var = globals()["continue_manual_Coref_var"].get()
     corefed_txt_file = corefed_txt_file_var.get()
 
     config_filename = GUI_util.config_filename_selected_config.get()
@@ -56,107 +58,147 @@ def run():
     inputDir = GUI_util.input_main_dir_path.get()
     outputDir = GUI_util.output_dir_path.get()
 
-    outputCorefedDir = ''
+    outputCorefedDir = ""
 
     filesToOpen = []
 
     # get the NLP package and language options
-    error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
+    (
+        error,
+        package,
+        parsers,
+        package_basics,
+        language,
+        package_display_area_value,
+        encoding_var,
+        export_json_var,
+        memory_var,
+        document_length_var,
+        limit_sentence_length_var,
+    ) = config_util.read_NLP_package_language_config()
     language_var = language
     language_list = [language]
 
-
-    filename_embeds_date_var, date_format_var, items_separator_var, date_position_var, config_file_exists = \
+    filename_embeds_date_var, date_format_var, items_separator_var, date_position_var, config_file_exists = (
         config_util.get_date_options(config_filename, config_input_output_numeric_options)
+    )
     extract_date_from_text_var = 0
 
-    if package_display_area_value == '':
-        mb.showwarning(title='No setup for NLP package and language',
-                       message="The default NLP package and language has not been setup.\n\nPlease, click on the Setup NLP button and try again.")
+    if package_display_area_value == "":
+        mb.showwarning(
+            title="No setup for NLP package and language",
+            message="The default NLP package and language has not been setup.\n\nPlease, click on the Setup NLP button and try again.",
+        )
         return
 
     inputFileBase = ""
     inputDirBase = ""
 
-
-    if  (not Coref or Coref == '') and split_coreferenced_files_var==False and continue_manual_Coref_var==False:
-        mb.showerror(title='Missing required information', message="No options have been selected.\n\nPlease, tick one of the available options and try again.")
+    if (not Coref or Coref == "") and split_coreferenced_files_var == False and continue_manual_Coref_var == False:
+        mb.showerror(
+            title="Missing required information",
+            message="No options have been selected.\n\nPlease, tick one of the available options and try again.",
+        )
         return False
 
     # CoRef _____________________________________________________
 
     if Coref:
-        if 'Stanza' in Coref:
+        if "Stanza" in Coref:
             # ── Stanza coreference path ──
-            if language_var != 'English':
-                mb.showwarning(title='Language',
-                               message='Stanza coreference resolution is currently available only for English.')
+            if language_var != "English":
+                mb.showwarning(
+                    title="Language", message="Stanza coreference resolution is currently available only for English."
+                )
                 return
 
             files_to_open, error_indicator = Stanza_util.Stanza_coref(
-                config_filename, inputFilename, inputDir, outputDir,
-                openOutputFiles, chartPackage, dataTransformation,
-                language_var, Manual_Coref_var)
+                config_filename,
+                inputFilename,
+                inputDir,
+                outputDir,
+                openOutputFiles,
+                chartPackage,
+                dataTransformation,
+                language_var,
+                Manual_Coref_var,
+            )
             if error_indicator:
                 return
 
             # determine outputCorefedDir from the first returned file
-            outputCorefedDir = ''
+            outputCorefedDir = ""
             if len(files_to_open) > 0:
                 outputCorefedDir = os.path.dirname(files_to_open[0])
 
-        elif 'BERT' in Coref:
+        elif "BERT" in Coref:
             # ── neural coreference path: BERT (fastcoref) ──
             import coreference_neural_util
+
             engine_fn = coreference_neural_util.fastcoref_coref
             files_to_open, error_indicator = engine_fn(
-                config_filename, inputFilename, inputDir, outputDir,
-                openOutputFiles, chartPackage, dataTransformation,
-                language_var, Manual_Coref_var)
+                config_filename,
+                inputFilename,
+                inputDir,
+                outputDir,
+                openOutputFiles,
+                chartPackage,
+                dataTransformation,
+                language_var,
+                Manual_Coref_var,
+            )
             if error_indicator:
                 return
 
-            outputCorefedDir = ''
+            outputCorefedDir = ""
             if len(files_to_open) > 0:
                 outputCorefedDir = os.path.dirname(files_to_open[0])
 
         else:
             # ── Stanford CoreNLP coreference path (default) ──
-            if language_var != 'English' and language_var != 'Chinese':
-                mb.showwarning(title='Language',
-                               message='The Stanford CoreNLP coreference resolution annotator is only available for English and Chinese.')
+            if language_var != "English" and language_var != "Chinese":
+                mb.showwarning(
+                    title="Language",
+                    message="The Stanford CoreNLP coreference resolution annotator is only available for English and Chinese.",
+                )
                 return
 
-            label = 'coref_CoreNLP'
-            if inputFilename != '':
+            label = "coref_CoreNLP"
+            if inputFilename != "":
                 inputBaseName = os.path.basename(inputFilename)[0:-4]  # without .txt
             else:
                 inputBaseName = os.path.basename(inputDir)
             outputCorefDir = os.path.join(outputDir, label + "_" + inputBaseName)
 
             # create a subdirectory of the output directory
-            outputCorefedDir = IO_files_util.make_output_subdirectory('', '', outputCorefDir, '',
-                                                                silent=False)
-            if outputCorefedDir == '':
+            outputCorefedDir = IO_files_util.make_output_subdirectory("", "", outputCorefDir, "", silent=False)
+            if outputCorefedDir == "":
                 return
 
             # inputFilename and inputDir are the original txt files to be coreferenced
             # 2 items are returned: filename string and true/False for error
-            files_to_open, error_indicator = Stanford_CoreNLP_coreference_util.run(config_filename, inputFilename, inputDir,
-                                           outputCorefedDir,
-                                           openOutputFiles, chartPackage, dataTransformation,
-                                           language_var,
-                                           memory_var, export_json_var,
-                                           Manual_Coref_var)
+            files_to_open, error_indicator = Stanford_CoreNLP_coreference_util.run(
+                config_filename,
+                inputFilename,
+                inputDir,
+                outputCorefedDir,
+                openOutputFiles,
+                chartPackage,
+                dataTransformation,
+                language_var,
+                memory_var,
+                export_json_var,
+                Manual_Coref_var,
+            )
             if error_indicator != 0:
                 return
 
-        if inputFilename!='':
+        if inputFilename != "":
             inputFilename = str(files_to_open)
-            inputDir = ''
+            inputDir = ""
         else:
             # processing a directory
-            inputFilename = ''
+            inputFilename = ""
             inputDir = outputCorefedDir
 
         if len(files_to_open) > 0:
@@ -169,39 +211,44 @@ def run():
     # split <@# #@> --------------------------------------------------------------------------------------
 
     if split_coreferenced_files_var:
-        subDir = ''
+        subDir = ""
         nFiles = 0
-        subDir, nFiles = file_splitter_merged_txt_util.run(corefed_txt_file_var.get(),
-                                                       '<@#',
-                                                       '#@>',
-                                                       outputDir)
-        mb.showwarning(title='Exported files',
-                       message=str(nFiles) + ' split files were created in the subdirectory of the output directory\n\n' + subDir)
+        subDir, nFiles = file_splitter_merged_txt_util.run(corefed_txt_file_var.get(), "<@#", "#@>", outputDir)
+        mb.showwarning(
+            title="Exported files",
+            message=str(nFiles) + " split files were created in the subdirectory of the output directory\n\n" + subDir,
+        )
         return
 
     # continue manual resolution --------------------------------------------------------------------------------------------------------
 
     if continue_manual_Coref_var:
-            error = Stanford_CoreNLP_coreference_util.manualCoref(inputFilename, corefed_txt_file, corefed_txt_file)
+        error = Stanford_CoreNLP_coreference_util.manualCoref(inputFilename, corefed_txt_file, corefed_txt_file)
 
     if openOutputFiles == True and len(filesToOpen) > 0:
         # The coreferenced txt files ARE the corpus and are saved to disk; do not flood the screen by
         # opening every one (a few hundred Harry Potter chapters would be unusable). Auto-open only a
         # handful of them, but ALWAYS open the analytical outputs (coref_table csv, charts, Sankey).
         MAX_COREF_TXT_TO_OPEN = 5
-        txt_files = [f for f in filesToOpen if str(f).lower().endswith('.txt')]
-        other_files = [f for f in filesToOpen if not str(f).lower().endswith('.txt')]
+        txt_files = [f for f in filesToOpen if str(f).lower().endswith(".txt")]
+        other_files = [f for f in filesToOpen if not str(f).lower().endswith(".txt")]
         if len(txt_files) > MAX_COREF_TXT_TO_OPEN:
-            mb.showinfo(title='Coreferenced corpus',
-                        message=str(len(txt_files)) + " coreferenced txt files were saved to\n\n" +
-                                str(outputCorefedDir) +
-                                "\n\nTo avoid opening hundreds of files, they were NOT opened automatically.\n\n"
-                                "Open the output folder to view them; the coref_table and any charts are opened below.")
+            mb.showinfo(
+                title="Coreferenced corpus",
+                message=str(len(txt_files))
+                + " coreferenced txt files were saved to\n\n"
+                + str(outputCorefedDir)
+                + "\n\nTo avoid opening hundreds of files, they were NOT opened automatically.\n\n"
+                "Open the output folder to view them; the coref_table and any charts are opened below.",
+            )
             files_for_opening = other_files
         else:
             files_for_opening = filesToOpen
         if len(files_for_opening) > 0:
-            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, files_for_opening, outputCorefedDir, scriptName)
+            IO_files_util.OpenOutputFiles(
+                GUI_util.window, openOutputFiles, files_for_opening, outputCorefedDir, scriptName
+            )
+
 
 # the values of the GUI widgets MUST be entered in the command as widget.get() otherwise they will not be updated
 GUI_util.run_button.configure(command=run)
@@ -210,31 +257,35 @@ GUI_util.run_button.configure(command=run)
 
 # the GUIs are all setup to run with a brief I/O display or full display (with filename, inputDir, outputDir)
 #   just change the next statement to True or False IO_setup_display_brief=True
-IO_setup_display_brief=True
-GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
-                             GUI_width=GUI_IO_util.get_GUI_width(3),
-                             GUI_height_brief=470, # height at brief display
-                             GUI_height_full=550, # height at full display
-                             y_multiplier_integer=GUI_util.y_multiplier_integer,
-                             y_multiplier_integer_add=2, # to be added for full display
-                             increment=2)  # to be added for full display
+IO_setup_display_brief = True
+GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(
+    IO_setup_display_brief,
+    GUI_width=GUI_IO_util.get_GUI_width(3),
+    GUI_height_brief=470,  # height at brief display
+    GUI_height_full=550,  # height at full display
+    y_multiplier_integer=GUI_util.y_multiplier_integer,
+    y_multiplier_integer_add=2,  # to be added for full display
+    increment=2,
+)  # to be added for full display
 
-GUI_label = 'Graphical User Interface (GUI) for Coreference PRONOMINAL Resolution (via CoreNLP/Stanza) and Manual Editing'
-config_filename = 'NLP_default_IO_config.csv'
+GUI_label = (
+    "Graphical User Interface (GUI) for Coreference PRONOMINAL Resolution (via CoreNLP/Stanza) and Manual Editing"
+)
+config_filename = "NLP_default_IO_config.csv"
 head, scriptName = os.path.split(os.path.basename(__file__))
 
 # The 4 values of config_option refer to:
 #   input file
-        # 1 for CoNLL file
-        # 2 for TXT file
-        # 3 for csv file
-        # 4 for any type of file
-        # 5 for txt or html
-        # 6 for txt or csv
+# 1 for CoNLL file
+# 2 for TXT file
+# 3 for csv file
+# 4 for any type of file
+# 5 for txt or html
+# 6 for txt or csv
 #   input dir
 #   input secondary dir
 #   output dir
-config_input_output_numeric_options= [6,1,0,1]
+config_input_output_numeric_options = [6, 1, 0, 1]
 
 GUI_util.set_window(GUI_size, GUI_label, config_filename, config_input_output_numeric_options)
 
@@ -254,16 +305,19 @@ GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_
 inputFilename = GUI_util.inputFilename
 input_main_dir_path = GUI_util.input_main_dir_path
 
+
 def clear(e):
-    CoRef_var.set('Stanford CoreNLP')
+    CoRef_var.set("Stanford CoreNLP")
     manual_Coref_var.set(0)
-    manual_Coref_checkbox.configure(state='disabled')
-    corefed_txt_file_var.set('')
+    manual_Coref_checkbox.configure(state="disabled")
+    corefed_txt_file_var.set("")
     continue_manual_Coref_var.set(0)
     split_coreferenced_files_var.set(0)
-    continue_manual_Coref_var_checkbox.configure(state='disabled')
-    split_coreferenced_files_checkbox.configure(state='disabled')
+    continue_manual_Coref_var_checkbox.configure(state="disabled")
+    split_coreferenced_files_checkbox.configure(state="disabled")
     GUI_util.clear("Escape")
+
+
 window.bind("<Escape>", clear)
 
 language_var = tk.StringVar()
@@ -271,36 +325,60 @@ CoRef_var = tk.StringVar()
 manual_Coref_var = tk.IntVar()
 split_coreferenced_files_var = tk.IntVar()
 continue_manual_Coref_var = tk.IntVar()
-corefed_txt_file_var= tk.StringVar()
+corefed_txt_file_var = tk.StringVar()
+
 
 def open_GUI():
     run_script_util.run_script("file_checker_converter_cleaner_main.py")
 
-pre_processing_button = tk.Button(window, width=GUI_IO_util.widget_width_short, text='Pre-processing tools (file checking & cleaning GUI)',command=open_GUI)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                               pre_processing_button)
 
-CoRef_lb = tk.Label(window, text='Coreference resolution')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,CoRef_lb,True)
+pre_processing_button = tk.Button(
+    window,
+    width=GUI_IO_util.widget_width_short,
+    text="Pre-processing tools (file checking & cleaning GUI)",
+    command=open_GUI,
+)
+y_multiplier_integer = GUI_IO_util.placeWidget(
+    window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer, pre_processing_button
+)
 
-CoRef_var.set('Stanford CoreNLP')
-CoRef_var_menu = tk.OptionMenu(window,CoRef_var,'Stanford CoreNLP','Stanza','BERT')
+CoRef_lb = tk.Label(window, text="Coreference resolution")
+y_multiplier_integer = GUI_IO_util.placeWidget(
+    window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer, CoRef_lb, True
+)
+
+CoRef_var.set("Stanford CoreNLP")
+CoRef_var_menu = tk.OptionMenu(window, CoRef_var, "Stanford CoreNLP", "Stanza", "BERT")
 # place widget with hover-over info
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.coreference_CoRef_var_menu_pos, y_multiplier_integer,
-                    CoRef_var_menu, False, False, True, False,
-                    90, GUI_IO_util.labels_x_coordinate,
-                    "Select the NLP package for coreference resolution.\n\nStanford CoreNLP: requires Java and CoreNLP installed; supports English and Chinese.\nStanza: pure Python, no Java needed; currently supports English only.")
+y_multiplier_integer = GUI_IO_util.placeWidget(
+    window,
+    GUI_IO_util.coreference_CoRef_var_menu_pos,
+    y_multiplier_integer,
+    CoRef_var_menu,
+    False,
+    False,
+    True,
+    False,
+    90,
+    GUI_IO_util.labels_x_coordinate,
+    "Select the NLP package for coreference resolution.\n\nStanford CoreNLP: requires Java and CoreNLP installed; supports English and Chinese.\nStanza: pure Python, no Java needed; currently supports English only.",
+)
+
 
 def activate_options(*args):
     selected = CoRef_var.get()
-    if selected == 'BERT':
-        mb.showwarning(title='BERT coreference (fastcoref)',
-                       message="BERT coreference uses the 'fastcoref' neural model (English only).\n\n"
-                               "It requires the 'fastcoref' package (pip install fastcoref); the first run "
-                               "downloads the model (~500 MB) and needs an internet connection.\n\n"
-                               "Unlike CoreNLP/Stanza (pronominal only), it also clusters nominal mentions, "
-                               "but the NLP Suite replaces only pronouns with their referent.")
-CoRef_var.trace('w',activate_options)
+    if selected == "BERT":
+        mb.showwarning(
+            title="BERT coreference (fastcoref)",
+            message="BERT coreference uses the 'fastcoref' neural model (English only).\n\n"
+            "It requires the 'fastcoref' package (pip install fastcoref); the first run "
+            "downloads the model (~500 MB) and needs an internet connection.\n\n"
+            "Unlike CoreNLP/Stanza (pronominal only), it also clusters nominal mentions, "
+            "but the NLP Suite replaces only pronouns with their referent.",
+        )
+
+
+CoRef_var.trace("w", activate_options)
 
 # CoRef_var.set(1)
 # CoRef_checkbox = tk.Checkbutton(window, text='Coreference Resolution, PRONOMINAL (via Stanford CoreNLP - Neural Network)',
@@ -314,75 +392,127 @@ CoRef_var.trace('w',activate_options)
 #
 
 manual_Coref_var.set(0)
-manual_Coref_checkbox = tk.Checkbutton(window, text='Manually edit coreferenced document ', variable=manual_Coref_var,
-                                       onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
-                                               manual_Coref_checkbox)
+manual_Coref_checkbox = tk.Checkbutton(
+    window, text="Manually edit coreferenced document ", variable=manual_Coref_var, onvalue=1, offvalue=0
+)
+y_multiplier_integer = GUI_IO_util.placeWidget(
+    window, GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer, manual_Coref_checkbox
+)
 
-def get_corefed_txt_file(window,title,fileType,annotate):
-    if corefed_txt_file!='':
-        initialFolder=os.path.dirname(os.path.abspath(corefed_txt_file_var.get()))
+
+def get_corefed_txt_file(window, title, fileType, annotate):
+    if corefed_txt_file != "":
+        initialFolder = os.path.dirname(os.path.abspath(corefed_txt_file_var.get()))
     else:
         initialFolder = os.path.dirname(os.path.abspath(__file__))
-    filePath = tk.filedialog.askopenfilename(title = title, initialdir = initialFolder, filetypes = fileType)
+    filePath = tk.filedialog.askopenfilename(title=title, initialdir=initialFolder, filetypes=fileType)
 
-    if len(filePath)>0:
+    if len(filePath) > 0:
         corefed_txt_file_var.set(filePath)
-        split_coreferenced_files_checkbox.configure(state='normal')
-        continue_manual_Coref_var_checkbox.configure(state='normal')
+        split_coreferenced_files_checkbox.configure(state="normal")
+        continue_manual_Coref_var_checkbox.configure(state="normal")
     else:
-        split_coreferenced_files_checkbox.configure(state='disabled')
-        continue_manual_Coref_var_checkbox.configure(state='disabled')
+        split_coreferenced_files_checkbox.configure(state="disabled")
+        continue_manual_Coref_var_checkbox.configure(state="disabled")
     return filePath
 
-corefed_txt_file_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT corefed TXT file',command=lambda: get_corefed_txt_file(window,'Select INPUT csv file', [("coreferenced file", "*.txt")],True))
-# place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                   corefed_txt_file_button,
-                                   True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
-                                   "Click on the button to select a previosuly coreferenced txt file for further manual coreference")
 
-#setup a button to open Windows Explorer on the selected input directory
-openInputFile_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openFile(window, corefed_txt_file_var.get()))
+corefed_txt_file_button = tk.Button(
+    window,
+    width=GUI_IO_util.select_file_directory_button_width,
+    text="Select INPUT corefed TXT file",
+    command=lambda: get_corefed_txt_file(window, "Select INPUT csv file", [("coreferenced file", "*.txt")], True),
+)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(
+    window,
+    GUI_IO_util.labels_x_coordinate,
+    y_multiplier_integer,
+    corefed_txt_file_button,
+    True,
+    False,
+    True,
+    False,
+    90,
+    GUI_IO_util.labels_x_coordinate,
+    "Click on the button to select a previosuly coreferenced txt file for further manual coreference",
+)
+
+# setup a button to open Windows Explorer on the selected input directory
+openInputFile_button = tk.Button(
+    window,
+    width=GUI_IO_util.open_file_directory_button_width,
+    text="",
+    command=lambda: IO_files_util.openFile(window, corefed_txt_file_var.get()),
+)
 # the button widget has hover-over effects (no_hover_over_widget=False) and the info displayed is in text_info
 # the two x-coordinate and x-coordinate_hover_over must have the same values
-y_multiplier_integer = GUI_IO_util.placeWidget(window,
+y_multiplier_integer = GUI_IO_util.placeWidget(
+    window,
     GUI_IO_util.IO_configuration_menu,
     y_multiplier_integer,
-    openInputFile_button, True, False, True, False, 90, GUI_IO_util.IO_configuration_menu, "Open coreferenced txt file")
+    openInputFile_button,
+    True,
+    False,
+    True,
+    False,
+    90,
+    GUI_IO_util.IO_configuration_menu,
+    "Open coreferenced txt file",
+)
 
-corefed_txt_file=tk.Entry(window, width=GUI_IO_util.coreference_corefed_txt_file_width,textvariable=corefed_txt_file_var)
-corefed_txt_file.config(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,corefed_txt_file)
+corefed_txt_file = tk.Entry(
+    window, width=GUI_IO_util.coreference_corefed_txt_file_width, textvariable=corefed_txt_file_var
+)
+corefed_txt_file.config(state="disabled")
+y_multiplier_integer = GUI_IO_util.placeWidget(
+    window, GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer, corefed_txt_file
+)
 
 split_coreferenced_files_var.set(0)
-split_coreferenced_files_checkbox = tk.Checkbutton(window, text='Split merged coreferenced file (with filenames embedded in <@# #@>) for manual editing to fit memory', variable=split_coreferenced_files_var,
-                                       onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
-                                               split_coreferenced_files_checkbox)
-split_coreferenced_files_checkbox.config(state='disabled')
+split_coreferenced_files_checkbox = tk.Checkbutton(
+    window,
+    text="Split merged coreferenced file (with filenames embedded in <@# #@>) for manual editing to fit memory",
+    variable=split_coreferenced_files_var,
+    onvalue=1,
+    offvalue=0,
+)
+y_multiplier_integer = GUI_IO_util.placeWidget(
+    window, GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer, split_coreferenced_files_checkbox
+)
+split_coreferenced_files_checkbox.config(state="disabled")
 
 continue_manual_Coref_var.set(0)
-continue_manual_Coref_var_checkbox = tk.Checkbutton(window, text='Continue manual coreferencing of previously coreferenced document', variable=continue_manual_Coref_var,
-                                       onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
-                                               continue_manual_Coref_var_checkbox)
+continue_manual_Coref_var_checkbox = tk.Checkbutton(
+    window,
+    text="Continue manual coreferencing of previously coreferenced document",
+    variable=continue_manual_Coref_var,
+    onvalue=1,
+    offvalue=0,
+)
+y_multiplier_integer = GUI_IO_util.placeWidget(
+    window, GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer, continue_manual_Coref_var_checkbox
+)
 
-continue_manual_Coref_var_checkbox.configure(state='disabled')
+continue_manual_Coref_var_checkbox.configure(state="disabled")
 
 
 def activateCoRefOptions():
-    if GUI_util.input_main_dir_path.get()!='':
-        reminders_util.checkReminder(scriptName, reminders_util.title_options_CoreNLP_coref,
-                                     reminders_util.message_CoreNLP_coref, True)
-        manual_Coref_checkbox.configure(state='disabled')
+    if GUI_util.input_main_dir_path.get() != "":
+        reminders_util.checkReminder(
+            scriptName, reminders_util.title_options_CoreNLP_coref, reminders_util.message_CoreNLP_coref, True
+        )
+        manual_Coref_checkbox.configure(state="disabled")
         manual_Coref_var.set(0)
     else:
-        manual_Coref_checkbox.configure(state='normal')
+        manual_Coref_checkbox.configure(state="normal")
+
 
 def changed_filename(tracedInputFile):
     activateCoRefOptions()
-GUI_util.input_main_dir_path.trace('w', lambda x, y, z: changed_filename(GUI_util.input_main_dir_path.get()))
+
+
+GUI_util.input_main_dir_path.trace("w", lambda x, y, z: changed_filename(GUI_util.input_main_dir_path.get()))
 # must trace on input_main_dir_path, rather than inputFilename,
 #   because inputFilename is set BEFORE input_main_dir_path in GUI_util and it is not up-to-date
 
@@ -397,63 +527,133 @@ GUI_util.input_main_dir_path.trace('w', lambda x, y, z: changed_filename(GUI_uti
 #
 # activateTxtFileOptions()
 
-videos_lookup = {'No videos available':''}
-videos_options='No videos available'
+videos_lookup = {"No videos available": ""}
+videos_options = "No videos available"
 
-TIPS_lookup = { 'Coreference resolution': "TIPS_NLP_Coreference resolution.pdf",
-               'Stanford CoreNLP supported languages': 'TIPS_NLP_Stanford CoreNLP supported languages.pdf',
-               'Stanford CoreNLP performance & accuracy': 'TIPS_NLP_Stanford CoreNLP performance and accuracy.pdf',
-               'Stanza coreference resolution': "TIPS_NLP_Coreference resolution.pdf",
-               'utf-8 encoding': 'TIPS_NLP_Text encoding.pdf',
-               'Stanford CoreNLP memory issues':'TIPS_NLP_Stanford CoreNLP memory issues.pdf',
-               'csv files - Problems & solutions': 'TIPS_NLP_csv files - Problems & solutions.pdf'}
+TIPS_lookup = {
+    "Coreference resolution": "TIPS_NLP_Coreference resolution.pdf",
+    "Stanford CoreNLP supported languages": "TIPS_NLP_Stanford CoreNLP supported languages.pdf",
+    "Stanford CoreNLP performance & accuracy": "TIPS_NLP_Stanford CoreNLP performance and accuracy.pdf",
+    "Stanza coreference resolution": "TIPS_NLP_Coreference resolution.pdf",
+    "utf-8 encoding": "TIPS_NLP_Text encoding.pdf",
+    "Stanford CoreNLP memory issues": "TIPS_NLP_Stanford CoreNLP memory issues.pdf",
+    "csv files - Problems & solutions": "TIPS_NLP_csv files - Problems & solutions.pdf",
+}
 
-TIPS_options = 'Coreference resolution','Stanford CoreNLP supported languages','Stanford CoreNLP performance & accuracy', 'utf-8 encoding', 'Stanford CoreNLP memory issues', 'csv files - Problems & solutions'
+TIPS_options = (
+    "Coreference resolution",
+    "Stanford CoreNLP supported languages",
+    "Stanford CoreNLP performance & accuracy",
+    "utf-8 encoding",
+    "Stanford CoreNLP memory issues",
+    "csv files - Problems & solutions",
+)
+
 
 # add all the lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
-def help_buttons(window, help_button_x_coordinate,y_multiplier_integer):
-    if IO_setup_display_brief==False:
-        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
-                                      "Please, select either a txt file to be analyzed and extract SVO triplets from it, or a csv file of previously extracted SVOs if all you want to do is to visualize the previously computed results." + GUI_IO_util.msg_openFile)
-        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
-                                      GUI_IO_util.msg_corpusData)
-        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
-                                      GUI_IO_util.msg_outputDirectory)
+def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
+    if IO_setup_display_brief == False:
+        y_multiplier_integer = GUI_IO_util.place_help_button(
+            window,
+            help_button_x_coordinate,
+            y_multiplier_integer,
+            "NLP Suite Help",
+            "Please, select either a txt file to be analyzed and extract SVO triplets from it, or a csv file of previously extracted SVOs if all you want to do is to visualize the previously computed results."
+            + GUI_IO_util.msg_openFile,
+        )
+        y_multiplier_integer = GUI_IO_util.place_help_button(
+            window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help", GUI_IO_util.msg_corpusData
+        )
+        y_multiplier_integer = GUI_IO_util.place_help_button(
+            window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help", GUI_IO_util.msg_outputDirectory
+        )
     else:
-        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
-                                      GUI_IO_util.msg_IO_setup)
+        y_multiplier_integer = GUI_IO_util.place_help_button(
+            window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help", GUI_IO_util.msg_IO_setup
+        )
 
-#    top.title("Comparing result from {0} (Edit text on the right hand side and Save) - in BLUE pronouns not done; in YELLOW & RED pronouns done".format('Neural Network'))
+    #    top.title("Comparing result from {0} (Edit text on the right hand side and Save) - in BLUE pronouns not done; in YELLOW & RED pronouns done".format('Neural Network'))
 
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, click on the 'Pre-processing tools' button to open the GUI where you will be able to perform a variety of\n   file checking options (e.g., utf-8 encoding compliance of your corpus or sentence length);\n   file cleaning options (e.g., convert non-ASCII apostrophes & quotes and % to percent).\n\nNon utf-8 compliant texts are likely to lead to code breakdown in various algorithms.\n\nASCII apostrophes & quotes (the slanted punctuation symbols of Microsoft Word), will not break any code but they will display in a csv document as weird characters.\n\n% signs will lead to code breakdon of Stanford CoreNLP.\n\nSentences without an end-of-sentence marker (. ! ?) in Stanford CoreNLP will be processed together with the next sentence, potentially leading to very long sentences.\n\nSentences longer than 70 or 100 words may pose problems to Stanford CoreNLP (the average sentence length of modern English is 20 words). Please, read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf."+ GUI_IO_util.msg_Esc)
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, using the dropdown menu, select the NLP ackage you wuld like to use for coreference resolution.\n\nThe Stanford CoreNLP coreference resolution annotator usesa neural network approach.\n\nOnly pronominal, and not nominal, coreference resolution is implemented for four different types of PRONOUNS:\n   nominative: I, you, he/she, it, we, they;\n   possessive: my, mine, our(s), his/her(s), their, its, yours;\n   objective: me, you, him, her, it, them;\n   reflexive: myself, yourself, himself, herself, oneself, itself, ourselves, yourselves, themselves.\n\nPlease, BE PATIENT. Depending upon size and number of documents to be coreferenced the algorithm may take a long a time.\n\nIn INPUT the algorithm expects a single txt file or a directory of txt files.\n\nIn OUTPUT the algorithm will produce txt-format copies of the same input txt files but co-referenced.")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, tick the checkbox if you wish to resolve manually cases of unresolved or wrongly resolved coreferences.\n\nThe option is not available with a directory in input.\n\nMANUAL EDITING REQUIRES A LOT OF MEMORY SINCE BOTH ORIGINAL AND CO-REFERENCED FILE ARE BROUGHT IN MEMORY. DEPENDING UPON FILE SIZES, YOU MAY NOT HAVE ENOUGH MEMORY FOR THIS STEP.\n\nIn output, the manual coreference algorithm will display the original text on the left, highlighting in BLUE the pronouns not coreferenced by CoreNLP, and in YELLOW the coreferenced pronouns, and the coreferenced text on the right, highlighting in the RED the coreferenced pronoun." + GUI_IO_util.msg_Esc)
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, use the 'Select INPUT corefed TXT file' button to select a previosuly coreferenced file for further manual coreference.\n\nYou can use the little square widget to the right of the button to open the selected input coref txt file for inspection."+ GUI_IO_util.msg_Esc)
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, tick the checkbox if you wish to automatically split files that may be too long to bring in memory for original vs. coreferenced files.\n\nIn INPUT the algorithm expects the coreferenced merged file (selected via the button 'Select INPUT corefed txt file').\n\nIn OUTPUT the algorithm will save the split individual files into a subfolder of the the output directory."+ GUI_IO_util.msg_Esc)
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, tick the checkboxes if you wish to run manually corefence a previously coreferenced file.\n\nIn INPUT the algorithm expects the original txt file(s) (selected in either the 'Default I/O configuration' or the 'Alternative I/O configuration') and the previously coreferenced file (selected via the button 'Select INPUT corefed txt file').\n\nIn OUTPUT the algorithm will save the same newly manually coreferenced file."+ GUI_IO_util.msg_Esc)
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  GUI_IO_util.msg_openOutputFiles)
-    return y_multiplier_integer -1
+    y_multiplier_integer = GUI_IO_util.place_help_button(
+        window,
+        help_button_x_coordinate,
+        y_multiplier_integer,
+        "NLP Suite Help",
+        "Please, click on the 'Pre-processing tools' button to open the GUI where you will be able to perform a variety of\n   file checking options (e.g., utf-8 encoding compliance of your corpus or sentence length);\n   file cleaning options (e.g., convert non-ASCII apostrophes & quotes and % to percent).\n\nNon utf-8 compliant texts are likely to lead to code breakdown in various algorithms.\n\nASCII apostrophes & quotes (the slanted punctuation symbols of Microsoft Word), will not break any code but they will display in a csv document as weird characters.\n\n% signs will lead to code breakdon of Stanford CoreNLP.\n\nSentences without an end-of-sentence marker (. ! ?) in Stanford CoreNLP will be processed together with the next sentence, potentially leading to very long sentences.\n\nSentences longer than 70 or 100 words may pose problems to Stanford CoreNLP (the average sentence length of modern English is 20 words). Please, read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf."
+        + GUI_IO_util.msg_Esc,
+    )
+    y_multiplier_integer = GUI_IO_util.place_help_button(
+        window,
+        help_button_x_coordinate,
+        y_multiplier_integer,
+        "NLP Suite Help",
+        "Please, using the dropdown menu, select the NLP ackage you wuld like to use for coreference resolution.\n\nThe Stanford CoreNLP coreference resolution annotator usesa neural network approach.\n\nOnly pronominal, and not nominal, coreference resolution is implemented for four different types of PRONOUNS:\n   nominative: I, you, he/she, it, we, they;\n   possessive: my, mine, our(s), his/her(s), their, its, yours;\n   objective: me, you, him, her, it, them;\n   reflexive: myself, yourself, himself, herself, oneself, itself, ourselves, yourselves, themselves.\n\nPlease, BE PATIENT. Depending upon size and number of documents to be coreferenced the algorithm may take a long a time.\n\nIn INPUT the algorithm expects a single txt file or a directory of txt files.\n\nIn OUTPUT the algorithm will produce txt-format copies of the same input txt files but co-referenced.",
+    )
+    y_multiplier_integer = GUI_IO_util.place_help_button(
+        window,
+        help_button_x_coordinate,
+        y_multiplier_integer,
+        "NLP Suite Help",
+        "Please, tick the checkbox if you wish to resolve manually cases of unresolved or wrongly resolved coreferences.\n\nThe option is not available with a directory in input.\n\nMANUAL EDITING REQUIRES A LOT OF MEMORY SINCE BOTH ORIGINAL AND CO-REFERENCED FILE ARE BROUGHT IN MEMORY. DEPENDING UPON FILE SIZES, YOU MAY NOT HAVE ENOUGH MEMORY FOR THIS STEP.\n\nIn output, the manual coreference algorithm will display the original text on the left, highlighting in BLUE the pronouns not coreferenced by CoreNLP, and in YELLOW the coreferenced pronouns, and the coreferenced text on the right, highlighting in the RED the coreferenced pronoun."
+        + GUI_IO_util.msg_Esc,
+    )
+    y_multiplier_integer = GUI_IO_util.place_help_button(
+        window,
+        help_button_x_coordinate,
+        y_multiplier_integer,
+        "NLP Suite Help",
+        "Please, use the 'Select INPUT corefed TXT file' button to select a previosuly coreferenced file for further manual coreference.\n\nYou can use the little square widget to the right of the button to open the selected input coref txt file for inspection."
+        + GUI_IO_util.msg_Esc,
+    )
+    y_multiplier_integer = GUI_IO_util.place_help_button(
+        window,
+        help_button_x_coordinate,
+        y_multiplier_integer,
+        "NLP Suite Help",
+        "Please, tick the checkbox if you wish to automatically split files that may be too long to bring in memory for original vs. coreferenced files.\n\nIn INPUT the algorithm expects the coreferenced merged file (selected via the button 'Select INPUT corefed txt file').\n\nIn OUTPUT the algorithm will save the split individual files into a subfolder of the the output directory."
+        + GUI_IO_util.msg_Esc,
+    )
+    y_multiplier_integer = GUI_IO_util.place_help_button(
+        window,
+        help_button_x_coordinate,
+        y_multiplier_integer,
+        "NLP Suite Help",
+        "Please, tick the checkboxes if you wish to run manually corefence a previously coreferenced file.\n\nIn INPUT the algorithm expects the original txt file(s) (selected in either the 'Default I/O configuration' or the 'Alternative I/O configuration') and the previously coreferenced file (selected via the button 'Select INPUT corefed txt file').\n\nIn OUTPUT the algorithm will save the same newly manually coreferenced file."
+        + GUI_IO_util.msg_Esc,
+    )
+    y_multiplier_integer = GUI_IO_util.place_help_button(
+        window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help", GUI_IO_util.msg_openOutputFiles
+    )
+    return y_multiplier_integer - 1
+
+
 y_multiplier_integer = help_buttons(window, GUI_IO_util.help_button_x_coordinate, 0)
 
 # change the value of the readMe_message
 readMe_message = "This set of Python 3 scripts implement different options to carry out coreference resolution.\n\nStanford CoreNLP uses a neural network approach to coreference resolution for four different types of PRONOUNS:\n   nominative: I, you, he/she, it, we, they;\n   possessive: my, mine, our(s), his/her(s), their, its, yours;\n   objective: me, you, him, her, it, them;\n   reflexive: myself, yourself, himself, herself, oneself, itself, ourselves, yourselves, themselves.\n\nFor Stanford CoreNLP the NLP Suite implements only PRONOMINAL coreference but NOT NOMINAL.\n\nIn INPUT the scripts expect either a single txt file or a set of txt files in a directory.\n\nIn OUTPUT, the scripts will produce\n   1. coreferenced txt file(s);\n   2. a csv file coref_table with each pronoun (antecedent) and its referent;\n   3. bar charts of frequency distributions of antecedents and referents;\n   4. a Sankey flowchart of pronouns (antecedents) and their referents.\n\nIf manual edit is selected, the script will also display a split-screen file for manual editing. On the left-hand side, pronouns cross-referenced by CoreNLP are tagged in YELLOW; pronouns NOT cross-referenced by CoreNLP are tagged in BLUE. On the right-hand side, pronouns cross-referenced by CoreNLP are tagged in RED, with the pronouns replaced by the referenced nouns.\n\nThe user can edit any unresolved or wrongly resolved pronominal cases directly on the right panel, as if it were any text editor and then save the changes."
 readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
-GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief,scriptName)
+GUI_util.GUI_bottom(
+    config_filename,
+    config_input_output_numeric_options,
+    y_multiplier_integer,
+    readMe_command,
+    videos_lookup,
+    videos_options,
+    TIPS_lookup,
+    TIPS_options,
+    IO_setup_display_brief,
+    scriptName,
+)
 
-if input_main_dir_path.get()!='':
-    reminders_util.checkReminder(scriptName, reminders_util.title_options_CoreNLP_coref,
-                                 reminders_util.message_CoreNLP_coref, True)
-reminders_util.checkReminder(scriptName, reminders_util.title_options_only_CoreNLP_coref,
-                             reminders_util.message_only_CoreNLP_coref, True)
+if input_main_dir_path.get() != "":
+    reminders_util.checkReminder(
+        scriptName, reminders_util.title_options_CoreNLP_coref, reminders_util.message_CoreNLP_coref, True
+    )
+reminders_util.checkReminder(
+    scriptName, reminders_util.title_options_only_CoreNLP_coref, reminders_util.message_only_CoreNLP_coref, True
+)
 
 activateCoRefOptions()
 

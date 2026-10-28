@@ -25,11 +25,16 @@
 # rather than copied, so the three knowledge bases produce identical output structure.
 
 import sys
+
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_Python_packages(GUI_util.window, "Wikipedia knowledge graph",
-                                                 ['os', 'requests', 'pandas', 'stanza']) == False:
+if (
+    IO_libraries_util.install_all_Python_packages(
+        GUI_util.window, "Wikipedia knowledge graph", ["os", "requests", "pandas", "stanza"]
+    )
+    == False
+):
     sys.exit(0)
 
 import os
@@ -39,43 +44,119 @@ from urllib.parse import quote
 import pandas as pd
 import requests
 
+import IO_csv_util
 import IO_files_util
 import IO_user_interface_util
-import IO_csv_util
-import IO_internet_util
 
 # shared with the YAGO annotator: same parser, same preprocessing, same HTML shape
-from knowledge_graphs_YAGO_util import _get_stanza_pipeline, _preprocess, _build_html, _eligible
+from knowledge_graphs_YAGO_util import _build_html, _eligible, _get_stanza_pipeline, _preprocess
 
-API_URL = 'https://en.wikipedia.org/w/api.php'
-ARTICLE_URL = 'https://en.wikipedia.org/wiki/'
+API_URL = "https://en.wikipedia.org/w/api.php"
+ARTICLE_URL = "https://en.wikipedia.org/wiki/"
 # the MediaWiki API accepts 50 titles per request for anonymous clients
 BATCH_SIZE = 50
 API_TIMEOUT = 30
 # MediaWiki asks that clients identify themselves; an unidentified bulk client can be throttled
-USER_AGENT = 'NLP-Suite (https://github.com/NLP-Suite/NLP-Suite; academic text analysis)'
+USER_AGENT = "NLP-Suite (https://github.com/NLP-Suite/NLP-Suite; academic text analysis)"
 
-ONTOLOGY_LABEL = 'Wikipedia article'
+ONTOLOGY_LABEL = "Wikipedia article"
 
 # Newspaper prose names people by title -- 'Sheriff Jim Cobb', 'Governor Hugh Dorsey' -- and Stanza tags
 # the honorific NNP too, so the phrase handed to the API includes it. Wikipedia has no article called
 # 'Sheriff Jim Cobb', so the person went unlinked; the article is under the bare name. The honorific is
 # therefore stripped before the lookup, while the annotation still covers the whole phrase as written.
 HONORIFICS = {
-    'mr', 'mrs', 'miss', 'ms', 'dr', 'doctor', 'prof', 'professor', 'rev', 'reverend', 'fr', 'father',
-    'sheriff', 'deputy', 'marshal', 'constable', 'judge', 'justice', 'attorney', 'solicitor',
-    'governor', 'gov', 'senator', 'sen', 'congressman', 'representative', 'rep', 'president',
-    'mayor', 'alderman', 'councilman', 'commissioner', 'coroner', 'warden', 'chief',
-    'captain', 'capt', 'colonel', 'col', 'major', 'general', 'gen', 'lieutenant', 'lt', 'sergeant',
-    'sgt', 'corporal', 'private', 'admiral', 'commander', 'sir', 'lord', 'lady', 'saint', 'st',
+    "mr",
+    "mrs",
+    "miss",
+    "ms",
+    "dr",
+    "doctor",
+    "prof",
+    "professor",
+    "rev",
+    "reverend",
+    "fr",
+    "father",
+    "sheriff",
+    "deputy",
+    "marshal",
+    "constable",
+    "judge",
+    "justice",
+    "attorney",
+    "solicitor",
+    "governor",
+    "gov",
+    "senator",
+    "sen",
+    "congressman",
+    "representative",
+    "rep",
+    "president",
+    "mayor",
+    "alderman",
+    "councilman",
+    "commissioner",
+    "coroner",
+    "warden",
+    "chief",
+    "captain",
+    "capt",
+    "colonel",
+    "col",
+    "major",
+    "general",
+    "gen",
+    "lieutenant",
+    "lt",
+    "sergeant",
+    "sgt",
+    "corporal",
+    "private",
+    "admiral",
+    "commander",
+    "sir",
+    "lord",
+    "lady",
+    "saint",
+    "st",
 }
 
 # Month and weekday names are proper nouns, so they are collected like any other, but linking every
 # 'May' in a corpus of dated newspaper articles to the article about the month is pure noise.
 CALENDAR_WORDS = {
-    'january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october',
-    'november', 'december', 'jan', 'feb', 'mar', 'apr', 'jun', 'jul', 'aug', 'sep', 'sept', 'oct',
-    'nov', 'dec', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday',
+    "january",
+    "february",
+    "march",
+    "april",
+    "may",
+    "june",
+    "july",
+    "august",
+    "september",
+    "october",
+    "november",
+    "december",
+    "jan",
+    "feb",
+    "mar",
+    "apr",
+    "jun",
+    "jul",
+    "aug",
+    "sep",
+    "sept",
+    "oct",
+    "nov",
+    "dec",
+    "monday",
+    "tuesday",
+    "wednesday",
+    "thursday",
+    "friday",
+    "saturday",
+    "sunday",
 }
 
 
@@ -83,13 +164,13 @@ def _lookup_title(phrase):
     """The title to ask Wikipedia for, or '' when the phrase should not be looked up at all."""
     tokens = phrase.split()
     if not tokens:
-        return ''
-    if len(tokens) == 1 and tokens[0].lower().strip('.') in CALENDAR_WORDS:
-        return ''
+        return ""
+    if len(tokens) == 1 and tokens[0].lower().strip(".") in CALENDAR_WORDS:
+        return ""
     # drop leading honorifics, but never reduce the phrase to nothing: 'Sheriff' alone stays 'Sheriff'
-    while len(tokens) > 1 and tokens[0].lower().strip('.') in HONORIFICS:
+    while len(tokens) > 1 and tokens[0].lower().strip(".") in HONORIFICS:
         tokens = tokens[1:]
-    return ' '.join(tokens)
+    return " ".join(tokens)
 
 
 def _collect_proper_noun_phrases(doc):
@@ -99,16 +180,15 @@ def _collect_proper_noun_phrases(doc):
     cache is a phrase we actually queried."""
     phrases = set()
     for sent in doc.sentences:
-        run = ''
+        run = ""
         for word in sent.words:
-            if word.xpos in ('NNP', 'NNPS'):
-                run += word.lemma + ' '
-            else:
-                if run:
-                    phrase = run.strip()
-                    if _eligible(phrase):
-                        phrases.add(phrase)
-                    run = ''
+            if word.xpos in ("NNP", "NNPS"):
+                run += word.lemma + " "
+            elif run:
+                phrase = run.strip()
+                if _eligible(phrase):
+                    phrases.add(phrase)
+                run = ""
         if run:
             phrase = run.strip()
             if _eligible(phrase):
@@ -120,8 +200,9 @@ def _collect_proper_noun_phrases(doc):
 # skips only VERB, DET, ADP, PRON and AUX, so conjunctions reach it: annotating 'and' against Wikipedia
 # is pure noise. This set is kept here rather than widened in the YAGO module, so that changing what
 # Wikipedia annotates does not quietly change what YAGO annotates.
-FUNCTION_POS = frozenset({'VERB', 'AUX', 'DET', 'ADP', 'PRON', 'CCONJ', 'SCONJ', 'PART',
-                          'INTJ', 'PUNCT', 'SYM', 'NUM', 'X'})
+FUNCTION_POS = frozenset(
+    {"VERB", "AUX", "DET", "ADP", "PRON", "CCONJ", "SCONJ", "PART", "INTJ", "PUNCT", "SYM", "NUM", "X"}
+)
 
 
 def _collect_content_words(doc):
@@ -132,16 +213,16 @@ def _collect_content_words(doc):
     """
     phrases = set()
     for sent in doc.sentences:
-        run = ''
+        run = ""
         for word in sent.words:
-            if word.xpos in ('NNP', 'NNPS'):
-                run += word.lemma + ' '
+            if word.xpos in ("NNP", "NNPS"):
+                run += word.lemma + " "
                 continue
             if run:
                 phrase = run.strip()
                 if _eligible(phrase):
                     phrases.add(phrase)
-                run = ''
+                run = ""
             if word.pos not in FUNCTION_POS and _eligible(word.lemma):
                 phrases.add(word.lemma)
         if run:
@@ -163,45 +244,52 @@ def _batch_query_wikipedia(phrases, color, session):
     lookup = {}
     for phrase in phrases:
         title = _lookup_title(phrase)
-        if title and '|' not in title:
+        if title and "|" not in title:
             lookup[phrase] = title
     titles = sorted(set(lookup.values()))
     resolved_titles = {}
 
     for start in range(0, len(titles), BATCH_SIZE):
-        batch = titles[start:start + BATCH_SIZE]
+        batch = titles[start : start + BATCH_SIZE]
         if not batch:
             continue
         try:
-            response = session.get(API_URL,
-                                   params={'action': 'query', 'format': 'json', 'redirects': 1,
-                                           'prop': 'pageprops', 'ppprop': 'disambiguation',
-                                           'titles': '|'.join(batch)},
-                                   headers={'User-Agent': USER_AGENT},
-                                   timeout=API_TIMEOUT)
+            response = session.get(
+                API_URL,
+                params={
+                    "action": "query",
+                    "format": "json",
+                    "redirects": 1,
+                    "prop": "pageprops",
+                    "ppprop": "disambiguation",
+                    "titles": "|".join(batch),
+                },
+                headers={"User-Agent": USER_AGENT},
+                timeout=API_TIMEOUT,
+            )
             if response.status_code != 200:
-                print('   Wikipedia API returned HTTP ' + str(response.status_code) + ' for a batch. Continuing...')
+                print("   Wikipedia API returned HTTP " + str(response.status_code) + " for a batch. Continuing...")
                 continue
-            data = response.json().get('query', {})
+            data = response.json().get("query", {})
         except (requests.exceptions.Timeout, requests.exceptions.ConnectionError):
-            print('   Wikipedia API timeout for a batch. Continuing...')
+            print("   Wikipedia API timeout for a batch. Continuing...")
             continue
         except Exception as e:
-            print('   Wikipedia API error: ' + str(e))
+            print("   Wikipedia API error: " + str(e))
             continue
 
         # the API reports the title it normalized to ('lynching' -> 'Lynching') and the one it redirected
         # to ('The Atlanta Constitution' -> 'The Atlanta Journal-Constitution'); a phrase must be followed
         # through both to find its page
-        normalized = {n['from']: n['to'] for n in data.get('normalized', [])}
-        redirected = {r['from']: r['to'] for r in data.get('redirects', [])}
+        normalized = {n["from"]: n["to"] for n in data.get("normalized", [])}
+        redirected = {r["from"]: r["to"] for r in data.get("redirects", [])}
         pages_by_title = {}
-        for page_id, page in data.get('pages', {}).items():
-            title = page.get('title')
+        for page_id, page in data.get("pages", {}).items():
+            title = page.get("title")
             if title is None:
                 continue
-            missing = ('missing' in page) or str(page_id).startswith('-')
-            disambiguation = 'disambiguation' in (page.get('pageprops') or {})
+            missing = ("missing" in page) or str(page_id).startswith("-")
+            disambiguation = "disambiguation" in (page.get("pageprops") or {})
             pages_by_title[title] = (missing, disambiguation)
 
         for title in batch:
@@ -219,15 +307,23 @@ def _batch_query_wikipedia(phrases, color, session):
     for phrase in phrases:
         resolved = resolved_titles.get(lookup.get(phrase))
         if resolved:
-            cache[phrase] = (ARTICLE_URL + quote(resolved.replace(' ', '_')), ONTOLOGY_LABEL, color)
+            cache[phrase] = (ARTICLE_URL + quote(resolved.replace(" ", "_")), ONTOLOGY_LABEL, color)
         else:
             cache[phrase] = None
     return cache
 
 
-def Wikipedia_annotate(inputFile, inputDir, outputDir, configFileName, color1, colorls,
-                       chartPackage='Excel', dataTransformation='No transformation',
-                       proper_nouns_only=True):
+def Wikipedia_annotate(
+    inputFile,
+    inputDir,
+    outputDir,
+    configFileName,
+    color1,
+    colorls,
+    chartPackage="Excel",
+    dataTransformation="No transformation",
+    proper_nouns_only=True,
+):
     """Annotate every proper noun that has a Wikipedia article. Returns the files to open.
 
     Unlike DBpedia and YAGO this takes no ontology class, because Wikipedia has no ontology: an article
@@ -246,17 +342,26 @@ def Wikipedia_annotate(inputFile, inputDir, outputDir, configFileName, color1, c
 
     color = colorls[0] if colorls else color1
 
-    files = IO_files_util.getFileList(inputFile, inputDir, '.txt', silent=False, configFileName=configFileName)
+    files = IO_files_util.getFileList(inputFile, inputDir, ".txt", silent=False, configFileName=configFileName)
     nFile = len(files)
     if nFile == 0:
         return filesToOpen
 
     startTime = IO_user_interface_util.timed_alert(
-        GUI_util.window, 2000, 'Analysis start',
-        'Started running Wikipedia Knowledge Graph at', True,
-        '\nAnnotating the ' + ('proper nouns' if proper_nouns_only else 'content words')
-        + ' that have a Wikipedia article, in ' + str(color) + '.',
-        True, '', False)
+        GUI_util.window,
+        2000,
+        "Analysis start",
+        "Started running Wikipedia Knowledge Graph at",
+        True,
+        "\nAnnotating the "
+        + ("proper nouns" if proper_nouns_only else "content words")
+        + " that have a Wikipedia article, in "
+        + str(color)
+        + ".",
+        True,
+        "",
+        False,
+    )
 
     session = requests.Session()
     nlp = _get_stanza_pipeline()
@@ -265,7 +370,7 @@ def Wikipedia_annotate(inputFile, inputDir, outputDir, configFileName, color1, c
         head, tail = os.path.split(file)
         print("Processing file " + str(file_idx) + "/" + str(nFile) + " " + tail)
 
-        with open(file, 'r', encoding='utf-8', errors='ignore') as _f:
+        with open(file, encoding="utf-8", errors="ignore") as _f:
             contents = _f.read()
         contents = _preprocess(contents)
 
@@ -284,9 +389,8 @@ def Wikipedia_annotate(inputFile, inputDir, outputDir, configFileName, color1, c
 
         html_str, phrases, links, onts, sent_ids, sentences = _build_html(doc, cache, color1, file)
 
-        outFilename = os.path.join(outputDir,
-                                   "NLP_Wikipedia_annotated_" + os.path.splitext(tail)[0] + '.html')
-        with open(outFilename, 'w', encoding='utf-8', errors='ignore') as f:
+        outFilename = os.path.join(outputDir, "NLP_Wikipedia_annotated_" + os.path.splitext(tail)[0] + ".html")
+        with open(outFilename, "w", encoding="utf-8", errors="ignore") as f:
             f.write(html_str)
         filesToOpen.append(outFilename)
 
@@ -300,9 +404,17 @@ def Wikipedia_annotate(inputFile, inputDir, outputDir, configFileName, color1, c
         all_html_docs.extend([hyper_html] * len(phrases))
 
     if not all_phrases:
-        IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end',
-                                           'Finished running Wikipedia Knowledge Graph at',
-                                           True, '', True, startTime, False)
+        IO_user_interface_util.timed_alert(
+            GUI_util.window,
+            2000,
+            "Analysis end",
+            "Finished running Wikipedia Knowledge Graph at",
+            True,
+            "",
+            True,
+            startTime,
+            False,
+        )
         return filesToOpen
 
     DocumentID = []
@@ -317,35 +429,53 @@ def Wikipedia_annotate(inputFile, inputDir, outputDir, configFileName, color1, c
     HyperLinkedDoc = [IO_csv_util.dressFilenameForCSVHyperlink(d) for d in all_documents]
     HyperLinkedURL = [IO_csv_util.dressFilenameForCSVHyperlink(u) for u in all_links]
 
-    df = pd.DataFrame({
-        'Token': all_phrases,
-        'Ontology class': all_onts,
-        'url': HyperLinkedURL,
-        'Sentence ID': all_sent_ids,
-        'Sentence': all_sentences,
-        'Document ID': DocumentID,
-        'Document': HyperLinkedDoc,
-        'Html File': all_html_docs,
-    })
+    df = pd.DataFrame(
+        {
+            "Token": all_phrases,
+            "Ontology class": all_onts,
+            "url": HyperLinkedURL,
+            "Sentence ID": all_sent_ids,
+            "Sentence": all_sentences,
+            "Document ID": DocumentID,
+            "Document": HyperLinkedDoc,
+            "Html File": all_html_docs,
+        }
+    )
 
-    from datetime import datetime, date
-    csvname = "Wikipedia_output_" + date.today().strftime("%b_%d_%Y") + "_" + datetime.now().strftime("%H_%M_%S") + ".csv"
+    from datetime import date, datetime
+
+    csvname = (
+        "Wikipedia_output_" + date.today().strftime("%b_%d_%Y") + "_" + datetime.now().strftime("%H_%M_%S") + ".csv"
+    )
     csvname = os.path.join(outputDir, csvname)
-    df.to_csv(csvname, encoding='utf-8', index=False)
+    df.to_csv(csvname, encoding="utf-8", index=False)
     filesToOpen.append(csvname)
 
     if not df.empty:
         import charts_util
-        outputFiles = charts_util.plot(csvname, outputDir, columns=['Token'],
-                                       title='Frequency of Wikipedia annotated entities',
-                                       x_label='Wikipedia entity')
+
+        outputFiles = charts_util.plot(
+            csvname,
+            outputDir,
+            columns=["Token"],
+            title="Frequency of Wikipedia annotated entities",
+            x_label="Wikipedia entity",
+        )
         if outputFiles is not None:
             if isinstance(outputFiles, str):
                 filesToOpen.append(outputFiles)
             else:
                 filesToOpen.extend(outputFiles)
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end',
-                                       'Finished running Wikipedia Knowledge Graph at',
-                                       True, '', True, startTime, False)
+    IO_user_interface_util.timed_alert(
+        GUI_util.window,
+        2000,
+        "Analysis end",
+        "Finished running Wikipedia Knowledge Graph at",
+        True,
+        "",
+        True,
+        startTime,
+        False,
+    )
     return filesToOpen

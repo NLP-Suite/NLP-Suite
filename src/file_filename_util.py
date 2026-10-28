@@ -1,34 +1,44 @@
 # Written by Roberto Franzosi December 2019
-#	edited July 2020
+# edited July 2020
 
 import sys
+
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_Python_packages(GUI_util.window, "file_filename_util",
-                                ['csv', 'os', 'platform', 'shutil', 'time', 'datetime']) == False:
+if (
+    IO_libraries_util.install_all_Python_packages(
+        GUI_util.window, "file_filename_util", ["csv", "os", "platform", "shutil", "time", "datetime"]
+    )
+    == False
+):
     sys.exit(0)
 
-import os
-import os.path, time, datetime
-from datetime import datetime, date
 import csv
-import shutil
+import datetime
+from datetime import datetime
+import os
+import os.path
 import platform
+import shutil
+import time
 import tkinter.messagebox as mb
 
 import IO_csv_util
 import IO_files_util
-import IO_user_interface_util
 
-def backup_files (inputFilename,inputDir,scripName, fileType='.txt',configFileName=''):
+
+def backup_files(inputFilename, inputDir, scripName, fileType=".txt", configFileName=""):
     if inputFilename != "":
         temp_inputDir, tail = os.path.split(inputFilename)
     else:
         temp_inputDir = inputDir
-    backup_path = os.path.join(temp_inputDir, 'backup')
-    answer=mb.askyesnocancel("Backup files!","The function '" + scripName + "' will modify your input file(s).\n\nDo you want to backup your file(s)?")
-    if answer==None: # Cancel
+    backup_path = os.path.join(temp_inputDir, "backup")
+    answer = mb.askyesnocancel(
+        "Backup files!",
+        "The function '" + scripName + "' will modify your input file(s).\n\nDo you want to backup your file(s)?",
+    )
+    if answer == None:  # Cancel
         return False
     if answer:
         IO_files_util.make_directory(backup_path)
@@ -36,22 +46,25 @@ def backup_files (inputFilename,inputDir,scripName, fileType='.txt',configFileNa
         return True
     inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType, False, configFileName)
     nDocs = len(inputDocs)
-    docID=0
+    docID = 0
     for doc in inputDocs:
         docID = docID + 1
         head, tail = os.path.split(doc)
-        print("Processing file " + str(docID) + "/" + str(nDocs) + ' ' + tail)
+        print("Processing file " + str(docID) + "/" + str(nDocs) + " " + tail)
         try:
             shutil.copy(doc, backup_path + os.sep + os.path.split(doc)[1])
         except:
             print(
-                'The file ' + doc + ' was skipped from processing. An unexpected error occurred when processing the file.')
+                "The file "
+                + doc
+                + " was skipped from processing. An unexpected error occurred when processing the file."
+            )
             fileFound = False
         fileFound = True
-    if nDocs!=docID:
+    if nDocs != docID:
         # IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Warning',
         #                                    str(nDocs-docID) + ' could not be backed up. Check files and try again.)
-        mb.warning('Warning',str(nDocs-docID) + ' could not be backed up. Check files and try again.')
+        mb.warning("Warning", str(nDocs - docID) + " could not be backed up. Check files and try again.")
         return False
     else:
         return True
@@ -59,7 +72,7 @@ def backup_files (inputFilename,inputDir,scripName, fileType='.txt',configFileNa
 
 def dateGreater(d1, d2):
     # This function returns True if d1 is a more recent date than d2, False otherwise
-    if d1 == '' or d2 == '':
+    if d1 == "" or d2 == "":
         print("Could not compare dates.")
         return False
     else:
@@ -71,7 +84,7 @@ def dateGreater(d1, d2):
 def purge_duplicate_rows_byFilename(window, inputFilename, outputDir, openOutputFiles, filenameCol):
     bestFiles = {}
     filenameColNum = 2
-    with open(inputFilename, 'r', encoding="utf-8", errors='ignore') as read_obj:
+    with open(inputFilename, encoding="utf-8", errors="ignore") as read_obj:
         csv_reader = csv.reader(read_obj)
         header = next(csv_reader)
         filenameColNum = IO_csv_util.get_columnNumber_from_headerValue(header, filenameCol, inputFilename)
@@ -91,7 +104,7 @@ def purge_duplicate_rows_byFilename(window, inputFilename, outputDir, openOutput
                     bestFiles[fName] = row
 
     deleteList = []
-    with open(inputFilename, 'r', encoding="utf-8", errors='ignore') as read_obj:
+    with open(inputFilename, encoding="utf-8", errors="ignore") as read_obj:
         csv_reader = csv.reader(read_obj)
         header = next(csv_reader)
         if header is not None:
@@ -105,8 +118,8 @@ def purge_duplicate_rows_byFilename(window, inputFilename, outputDir, openOutput
                         deleteList.append([row[filenameColNum]])
 
     # Now, we can call list_to_csv so that we can generate a new CSV with the list of files to be deleted
-    filesToOpen = [outputDir + os.sep + 'files_to_delete.csv']
-    IO_csv_util.list_to_csv(window, deleteList, outputDir + os.sep + 'files_to_delete.csv', colnum=0)
+    filesToOpen = [outputDir + os.sep + "files_to_delete.csv"]
+    IO_csv_util.list_to_csv(window, deleteList, outputDir + os.sep + "files_to_delete.csv", colnum=0)
     if openOutputFiles:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
 
@@ -132,7 +145,7 @@ def purge_partial_matches(window, inputFilename, outputDir, openOutputFiles, nam
     docxdict = {}
     nameColNum = 0
     filenameColNum = 2
-    with open(inputFilename, 'r', encoding="utf-8", errors='ignore') as read_obj:
+    with open(inputFilename, encoding="utf-8", errors="ignore") as read_obj:
         csv_reader = csv.reader(read_obj)
         header = next(csv_reader)
         nameColNum = IO_csv_util.get_columnNumber_from_headerValue(header, nameCol, inputFilename)
@@ -140,15 +153,15 @@ def purge_partial_matches(window, inputFilename, outputDir, openOutputFiles, nam
         print(nameColNum, filenameColNum)
         if header is not None:
             for row in csv_reader:
-                if os.path.splitext(row[filenameColNum])[1].lower() == '.pdf':
+                if os.path.splitext(row[filenameColNum])[1].lower() == ".pdf":
                     fill_dictionary(row, pdfdict, nameColNum, filenameColNum)
-                elif os.path.splitext(row[filenameColNum])[1].lower() == '.docx':
+                elif os.path.splitext(row[filenameColNum])[1].lower() == ".docx":
                     fill_dictionary(row, docxdict, nameColNum, filenameColNum)
                 else:
                     print("Unrecognized file:", row[filenameColNum])
 
     deleteList = []
-    with open(inputFilename, 'r', encoding="utf-8", errors='ignore') as read_obj:
+    with open(inputFilename, encoding="utf-8", errors="ignore") as read_obj:
         csv_reader = csv.reader(read_obj)
         header = next(csv_reader)
         if header is not None:
@@ -156,114 +169,144 @@ def purge_partial_matches(window, inputFilename, outputDir, openOutputFiles, nam
                 # Go through the csv file again, this time picking out the files that are NOT in the dictionary
                 name = row[nameColNum]
                 head, fName = os.path.split(row[filenameColNum])
-                if os.path.splitext(fName)[1].lower() == '.pdf':
+                if os.path.splitext(fName)[1].lower() == ".pdf":
                     # We are in the pdf dictionary
                     if row != pdfdict.get(name):
                         # This file is not in the dictionary, so we should delete it! Add it to the list.
                         deleteList.append([row[filenameColNum]])
-                elif os.path.splitext(fName)[1].lower() == '.docx':
+                elif os.path.splitext(fName)[1].lower() == ".docx":
                     if row != docxdict.get(name):
                         deleteList.append([row[filenameColNum]])
 
     # Now, we can call list_to_csv so that we can generate a new CSV with the list of files to be deleted
-    filesToOpen = [outputDir + os.sep + 'files_to_delete.csv']
-    IO_csv_util.list_to_csv(window, deleteList, outputDir + os.sep + 'files_to_delete.csv', colnum=0)
+    filesToOpen = [outputDir + os.sep + "files_to_delete.csv"]
+    IO_csv_util.list_to_csv(window, deleteList, outputDir + os.sep + "files_to_delete.csv", colnum=0)
     if openOutputFiles:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
 
 
-def writeOutput(inputPath, inputFilenamename, outputPath, outputFilename, fieldnames,
-                by_creation_date_var, creation_date, modification_date,
-                by_author_var, author,
-                string_entry_var,
-                by_embedded_items_var, comparison_var, embedded_item_character_value, number_of_items_var, itemCount,
-                character_count_var, character_entry_var, characterCount,
-                fileName_embeds_date, date, dateStr,
-                split_string):
+def writeOutput(
+    inputPath,
+    inputFilenamename,
+    outputPath,
+    outputFilename,
+    fieldnames,
+    by_creation_date_var,
+    creation_date,
+    modification_date,
+    by_author_var,
+    author,
+    string_entry_var,
+    by_embedded_items_var,
+    comparison_var,
+    embedded_item_character_value,
+    number_of_items_var,
+    itemCount,
+    character_count_var,
+    character_entry_var,
+    characterCount,
+    fileName_embeds_date,
+    date,
+    dateStr,
+    split_string,
+):
 
     if not os.path.isdir(os.path.join(inputPath, inputFilenamename)):
         printLine = {}
-        with open(outputPath + os.sep + outputFilename, 'a', errors='ignore', newline='') as csvfile:
+        with open(outputPath + os.sep + outputFilename, "a", errors="ignore", newline="") as csvfile:
             # write file headers
             writer = csv.DictWriter(csvfile, fieldnames)
             head, tail = os.path.split(inputFilenamename)
             filename, file_extension = os.path.splitext(inputFilenamename)
             ext = file_extension[1:]
 
-            printLine = {'File_Name': tail, 'Path_To_File': IO_csv_util.dressFilenameForCSVHyperlink(inputPath),
-                         'File_Name_With_Path': IO_csv_util.dressFilenameForCSVHyperlink(inputFilenamename), 'File_Type':ext}
+            printLine = {
+                "File_Name": tail,
+                "Path_To_File": IO_csv_util.dressFilenameForCSVHyperlink(inputPath),
+                "File_Name_With_Path": IO_csv_util.dressFilenameForCSVHyperlink(inputFilenamename),
+                "File_Type": ext,
+            }
             if by_creation_date_var == 1:
-                printLine['Creation_date'] = creation_date
-                printLine['Modification_date'] = modification_date
+                printLine["Creation_date"] = creation_date
+                printLine["Modification_date"] = modification_date
             if by_author_var == 1:
-                printLine['Author'] = author
-            if by_embedded_items_var == 1 and number_of_items_var>0:
-                printLine['Embedded items count (' + embedded_item_character_value + ')'] = str(number_of_items_var)
-                printLine['Count by document'] = str(itemCount)
+                printLine["Author"] = author
+            if by_embedded_items_var == 1 and number_of_items_var > 0:
+                printLine["Embedded items count (" + embedded_item_character_value + ")"] = str(number_of_items_var)
+                printLine["Count by document"] = str(itemCount)
             if character_count_var == 1:
-                printLine['Character count (' + character_entry_var + ')'] = str(characterCount)
+                printLine["Character count (" + character_entry_var + ")"] = str(characterCount)
             if fileName_embeds_date == 1:
-                printLine['Date'] = dateStr
-            if split_string!='':
-                split_items = split_string.split(',')
+                printLine["Date"] = dateStr
+            if split_string != "":
+                split_items = split_string.split(",")
                 ID = 1
                 for item in split_items:
-                    printLine['Split item' + str(ID)] = str(item)
+                    printLine["Split item" + str(ID)] = str(item)
                     ID = ID + 1
             try:
                 writer.writerow(printLine)
             except:
                 # mb.showwarning(title="Filename error",
                 #                message=split_string + "\n\nERROR! The current file has more embedded items than the number of fields first created in the output csv file (" + str(ID) + ").\n\nPlease, check the filename and edit it.")
-                print("ERROR! The current file has more embedded items (" + str(ID) + ") than the number of fields first created in the output csv file. The file split values cannot be saved.")
+                print(
+                    "ERROR! The current file has more embedded items ("
+                    + str(ID)
+                    + ") than the number of fields first created in the output csv file. The file split values cannot be saved."
+                )
     else:
         fileFound = False
 
 
-def processFile(inputPath, outputPath, filename, outputFilename,
-                fieldnames,
-                selectedCsvFile_var,
-                hasFullPath,
-                utf8_var,
-                ASCII_var,
-                list_var,
-                rename_var,
-                copy_var,
-                move_var,
-                delete_var,
-                split_var,
-                rename_new_entry,
-                file_type_menu_var,
-                by_creation_date_var,
-                by_author_var,
-                by_prefix_var,
-                by_substring_var,
-                string_entry_var,
-                by_foldername_var,
-                folder_character_separator_var,
-                by_embedded_items_var,
-                comparison_var,
-                number_of_items_var,
-                embedded_item_character_value,
-                include_exclude_var,
-                character_count_var,
-                character_entry_var,
-                include_subdir_var,
-                fileName_embeds_date,
-                date_format,
-                date_separator,
-                date_position):
+def processFile(
+    inputPath,
+    outputPath,
+    filename,
+    outputFilename,
+    fieldnames,
+    selectedCsvFile_var,
+    hasFullPath,
+    utf8_var,
+    ASCII_var,
+    list_var,
+    rename_var,
+    copy_var,
+    move_var,
+    delete_var,
+    split_var,
+    rename_new_entry,
+    file_type_menu_var,
+    by_creation_date_var,
+    by_author_var,
+    by_prefix_var,
+    by_substring_var,
+    string_entry_var,
+    by_foldername_var,
+    folder_character_separator_var,
+    by_embedded_items_var,
+    comparison_var,
+    number_of_items_var,
+    embedded_item_character_value,
+    include_exclude_var,
+    character_count_var,
+    character_entry_var,
+    include_subdir_var,
+    fileName_embeds_date,
+    date_format,
+    date_separator,
+    date_position,
+):
     # TODO must handle selectedCsvFile_var
-    #	if selectedCsvFile_var.get()!='' if whatever filename is passed to processFile is in the csv file then we do something
+    # if selectedCsvFile_var.get()!='' if whatever filename is passed to processFile is in the csv file then we do something
 
     characterCount = 0
     itemCount = 0
-    creation_date = ''
-    modification_date = ''
-    author = ''
-    date = ''
-    dateStr = ''
-    split_string = ''
+    creation_date = ""
+    modification_date = ""
+    author = ""
+    date = ""
+    dateStr = ""
+    split_string = ""
     fileFound = True
 
     # ext = IO_files_util.getFileExtension(os.path.join(inputPath, filename))
@@ -281,7 +324,7 @@ def processFile(inputPath, outputPath, filename, outputFilename,
             fileFound = False
 
     if len(file_type_menu_var) > 0:
-        if file_type_menu_var == '*':
+        if file_type_menu_var == "*":
             fileFound = True
         else:
             ext = IO_files_util.getFileExtension(os.path.join(inputPath, filename))
@@ -302,13 +345,13 @@ def processFile(inputPath, outputPath, filename, outputFilename,
             fileFound = False
 
     if list_var == 1 and fileFound:
-        if utf8_var==1:
+        if utf8_var == 1:
             try:
                 # none of these options break the code
                 filename.encode(sys.getfilesystemencoding())
                 print(filename)
             except UnicodeEncodeError:
-                print('   Filename ' + filename + ' is not utf-8')
+                print("   Filename " + filename + " is not utf-8")
         # ASCII_var,
 
         # old_file=filename
@@ -319,20 +362,24 @@ def processFile(inputPath, outputPath, filename, outputFilename,
         # get_author works for docx files only
         if by_author_var == 1:
             ext = IO_files_util.getFileExtension(os.path.join(inputPath, filename))
-            if ext == '.docx' or ext == 'docx':
+            if ext == ".docx" or ext == "docx":
                 author = get_author(os.path.join(inputPath, filename))
             else:
                 author = ""
 
         if fileName_embeds_date == 1:
-            date, dateStr, month, day, year = IO_files_util.getDateFromFileName(filename, date_format, date_separator, date_position, False)
+            date, dateStr, month, day, year = IO_files_util.getDateFromFileName(
+                filename, date_format, date_separator, date_position, False
+            )
 
         if by_embedded_items_var == 1:
             itemCount = 0
             # old_file = filename
-            filename, itemCount = get_spec_num_files(filename, comparison_var, number_of_items_var, embedded_item_character_value)
+            filename, itemCount = get_spec_num_files(
+                filename, comparison_var, number_of_items_var, embedded_item_character_value
+            )
             # filename = numEmbedded(filename, comparison_var,  embedded_item_character_value, include_exclude_var)
-            if filename == '':
+            if filename == "":
                 fileFound = False
 
     if rename_var == 1:
@@ -346,15 +393,19 @@ def processFile(inputPath, outputPath, filename, outputFilename,
             ext = IO_files_util.getFileExtension(os.path.join(inputPath, filename))
             n = len(ext)
             filename_noExtension = filename[:-n]
-            filenameOut = filename.replace(filename,
-                                           filename_noExtension + folder_character_separator_var + currentDir + ext)
+            filenameOut = filename.replace(
+                filename, filename_noExtension + folder_character_separator_var + currentDir + ext
+            )
 
         if fileFound == True:  # always True when Renaming the file
             try:
                 os.rename(inputPath + os.sep + filename, inputPath + os.sep + filenameOut)
             except:
                 print(
-                    "Cannot rename file '" + filenameOut + "' because a file by that name already exists in the output directory.")
+                    "Cannot rename file '"
+                    + filenameOut
+                    + "' because a file by that name already exists in the output directory."
+                )
                 fileFound = False
     # fileFound==False
 
@@ -362,8 +413,11 @@ def processFile(inputPath, outputPath, filename, outputFilename,
         filename = IO_csv_util.undressFilenameForCSVHyperlink(filename)
     if len(filename) > 255:
         print(
-            'The file ' + filename + ' was skipped from processing. The combined length of filename + path exceeds the maximum of 255 characters.')
-        return False, len(filename), '', '', '', '', ''
+            "The file "
+            + filename
+            + " was skipped from processing. The combined length of filename + path exceeds the maximum of 255 characters."
+        )
+        return False, len(filename), "", "", "", "", ""
 
     if copy_var == 1:
         if hasFullPath:
@@ -371,16 +425,21 @@ def processFile(inputPath, outputPath, filename, outputFilename,
                 shutil.copy(filename, outputPath + os.sep + os.path.split(filename)[1])
             except:
                 print(
-                    'The file ' + filename + ' was skipped from processing. An unexpected error occurred when processing the file.')
+                    "The file "
+                    + filename
+                    + " was skipped from processing. An unexpected error occurred when processing the file."
+                )
                 fileFound = False
-        else:
-            if fileFound == True:
-                try:
-                    shutil.copy(inputPath + os.sep + filename, outputPath + os.sep + filename)
-                except:
-                    print(
-                        'The file ' + filename + ' was skipped from processing. An unexpected error occurred when processing the file.')
-                    fileFound = False
+        elif fileFound == True:
+            try:
+                shutil.copy(inputPath + os.sep + filename, outputPath + os.sep + filename)
+            except:
+                print(
+                    "The file "
+                    + filename
+                    + " was skipped from processing. An unexpected error occurred when processing the file."
+                )
+                fileFound = False
 
     if move_var == 1:
         if hasFullPath:
@@ -389,15 +448,20 @@ def processFile(inputPath, outputPath, filename, outputFilename,
                 fileFound = False
             except:
                 print(
-                    'The file ' + filename + ' was skipped from processing. An unexpected error occurred when processing the file.')
-        else:
-            if fileFound == True:
-                try:
-                    shutil.move(inputPath + os.sep + filename, outputPath + os.sep + filename)
-                except:
-                    print(
-                        'The file ' + filename + ' was skipped from processing. An unexpected error occurred when processing the file.')
-                    fileFound = False
+                    "The file "
+                    + filename
+                    + " was skipped from processing. An unexpected error occurred when processing the file."
+                )
+        elif fileFound == True:
+            try:
+                shutil.move(inputPath + os.sep + filename, outputPath + os.sep + filename)
+            except:
+                print(
+                    "The file "
+                    + filename
+                    + " was skipped from processing. An unexpected error occurred when processing the file."
+                )
+                fileFound = False
 
     if delete_var == 1:
         if hasFullPath:
@@ -405,42 +469,64 @@ def processFile(inputPath, outputPath, filename, outputFilename,
                 os.unlink(filename)
             except:
                 print(
-                    'The file ' + filename + ' was skipped from processing. An unexpected error occurred when processing the file.')
+                    "The file "
+                    + filename
+                    + " was skipped from processing. An unexpected error occurred when processing the file."
+                )
                 fileFound = False
-        else:
-            if fileFound == True:
-                try:
-                    os.unlink(inputPath + os.sep + filename)
-                except:
-                    print(
-                        'The file ' + filename + ' was skipped from processing. An unexpected error occurred when processing the file.')
-                    fileFound = False
+        elif fileFound == True:
+            try:
+                os.unlink(inputPath + os.sep + filename)
+            except:
+                print(
+                    "The file "
+                    + filename
+                    + " was skipped from processing. An unexpected error occurred when processing the file."
+                )
+                fileFound = False
 
     if split_var == 1:
-        split_string=''
-        filename=filename[:-4]  #remove file extension
-        filename_items=filename.split(embedded_item_character_value)
+        split_string = ""
+        filename = filename[:-4]  # remove file extension
+        filename_items = filename.split(embedded_item_character_value)
         for item in filename_items:
-            if split_string =='':
+            if split_string == "":
                 split_string = item
             else:
-                split_string = split_string + ',' + item
+                split_string = split_string + "," + item
 
-    if (fileFound == True):
-
-        writeOutput(inputPath, filename, outputPath, outputFilename, fieldnames,
-                    by_creation_date_var, creation_date, modification_date,
-                    by_author_var, author,
-                    string_entry_var,
-                    by_embedded_items_var, comparison_var, embedded_item_character_value, number_of_items_var, itemCount,
-                    character_count_var, character_entry_var, characterCount,
-                    fileName_embeds_date, date, dateStr,
-                    split_string)
+    if fileFound == True:
+        writeOutput(
+            inputPath,
+            filename,
+            outputPath,
+            outputFilename,
+            fieldnames,
+            by_creation_date_var,
+            creation_date,
+            modification_date,
+            by_author_var,
+            author,
+            string_entry_var,
+            by_embedded_items_var,
+            comparison_var,
+            embedded_item_character_value,
+            number_of_items_var,
+            itemCount,
+            character_count_var,
+            character_entry_var,
+            characterCount,
+            fileName_embeds_date,
+            date,
+            dateStr,
+            split_string,
+        )
 
     return fileFound, characterCount, creation_date, modification_date, author, date, dateStr
 
 
 # https://automatetheboringstuff.com/chapter9/
+
 
 def get_count(path, outputPath, outputFilename):
     folders = []
@@ -448,10 +534,10 @@ def get_count(path, outputPath, outputFilename):
         if i.is_dir():
             folders.append(i.path)
 
-    fieldnames = ['Main_Dir', 'Subdir', 'pdf', 'doc', 'docx', 'txt', 'Matching']
+    fieldnames = ["Main_Dir", "Subdir", "pdf", "doc", "docx", "txt", "Matching"]
     # fieldnames = ['a','b','c','d','e','f','g']
     # outputFilename = 'Ext_count.csv'
-    with open(outputPath + os.sep + outputFilename, 'w', newline='') as csvfile:
+    with open(outputPath + os.sep + outputFilename, "w", newline="") as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
         i = 0
@@ -462,22 +548,32 @@ def get_count(path, outputPath, outputFilename):
                 i = i + 1
                 filename, file_extension = os.path.splitext(file)
                 ext = file_extension[1:]
-                if ext == 'pdf':
+                if ext == "pdf":
                     pdf += 1
-                elif ext == 'doc':
+                elif ext == "doc":
                     doc += 1
-                elif ext == 'docx':
+                elif ext == "docx":
                     docx += 1
-                elif ext == 'txt':
+                elif ext == "txt":
                     txt += 1
 
-                if (pdf != doc and doc != 0) or (pdf != docx and docx != 0) or (pdf != txt and txt != 0) or (
-                        doc + docx + txt == 0 and pdf != 0):
+                if (
+                    (pdf != doc and doc != 0)
+                    or (pdf != docx and docx != 0)
+                    or (pdf != txt and txt != 0)
+                    or (doc + docx + txt == 0 and pdf != 0)
+                ):
                     flag = False
             subDir = os.path.basename(os.path.normpath(folder))
-            printLine = {'Main_Dir': IO_csv_util.dressFilenameForCSVHyperlink(path),
-                         'Subdir': IO_csv_util.dressFilenameForCSVHyperlink(subDir), 'pdf': pdf, 'doc': doc, 'docx': docx,
-                         'txt': txt, 'Matching': flag}
+            printLine = {
+                "Main_Dir": IO_csv_util.dressFilenameForCSVHyperlink(path),
+                "Subdir": IO_csv_util.dressFilenameForCSVHyperlink(subDir),
+                "pdf": pdf,
+                "doc": doc,
+                "docx": docx,
+                "txt": txt,
+                "Matching": flag,
+            }
             writer.writerow(printLine)
     return i
 
@@ -485,16 +581,19 @@ def get_count(path, outputPath, outputFilename):
 # https://stackoverflow.com/questions/7021141/how-to-retrieve-author-of-a-office-file-in-python
 # get_author works for docx files only
 def get_author(path_to_file):
-    import zipfile, lxml.etree
+    import zipfile
+
+    import lxml.etree
+
     # The XML inside a .docx was written by whoever sent the file, so it is parsed with entity
     # resolution and network access OFF -- otherwise reading the author of a document can be made
     # to read something else entirely. See IO_files_util.safe_xml_parser.
     parser = IO_files_util.safe_xml_parser()
     try:
         with zipfile.ZipFile(path_to_file) as zf:
-            doc = lxml.etree.fromstring(zf.read('docProps/core.xml'), parser=parser)
-            ns = {'dc': 'http://purl.org/dc/elements/1.1/'}
-            creator = doc.xpath('//dc:creator', namespaces=ns)[0].text
+            doc = lxml.etree.fromstring(zf.read("docProps/core.xml"), parser=parser)
+            ns = {"dc": "http://purl.org/dc/elements/1.1/"}
+            creator = doc.xpath("//dc:creator", namespaces=ns)[0].text
     except:
         creator = ""
     # ALWAYS a string. An element whose only child is an unresolved entity has .text of None, so
@@ -505,26 +604,33 @@ def get_author(path_to_file):
 
 # https://stackoverflow.com/questions/7021141/how-to-retrieve-author-of-a-office-file-in-python
 
+
 # https://stackoverflow.com/questions/237079/how-to-get-file-creation-modification-date-times-in-python
 # path_to_file is the filename with path
 def get_creation_date(path_to_file):
-    creation_date = ''
-    modification_date = ''
+    creation_date = ""
+    modification_date = ""
 
     # should not be a list but a string
     if isinstance(path_to_file, list):
         return creation_date, modification_date
 
     if len(str(path_to_file)) > 256:
-        print("The filename and path " + str(
-            path_to_file) + " exceeds the 256 character limit of filename length. Please, shorten the filename with its path and try again.")
+        print(
+            "The filename and path "
+            + str(path_to_file)
+            + " exceeds the 256 character limit of filename length. Please, shorten the filename with its path and try again."
+        )
         return creation_date, modification_date
 
     if os.path.isfile(path_to_file):
         pass
     else:
-        print("The string " + str(
-            path_to_file) + " is not a filename and path as expected. Document creation and modification date will be skipped.")
+        print(
+            "The string "
+            + str(path_to_file)
+            + " is not a filename and path as expected. Document creation and modification date will be skipped."
+        )
         return creation_date, modification_date
 
     """
@@ -533,18 +639,18 @@ def get_creation_date(path_to_file):
     See http://stackoverflow.com/a/39501288/1709587 for explanation.
     """
 
-    if platform.system() == 'Windows':
+    if platform.system() == "Windows":
         named_tuple = time.ctime(os.path.getctime(path_to_file))
         try:
             creation_date = datetime.strptime(named_tuple, "%a %b %d %H:%M:%S %Y").strftime("%m/%d/%Y")
         except:
-            creation_date = ''
+            creation_date = ""
         try:
             modification_date = datetime.fromtimestamp(os.path.getmtime(path_to_file)).strftime("%m/%d/%Y")
         except:
-            modification_date = ''
+            modification_date = ""
         if creation_date is None or modification_date is None:
-            creation_date = modification_date = ''
+            creation_date = modification_date = ""
         return creation_date, modification_date
     else:
         stat = os.stat(path_to_file)
@@ -568,16 +674,16 @@ def get_spec_num_files(filename, comparator, number_of_items_var, embedded_item_
     # fullFilePath = row[fullPathColNum] # fullPathColNum should point to the col that has the complete path to the file ie  C:\Users\brett\Desktop\myfile.docx
     justName = os.path.splitext(os.path.split(filename)[1])[0]
     itemCount = len(justName.split(embedded_item_character_value))
-    result = ''
-    if comparator == '=':
+    result = ""
+    if comparator == "=":
         if itemCount == number_of_items_var:
             # outputList.append([filename])
             result = filename
-    elif comparator == '>=':
+    elif comparator == ">=":
         if itemCount >= number_of_items_var:
             # outputList.append([filename])
             result = filename
-    elif comparator == '<=':
+    elif comparator == "<=":
         if itemCount <= number_of_items_var:
             # outputList.append([filename])
             result = filename

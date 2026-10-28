@@ -1,37 +1,44 @@
-import sqlite3, time, sys
-db = 'C:/Users/rfranzo/Desktop/PCACE-lynching_xlsx/PCACE-lynching_xlsx.sqlite'
+import sqlite3
+import sys
+import time
+
+db = "C:/Users/rfranzo/Desktop/PCACE-lynching_xlsx/PCACE-lynching_xlsx.sqlite"
 conn = sqlite3.connect(db)
 cur = conn.cursor()
 
 # Table sizes
-for t in ['data_Complex', 'data_xref_Complex_Complex', 'data_Simplex', 'data_xref_Simplex_Complex']:
+for t in ["data_Complex", "data_xref_Complex_Complex", "data_Simplex", "data_xref_Simplex_Complex"]:
     cur.execute(f"SELECT count(*) FROM [{t}]")
-    print(f'  {t}: {cur.fetchone()[0]} rows')
+    print(f"  {t}: {cur.fetchone()[0]} rows")
 
 # How many Actors (setup=35)?
 cur.execute("SELECT count(*) FROM data_Complex WHERE ID_setup_complex=35")
-print(f'\n  Actors (setup=35): {cur.fetchone()[0]}')
+print(f"\n  Actors (setup=35): {cur.fetchone()[0]}")
 cur.execute("SELECT count(*) FROM data_Complex WHERE ID_setup_complex=2")
-print(f'  Participant-S (setup=2): {cur.fetchone()[0]}')
+print(f"  Participant-S (setup=2): {cur.fetchone()[0]}")
 cur.execute("SELECT count(*) FROM data_Complex WHERE ID_setup_complex=52")
-print(f'  Semantic Triplet (setup=52): {cur.fetchone()[0]}')
+print(f"  Semantic Triplet (setup=52): {cur.fetchone()[0]}")
 cur.execute("SELECT count(*) FROM data_Complex WHERE ID_setup_complex=3")
-print(f'  Process (setup=3): {cur.fetchone()[0]}')
+print(f"  Process (setup=3): {cur.fetchone()[0]}")
 
 # xref size
 cur.execute("SELECT count(*) FROM data_xref_Complex_Complex")
-print(f'\n  data_xref_Complex_Complex: {cur.fetchone()[0]} rows')
+print(f"\n  data_xref_Complex_Complex: {cur.fetchone()[0]} rows")
 
 # Test: composite index on (ID_data_complex_lower, ID_data_complex_higher)
-print('\nAdding composite indexes...')
+print("\nAdding composite indexes...")
 sys.stdout.flush()
-cur.execute("CREATE INDEX IF NOT EXISTS idx_xcc_lower_higher ON data_xref_Complex_Complex(ID_data_complex_lower, ID_data_complex_higher)")
-cur.execute("CREATE INDEX IF NOT EXISTS idx_xcc_higher_lower ON data_xref_Complex_Complex(ID_data_complex_higher, ID_data_complex_lower)")
+cur.execute(
+    "CREATE INDEX IF NOT EXISTS idx_xcc_lower_higher ON data_xref_Complex_Complex(ID_data_complex_lower, ID_data_complex_higher)"
+)
+cur.execute(
+    "CREATE INDEX IF NOT EXISTS idx_xcc_higher_lower ON data_xref_Complex_Complex(ID_data_complex_higher, ID_data_complex_lower)"
+)
 # Composite on data_Complex
 cur.execute("CREATE INDEX IF NOT EXISTS idx_dc_setup_id ON data_Complex(ID_setup_complex, ID_data_complex)")
 cur.execute("CREATE INDEX IF NOT EXISTS idx_dc_id_setup ON data_Complex(ID_data_complex, ID_setup_complex)")
 conn.commit()
-print('Done')
+print("Done")
 sys.stdout.flush()
 
 # Re-test with composite indexes
@@ -61,18 +68,18 @@ WHERE
 ORDER BY tgt_dc.ID_data_complex
 """
 
-print('\n=== QUERY PLAN (with composite indexes) ===')
+print("\n=== QUERY PLAN (with composite indexes) ===")
 sys.stdout.flush()
 cur.execute("EXPLAIN QUERY PLAN " + q)
 for r in cur.fetchall():
-    print(f'  {r}')
+    print(f"  {r}")
 sys.stdout.flush()
 
-print('\n=== RUNNING ===')
+print("\n=== RUNNING ===")
 sys.stdout.flush()
 t0 = time.time()
 cur.execute(q)
 rows = cur.fetchall()
 t1 = time.time()
-print(f'{len(rows)} rows in {t1-t0:.3f}s')
+print(f"{len(rows)} rows in {t1 - t0:.3f}s")
 conn.close()

@@ -1,23 +1,26 @@
 import sys
+
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_Python_packages(GUI_util.window, "NGrams_collocation_statistics_util",
-        ['os', 'tkinter', 'pandas', 'numpy', 'nltk']) == False:
+if (
+    IO_libraries_util.install_all_Python_packages(
+        GUI_util.window, "NGrams_collocation_statistics_util", ["os", "tkinter", "pandas", "numpy", "nltk"]
+    )
+    == False
+):
     sys.exit(0)
 
-import os
+from collections import Counter
 import math
-import numpy as np
-import pandas as pd
+import os
 import tkinter.messagebox as mb
-from collections import Counter, defaultdict
 
-import IO_csv_util
+import pandas as pd
+
 import IO_files_util
 import IO_user_interface_util
-
-from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text
+from Stanza_functions_util import sentence_split_stanza_text, stanzaPipeLine
 
 
 def _tokenize_sentences(text):
@@ -34,7 +37,8 @@ def _compute_bigram_stats(sentences, min_freq=2, stop_words=None):
     if stop_words is None:
         try:
             from nltk.corpus import stopwords
-            stop_words = set(stopwords.words('english'))
+
+            stop_words = set(stopwords.words("english"))
         except:
             stop_words = set()
 
@@ -80,106 +84,125 @@ def _compute_bigram_stats(sentences, min_freq=2, stop_words=None):
 
         dice = (2 * f_bigram) / (f_w1 + f_w2) if (f_w1 + f_w2) > 0 else 0
 
-        results.append({
-            'Word 1': w1,
-            'Word 2': w2,
-            'Bigram': f'{w1} {w2}',
-            'Frequency': f_bigram,
-            'Word 1 Freq': f_w1,
-            'Word 2 Freq': f_w2,
-            'PMI': round(pmi, 4),
-            'Log-Likelihood': round(ll_val, 4),
-            'Chi-Squared': round(chi2, 4),
-            'T-Score': round(t_score, 4),
-            'Dice Coefficient': round(dice, 4),
-        })
+        results.append(
+            {
+                "Word 1": w1,
+                "Word 2": w2,
+                "Bigram": f"{w1} {w2}",
+                "Frequency": f_bigram,
+                "Word 1 Freq": f_w1,
+                "Word 2 Freq": f_w2,
+                "PMI": round(pmi, 4),
+                "Log-Likelihood": round(ll_val, 4),
+                "Chi-Squared": round(chi2, 4),
+                "T-Score": round(t_score, 4),
+                "Dice Coefficient": round(dice, 4),
+            }
+        )
 
     return results
 
 
-def compute_collocation_statistics(inputFilename, inputDir, outputDir,
-                                    chartPackage='Excel', dataTransformation='No transformation',
-                                    min_freq=2, top_n=100):
+def compute_collocation_statistics(
+    inputFilename,
+    inputDir,
+    outputDir,
+    chartPackage="Excel",
+    dataTransformation="No transformation",
+    min_freq=2,
+    top_n=100,
+):
     filesToOpen = []
 
-    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir,
-                                                        label='collocations', silent=True)
-    if outputDir == '':
+    outputDir = IO_files_util.make_output_subdirectory(
+        inputFilename, inputDir, outputDir, label="collocations", silent=True
+    )
+    if outputDir == "":
         return filesToOpen
 
-    startTime = IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
-                                                    'Started running Collocation Statistics at', True)
+    startTime = IO_user_interface_util.timed_alert(
+        GUI_util.window, 2000, "Analysis start", "Started running Collocation Statistics at", True
+    )
 
     all_sentences = []
 
     if inputFilename and os.path.exists(inputFilename):
-        with open(inputFilename, 'r', encoding='utf-8', errors='ignore') as f:
+        with open(inputFilename, encoding="utf-8", errors="ignore") as f:
             text = f.read()
         if text.strip():
             all_sentences.extend(_tokenize_sentences(text))
     elif inputDir and os.path.isdir(inputDir):
-        txt_files = sorted([f for f in os.listdir(inputDir) if f.endswith('.txt')])
+        txt_files = sorted([f for f in os.listdir(inputDir) if f.endswith(".txt")])
         for filename in txt_files:
             filepath = os.path.join(inputDir, filename)
-            with open(filepath, 'r', encoding='utf-8', errors='ignore') as f:
+            with open(filepath, encoding="utf-8", errors="ignore") as f:
                 text = f.read()
             if text.strip():
                 all_sentences.extend(_tokenize_sentences(text))
 
     if not all_sentences:
-        mb.showwarning(title='No data', message='No text data found to analyze.')
+        mb.showwarning(title="No data", message="No text data found to analyze.")
         return filesToOpen
 
     results = _compute_bigram_stats(all_sentences, min_freq=min_freq)
 
     if not results:
-        mb.showwarning(title='No collocations',
-                       message=f'No bigrams found with minimum frequency of {min_freq}.')
+        mb.showwarning(title="No collocations", message=f"No bigrams found with minimum frequency of {min_freq}.")
         return filesToOpen
 
     df = pd.DataFrame(results)
 
-    full_output = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir,
-                                                           '.csv', 'collocations_all',
-                                                           '', '', '', '', False, True)
-    df_sorted = df.sort_values('PMI', ascending=False)
-    df_sorted.to_csv(full_output, index=False, encoding='utf-8')
+    full_output = IO_files_util.generate_output_file_name(
+        inputFilename, inputDir, outputDir, ".csv", "collocations_all", "", "", "", "", False, True
+    )
+    df_sorted = df.sort_values("PMI", ascending=False)
+    df_sorted.to_csv(full_output, index=False, encoding="utf-8")
     filesToOpen.append(full_output)
 
-    for measure in ['PMI', 'Log-Likelihood', 'Chi-Squared', 'T-Score']:
+    for measure in ["PMI", "Log-Likelihood", "Chi-Squared", "T-Score"]:
         top_df = df.nlargest(top_n, measure)
-        measure_file = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir,
-                                                                '.csv',
-                                                                f'collocations_top_{measure.replace("-", "_")}',
-                                                                '', '', '', '', False, True)
-        top_df.to_csv(measure_file, index=False, encoding='utf-8')
+        measure_file = IO_files_util.generate_output_file_name(
+            inputFilename,
+            inputDir,
+            outputDir,
+            ".csv",
+            f"collocations_top_{measure.replace('-', '_')}",
+            "",
+            "",
+            "",
+            "",
+            False,
+            True,
+        )
+        top_df.to_csv(measure_file, index=False, encoding="utf-8")
         filesToOpen.append(measure_file)
 
-    if chartPackage != 'No charts':
+    if chartPackage != "No charts":
         import matplotlib.pyplot as plt
 
         fig, axes = plt.subplots(2, 2, figsize=(16, 12))
-        measures = ['PMI', 'Log-Likelihood', 'Chi-Squared', 'T-Score']
-        colors = ['#378ADD', '#E24B4A', '#639922', '#BA7517']
+        measures = ["PMI", "Log-Likelihood", "Chi-Squared", "T-Score"]
+        colors = ["#378ADD", "#E24B4A", "#639922", "#BA7517"]
 
         for ax, measure, color in zip(axes.flatten(), measures, colors):
             plot_df = df.nlargest(20, measure)
             ax.barh(range(len(plot_df)), plot_df[measure].values, color=color, alpha=0.8)
             ax.set_yticks(range(len(plot_df)))
-            ax.set_yticklabels(plot_df['Bigram'].values, fontsize=8)
+            ax.set_yticklabels(plot_df["Bigram"].values, fontsize=8)
             ax.invert_yaxis()
-            ax.set_title(f'Top 20 Collocations by {measure}', fontsize=11)
-            ax.grid(True, alpha=0.3, axis='x')
+            ax.set_title(f"Top 20 Collocations by {measure}", fontsize=11)
+            ax.grid(True, alpha=0.3, axis="x")
 
-        plt.suptitle('Collocation Statistics', fontsize=14)
+        plt.suptitle("Collocation Statistics", fontsize=14)
         plt.tight_layout()
 
-        chart_file = os.path.join(outputDir, 'collocation_statistics_chart.png')
-        plt.savefig(chart_file, dpi=150, bbox_inches='tight')
+        chart_file = os.path.join(outputDir, "collocation_statistics_chart.png")
+        plt.savefig(chart_file, dpi=150, bbox_inches="tight")
         plt.close()
         filesToOpen.append(chart_file)
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end',
-                                        'Finished running Collocation Statistics at', True, '', True, startTime)
+    IO_user_interface_util.timed_alert(
+        GUI_util.window, 2000, "Analysis end", "Finished running Collocation Statistics at", True, "", True, startTime
+    )
 
     return filesToOpen

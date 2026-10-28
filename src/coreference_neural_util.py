@@ -13,10 +13,9 @@
 # written for the NLP Suite
 
 import os
-import sys
-import subprocess
-import pandas as pd
 import tkinter.messagebox as mb
+
+import pandas as pd
 
 import GUI_util
 import IO_files_util
@@ -25,18 +24,42 @@ import IO_user_interface_util
 # same pronoun inventory used by the Stanza coref path (Stanza_util._PRONOUNS)
 _PRONOUNS = {
     # nominative
-    'i', 'you', 'he', 'she', 'it', 'we', 'they',
+    "i",
+    "you",
+    "he",
+    "she",
+    "it",
+    "we",
+    "they",
     # possessive
-    'my', 'mine', 'our', 'ours', 'his', 'her', 'hers', 'their', 'theirs', 'its', 'yours',
+    "my",
+    "mine",
+    "our",
+    "ours",
+    "his",
+    "her",
+    "hers",
+    "their",
+    "theirs",
+    "its",
+    "yours",
     # objective
-    'me', 'him', 'them',
+    "me",
+    "him",
+    "them",
     # reflexive
-    'myself', 'yourself', 'himself', 'herself', 'oneself', 'itself',
-    'ourselves', 'yourselves', 'themselves',
+    "myself",
+    "yourself",
+    "himself",
+    "herself",
+    "oneself",
+    "itself",
+    "ourselves",
+    "yourselves",
+    "themselves",
 }
 
-_COREF_TABLE_COLUMNS = ['Pronoun (antecedent)', 'Referent', 'Sentence ID', 'Sentence',
-                        'Document ID', 'Document']
+_COREF_TABLE_COLUMNS = ["Pronoun (antecedent)", "Referent", "Sentence ID", "Sentence", "Document ID", "Document"]
 
 
 def _is_pronoun(text):
@@ -48,15 +71,16 @@ def _sentence_spans(text):
     Falls back to a single span covering the whole text if nltk/punkt is unavailable."""
     try:
         import nltk
+
         try:
-            tok = nltk.data.load('tokenizers/punkt/english.pickle')
+            tok = nltk.data.load("tokenizers/punkt/english.pickle")
         except LookupError:
-            for res in ('punkt', 'punkt_tab'):
+            for res in ("punkt", "punkt_tab"):
                 try:
                     nltk.download(res, quiet=True)
                 except Exception:
                     pass
-            tok = nltk.data.load('tokenizers/punkt/english.pickle')
+            tok = nltk.data.load("tokenizers/punkt/english.pickle")
         return list(tok.span_tokenize(text))
     except Exception:
         return [(0, len(text))]
@@ -75,12 +99,12 @@ def _locate_sentence(char_pos, sent_spans, text):
 
 
 def _make_output_dir(inputFilename, inputDir, outputDir, engine):
-    if inputFilename != '':
+    if inputFilename != "":
         inputBaseName = os.path.basename(inputFilename)[0:-4]
     else:
         inputBaseName = os.path.basename(inputDir)
-    outputCorefDir = os.path.join(outputDir, 'coref_' + engine + '_' + inputBaseName)
-    return IO_files_util.make_output_subdirectory('', '', outputCorefDir, '', silent=False)
+    outputCorefDir = os.path.join(outputDir, "coref_" + engine + "_" + inputBaseName)
+    return IO_files_util.make_output_subdirectory("", "", outputCorefDir, "", silent=False)
 
 
 def _apply_char_replacements(text, replacements):
@@ -97,7 +121,7 @@ def _apply_char_replacements(text, replacements):
         out.append(rep)
         cursor = end
     out.append(text[cursor:])
-    return ''.join(out)
+    return "".join(out)
 
 
 def _write_outputs(engine, coref_rows, per_file_corefed, outputCorefedDir):
@@ -106,13 +130,14 @@ def _write_outputs(engine, coref_rows, per_file_corefed, outputCorefedDir):
     corefed_files = []
     for tail, corefed_text in per_file_corefed:
         corefed_filename = os.path.join(outputCorefedDir, tail)
-        with open(corefed_filename, 'w', encoding='utf-8') as f:
+        with open(corefed_filename, "w", encoding="utf-8") as f:
             f.write(corefed_text)
         corefed_files.append(corefed_filename)
     if len(coref_rows) > 0:
-        coref_table_filename = os.path.join(outputCorefedDir, 'coref_table_' + engine + '.csv')
+        coref_table_filename = os.path.join(outputCorefedDir, "coref_table_" + engine + ".csv")
         pd.DataFrame(coref_rows, columns=_COREF_TABLE_COLUMNS).to_csv(
-            coref_table_filename, index=False, encoding='utf-8')
+            coref_table_filename, index=False, encoding="utf-8"
+        )
         corefed_files.append(coref_table_filename)
     return corefed_files
 
@@ -120,48 +145,72 @@ def _write_outputs(engine, coref_rows, per_file_corefed, outputCorefedDir):
 # ======================================================================================
 #  BERT option  ->  fastcoref (LingMess / F-coref)
 # ======================================================================================
-def fastcoref_coref(config_filename, inputFilename, inputDir, outputDir,
-                    openOutputFiles, chartPackage, dataTransformation,
-                    language_var, manual_Coref):
+def fastcoref_coref(
+    config_filename,
+    inputFilename,
+    inputDir,
+    outputDir,
+    openOutputFiles,
+    chartPackage,
+    dataTransformation,
+    language_var,
+    manual_Coref,
+):
     """Coreference resolution with fastcoref (a BERT/SpanBERT-based neural model).
     Returns (corefed_files, errorFound) to match coreference_main.run()."""
-    if language_var != 'English':
-        mb.showwarning(title='Language',
-                       message='The BERT (fastcoref) coreference model wired here is English only.\n\n'
-                               'The selected language is ' + str(language_var) + '.')
+    if language_var != "English":
+        mb.showwarning(
+            title="Language",
+            message="The BERT (fastcoref) coreference model wired here is English only.\n\n"
+            "The selected language is " + str(language_var) + ".",
+        )
         return [], True
 
     try:
         from fastcoref import FCoref
     except ImportError:
-        mb.showerror(title='fastcoref not installed',
-                     message="The BERT coreference option requires the 'fastcoref' package, which is not installed.\n\n"
-                             "To install it, open a terminal and run:\n"
-                             "   conda activate NLP\n"
-                             "   pip install fastcoref\n\n"
-                             "fastcoref uses PyTorch + Transformers (already bundled with the NLP Suite) and, "
-                             "on first use, downloads its model (~500 MB) - so the first run needs an internet connection.")
+        mb.showerror(
+            title="fastcoref not installed",
+            message="The BERT coreference option requires the 'fastcoref' package, which is not installed.\n\n"
+            "To install it, open a terminal and run:\n"
+            "   conda activate NLP\n"
+            "   pip install fastcoref\n\n"
+            "fastcoref uses PyTorch + Transformers (already bundled with the NLP Suite) and, "
+            "on first use, downloads its model (~500 MB) - so the first run needs an internet connection.",
+        )
         return [], True
 
-    inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt',
-                                          silent=False, configFileName=config_filename)
+    inputDocs = IO_files_util.getFileList(
+        inputFilename, inputDir, fileType=".txt", silent=False, configFileName=config_filename
+    )
     if len(inputDocs) == 0:
         return [], True
 
-    outputCorefedDir = _make_output_dir(inputFilename, inputDir, outputDir, 'BERT')
-    if outputCorefedDir == '':
+    outputCorefedDir = _make_output_dir(inputFilename, inputDir, outputDir, "BERT")
+    if outputCorefedDir == "":
         return [], True
 
     startTime = IO_user_interface_util.timed_alert(
-        GUI_util.window, 2000, 'Analysis start',
-        'Started running BERT (fastcoref) coreference resolution at', True, '', True, '', False)
+        GUI_util.window,
+        2000,
+        "Analysis start",
+        "Started running BERT (fastcoref) coreference resolution at",
+        True,
+        "",
+        True,
+        "",
+        False,
+    )
 
     try:
         model = FCoref()  # first call downloads the model
     except Exception as e:
-        mb.showerror(title='fastcoref model error',
-                     message='Failed to load the fastcoref model.\n\n' + str(e) +
-                             '\n\nThe first run downloads the model and needs an internet connection.')
+        mb.showerror(
+            title="fastcoref model error",
+            message="Failed to load the fastcoref model.\n\n"
+            + str(e)
+            + "\n\nThe first run downloads the model and needs an internet connection.",
+        )
         return [], True
 
     coref_rows = []
@@ -171,9 +220,9 @@ def fastcoref_coref(config_filename, inputFilename, inputDir, outputDir,
 
     for docID, doc_path in enumerate(inputDocs, 1):
         tail = os.path.basename(doc_path)
-        print("Processing file " + str(docID) + "/" + str(nDocs) + ' ' + tail)
-        text = open(doc_path, 'r', encoding='utf-8', errors='ignore').read()
-        if text.strip() == '':
+        print("Processing file " + str(docID) + "/" + str(nDocs) + " " + tail)
+        text = open(doc_path, encoding="utf-8", errors="ignore").read()
+        if text.strip() == "":
             print("  Skipping empty file: " + tail)
             continue
 
@@ -192,29 +241,36 @@ def fastcoref_coref(config_filename, inputFilename, inputDir, outputDir,
         for cluster in clusters:
             # canonical referent = first non-pronoun mention in the cluster
             canonical = None
-            for (s, e) in cluster:
+            for s, e in cluster:
                 mention_text = text[s:e].strip()
                 if mention_text and not _is_pronoun(mention_text):
                     canonical = mention_text
                     break
             if canonical is None:
                 continue
-            for (s, e) in cluster:
+            for s, e in cluster:
                 mention_text = text[s:e]
                 if _is_pronoun(mention_text):
                     sent_idx, sent_text = _locate_sentence(s, sent_spans, text)
-                    coref_rows.append([mention_text.strip(), canonical, sent_idx, sent_text,
-                                       docID, doc_path])
+                    coref_rows.append([mention_text.strip(), canonical, sent_idx, sent_text, docID, doc_path])
                     replacements.append((s, e, canonical))
 
         corefed_text = _apply_char_replacements(text, replacements)
         per_file_corefed.append((tail, corefed_text))
 
-    corefed_files = _write_outputs('BERT', coref_rows, per_file_corefed, outputCorefedDir)
+    corefed_files = _write_outputs("BERT", coref_rows, per_file_corefed, outputCorefedDir)
 
     IO_user_interface_util.timed_alert(
-        GUI_util.window, 2000, 'Analysis end',
-        'Finished running BERT (fastcoref) coreference resolution at', True, '', True, startTime, False)
+        GUI_util.window,
+        2000,
+        "Analysis end",
+        "Finished running BERT (fastcoref) coreference resolution at",
+        True,
+        "",
+        True,
+        startTime,
+        False,
+    )
 
     _maybe_manual(manual_Coref, inputDir, inputFilename, corefed_files)
     return corefed_files, errorFound
@@ -226,10 +282,14 @@ def _maybe_manual(manual_Coref, inputDir, inputFilename, corefed_files):
         return
     if len(inputDir) == 0 and len(inputFilename) > 0:
         import Stanford_CoreNLP_coreference_util
+
         for file in corefed_files:
-            if file.endswith('.txt'):
+            if file.endswith(".txt"):
                 Stanford_CoreNLP_coreference_util.manualCoref(inputFilename, file, file)
     else:
         IO_user_interface_util.timed_alert(
-            GUI_util.window, 2000, 'Feature Not Available',
-            'Manual coreference is only available when processing a single file, not an input directory.')
+            GUI_util.window,
+            2000,
+            "Feature Not Available",
+            "Manual coreference is only available when processing a single file, not an input directory.",
+        )

@@ -1,72 +1,90 @@
-from itertools import count
-import sys
 # import GUI_util
 # import IO_libraries_util
 # if not IO_libraries_util.install_all_Python_packages(GUI_util.window,"GUI_IO_util", ['tkinter', 'os']):
 #     sys.exit(0)
-
 import os
+import sys
 import tkinter as tk
 from tkinter import ttk
 import tkinter.messagebox as mb
 
-import config_util
 import IO_libraries_util
 
 # import IO_internet_util
 # import webbrowser
 
-NLP_Suite_website_name = 'NLP Suite GitHub'
+NLP_Suite_website_name = "NLP Suite GitHub"
 # HELP messages
 
-introduction_main = "Welcome to this Python 3 script.\nFor brief general information about this script, click on the \"Read Me\" button.\nFor brief information on specific lines click on any of the \"?HELP\" buttons.\nFor longer information on various aspects of the script, click on the \"Open TIPS files\" button and select the pdf help file to view.\nAfter selecting an option, click on \"RUN\" (the RUN button is disabled until all I/O information has been entered).   Click on \"CLOSE\" to exit."
+introduction_main = 'Welcome to this Python 3 script.\nFor brief general information about this script, click on the "Read Me" button.\nFor brief information on specific lines click on any of the "?HELP" buttons.\nFor longer information on various aspects of the script, click on the "Open TIPS files" button and select the pdf help file to view.\nAfter selecting an option, click on "RUN" (the RUN button is disabled until all I/O information has been entered).   Click on "CLOSE" to exit.'
 # msg_fileButtonDisabled="\n\nIf the Select INPUT file button is greyed out because you previously selected an INPUT directory but you now wish to use a file as input, click on the Select INPUT directory button and press ESCape to make all INPUT options available."
 # msg_dirButtonDisabled="\n\nIf the Select INPUT directory button is greyed out because you previously selected an INPUT file but you now wish to use a directory as input, click on the Select INPUT file button and press ESCape to make all INPUT options available."
-msg_openExplorer="\n\nA small button appears next to the select directory button. Click on the button to open Windows Explorer on the directory displayed, if one is displayed, or on the directory where the NLP script is saved."
-msg_openFile="\n\nA small button appears next to the select file button. Click on the button to open the file, if one has been selected, as a check that you selected the correct file." # + msg_fileButtonDisabled
-msg_Esc="\n\nPress the ESCape button to clear any previously selected options and start fresh."
+msg_openExplorer = "\n\nA small button appears next to the select directory button. Click on the button to open Windows Explorer on the directory displayed, if one is displayed, or on the directory where the NLP script is saved."
+msg_openFile = "\n\nA small button appears next to the select file button. Click on the button to open the file, if one has been selected, as a check that you selected the correct file."  # + msg_fileButtonDisabled
+msg_Esc = "\n\nPress the ESCape button to clear any previously selected options and start fresh."
 
-msg_IO_config="The default or selected config files are 2-columns csv files with the 4 I/O labels - Input filename with path, Input files directory, Input files secondary directory, Output files directory - in the first column and the file or directory path in the second column.\n\nThe fields Input filename with path and Input files directory are MUTUALLY EXCLUSIVE. YOU CAN ONLY HAVE ONE OR THE OTHER BUT NOT BOTH.\n\nA couple of scripts in the NLP Suite require two input directories (e.g., for source and target files, as in social_science_researh_main and file_classifier_main)\n\nCONFIG FILES ARE STORED IN THE SUBDIRECTORY config OF THE MAIN NLP SUITE DIRECTORY."
+msg_IO_config = "The default or selected config files are 2-columns csv files with the 4 I/O labels - Input filename with path, Input files directory, Input files secondary directory, Output files directory - in the first column and the file or directory path in the second column.\n\nThe fields Input filename with path and Input files directory are MUTUALLY EXCLUSIVE. YOU CAN ONLY HAVE ONE OR THE OTHER BUT NOT BOTH.\n\nA couple of scripts in the NLP Suite require two input directories (e.g., for source and target files, as in social_science_researh_main and file_classifier_main)\n\nCONFIG FILES ARE STORED IN THE SUBDIRECTORY config OF THE MAIN NLP SUITE DIRECTORY."
 
-msg_IO_setup="Please, using the dropdown menu, select the type of INPUT/OUTPUT configuration you wish to use in this GUI: Default I/O configuration or Select any I/O csv config file.\n\nEach option will allow you to select and INPUT file or directory where the files(s) to be used in input are stored and an OUTPUT directory where files produced by the NLP tools will be saved (csv, txt, html, kml, jpg).\n\n   The default configuration is the I/O option used for all GUIs as default;\n   You can use the option 'Select any I/O csv config file' to work on a different corpus in any GUIs.\n\nYou can click on the display area and scroll to visualize the current configuration. You can also click on the 'Setup INPUT/OUTPUT configuration' button to get a better view of the available options.\n\nClick on the small buttons to the right of the I/O display area to open the input file, the input directory, the output directory displayed, and the config file where these options are saved. "+msg_IO_config
-msg_save_uponClose="\n\nWHEN CLICKING ON CLOSE, YOU WILL BE ASKED IF YOU WANT TO SAVE YOUR SELECTED OPTIONS, IF DIFFERENT FROM CURRENT SELECTION."
-msg_CoreNLP="Please, select the directory where you downloaded the Stanford CoreNLP software.\n\nYou can download Stanford CoreNLP from https://stanfordnlp.github.io/CoreNLP/download.html\n\nYou can place the Stanford CoreNLP folder anywhere on your machine. But... on some machines CoreNLP will not run unless the folder is inside the NLP folder.\n\nIf you suspect that CoreNLP may have given faulty results for some sentences, you can test those sentences directly on the Stanford CoreNLP website at https://corenlp.run\n\nYOU MUST BE CONNECTED TO THE INTERNET TO RUN CoreNLP."
-msg_WordNet="Please, select the directory where you downloaded the WordNet lexicon database.\n\nYou can download WordNet from https://wordnet.princeton.edu/download/current-version."
-msg_Mallet="Please, select the directory where you downloaded the MALLET topic modeling software."
-msg_CoNLL="Please, select a csv CoNLL table that you would like to analyze.\n\nA CoNLL table is generated by a parser (spaCy, Stanford CoreNLP, or Stanza). The parser processes a set of text documents, providing a dependency tree for each sentence. In a CoNLL table, each token is labeled with a part-of-speech tag (POSTAG), a Dependency Relation tag (DEPREL), its dependency relation within the corresponding dependency tree, and other useful information." + msg_openFile
-msg_corpusData="Please, select the directory where you store your TXT corpus to be analyzed. ALL TXT FILES PRESENT IN THE DIRECTORY WILL BE PARSED. NON TXT FILES WILL BE IGNORED. MOVE ANY TXT FILES YOU DO NOT WISH TO PROCESS TO A DIFFERENT DIRECTORY."  + msg_openExplorer # + msg_dirButtonDisabled
-msg_anyData="Please, select the directory where you store the files to be analyzed. ALL FILES OF A SELECTED EXTENSION TYPE (pdf, docx, txt, csv, conll), PRESENT IN THE DIRECTORY WILL BE PROCESSED. ALL OTHER FILE TYPES WILL BE IGNORED."  + msg_openExplorer # + msg_dirButtonDisabled
-msg_anyFile="Please, select the file to be analyzed (of any type: pdf, docx, txt, csv, conll)."  + msg_openFile
-msg_txtFile="Please, select the TXT file to be analyzed." + msg_openFile # + msg_fileButtonDisabled
-msg_csvFile="Please, select the csv file to be analyzed." + msg_openFile # + msg_fileButtonDisabled
-msg_csv_txtFile="Please, select either a CSV file or a TXT file to be analyzed." + msg_openFile # + msg_fileButtonDisabled
-msg_txt_htmlFile="Please, select either a TXT file or an html file to be analyzed." + msg_openFile # + msg_fileButtonDisabled
-msg_outputDirectory="Please, select the directory where the script will save all OUTPUT files of any type (txt, csv, png, html).\n\nMOST GUI SCRIPTS WILL ORGANIZE OUTPUT FILES IN SPECIFIC SUBDIRECTORIES INSIDE THE MAIN OUTPUT DIRECTORY SELECTED HERE (e.g., the SVO GUI will create several subdirectories: GIS, SVO, SVO-filtered, SVO-unfiltered, SVO-lemma, WordNet)."  + msg_openExplorer
-msg_outputFilename="Please, enter the OUTPUT file name. THE SELECT OUTPUT BUTTON IS DISABLED UNTIL A SEARCHED TOKEN HAS BEEN ENTERED.\n\nThe search result will be saved as a separated csv file with the file path and name entered. \n\nThe same information will be displayed in the command line."
-msg_openOutputFiles="Please, tick the checkbox to open automatically (or not open) output csv file(s), including any charts." \
-    "\n\nUse the dropdown menu to select the chart package you wish to use for chart visualization (e.g., Excel, plotly). If you do not wish to create and visualize charts, select the 'No charts' option." \
-    "\n\nIf you select to create and visualize charts, use the next dropdown menu widget to select the chart type you wish to use (e.g., bar chart, pie chart)." \
-    "\n\nIf you select to create and visualize charts, use the next dropdown menu widget to select the type of data transformation to be used for plotting ('No transformation' is the default option'). All charts involving multiple documents are automatically normalized by document size." \
+msg_IO_setup = (
+    "Please, using the dropdown menu, select the type of INPUT/OUTPUT configuration you wish to use in this GUI: Default I/O configuration or Select any I/O csv config file.\n\nEach option will allow you to select and INPUT file or directory where the files(s) to be used in input are stored and an OUTPUT directory where files produced by the NLP tools will be saved (csv, txt, html, kml, jpg).\n\n   The default configuration is the I/O option used for all GUIs as default;\n   You can use the option 'Select any I/O csv config file' to work on a different corpus in any GUIs.\n\nYou can click on the display area and scroll to visualize the current configuration. You can also click on the 'Setup INPUT/OUTPUT configuration' button to get a better view of the available options.\n\nClick on the small buttons to the right of the I/O display area to open the input file, the input directory, the output directory displayed, and the config file where these options are saved. "
+    + msg_IO_config
+)
+msg_save_uponClose = "\n\nWHEN CLICKING ON CLOSE, YOU WILL BE ASKED IF YOU WANT TO SAVE YOUR SELECTED OPTIONS, IF DIFFERENT FROM CURRENT SELECTION."
+msg_CoreNLP = "Please, select the directory where you downloaded the Stanford CoreNLP software.\n\nYou can download Stanford CoreNLP from https://stanfordnlp.github.io/CoreNLP/download.html\n\nYou can place the Stanford CoreNLP folder anywhere on your machine. But... on some machines CoreNLP will not run unless the folder is inside the NLP folder.\n\nIf you suspect that CoreNLP may have given faulty results for some sentences, you can test those sentences directly on the Stanford CoreNLP website at https://corenlp.run\n\nYOU MUST BE CONNECTED TO THE INTERNET TO RUN CoreNLP."
+msg_WordNet = "Please, select the directory where you downloaded the WordNet lexicon database.\n\nYou can download WordNet from https://wordnet.princeton.edu/download/current-version."
+msg_Mallet = "Please, select the directory where you downloaded the MALLET topic modeling software."
+msg_CoNLL = (
+    "Please, select a csv CoNLL table that you would like to analyze.\n\nA CoNLL table is generated by a parser (spaCy, Stanford CoreNLP, or Stanza). The parser processes a set of text documents, providing a dependency tree for each sentence. In a CoNLL table, each token is labeled with a part-of-speech tag (POSTAG), a Dependency Relation tag (DEPREL), its dependency relation within the corresponding dependency tree, and other useful information."
+    + msg_openFile
+)
+msg_corpusData = (
+    "Please, select the directory where you store your TXT corpus to be analyzed. ALL TXT FILES PRESENT IN THE DIRECTORY WILL BE PARSED. NON TXT FILES WILL BE IGNORED. MOVE ANY TXT FILES YOU DO NOT WISH TO PROCESS TO A DIFFERENT DIRECTORY."
+    + msg_openExplorer
+)  # + msg_dirButtonDisabled
+msg_anyData = (
+    "Please, select the directory where you store the files to be analyzed. ALL FILES OF A SELECTED EXTENSION TYPE (pdf, docx, txt, csv, conll), PRESENT IN THE DIRECTORY WILL BE PROCESSED. ALL OTHER FILE TYPES WILL BE IGNORED."
+    + msg_openExplorer
+)  # + msg_dirButtonDisabled
+msg_anyFile = "Please, select the file to be analyzed (of any type: pdf, docx, txt, csv, conll)." + msg_openFile
+msg_txtFile = "Please, select the TXT file to be analyzed." + msg_openFile  # + msg_fileButtonDisabled
+msg_csvFile = "Please, select the csv file to be analyzed." + msg_openFile  # + msg_fileButtonDisabled
+msg_csv_txtFile = (
+    "Please, select either a CSV file or a TXT file to be analyzed." + msg_openFile
+)  # + msg_fileButtonDisabled
+msg_txt_htmlFile = (
+    "Please, select either a TXT file or an html file to be analyzed." + msg_openFile
+)  # + msg_fileButtonDisabled
+msg_outputDirectory = (
+    "Please, select the directory where the script will save all OUTPUT files of any type (txt, csv, png, html).\n\nMOST GUI SCRIPTS WILL ORGANIZE OUTPUT FILES IN SPECIFIC SUBDIRECTORIES INSIDE THE MAIN OUTPUT DIRECTORY SELECTED HERE (e.g., the SVO GUI will create several subdirectories: GIS, SVO, SVO-filtered, SVO-unfiltered, SVO-lemma, WordNet)."
+    + msg_openExplorer
+)
+msg_outputFilename = "Please, enter the OUTPUT file name. THE SELECT OUTPUT BUTTON IS DISABLED UNTIL A SEARCHED TOKEN HAS BEEN ENTERED.\n\nThe search result will be saved as a separated csv file with the file path and name entered. \n\nThe same information will be displayed in the command line."
+msg_openOutputFiles = (
+    "Please, tick the checkbox to open automatically (or not open) output csv file(s), including any charts."
+    "\n\nUse the dropdown menu to select the chart package you wish to use for chart visualization (e.g., Excel, plotly). If you do not wish to create and visualize charts, select the 'No charts' option."
+    "\n\nIf you select to create and visualize charts, use the next dropdown menu widget to select the chart type you wish to use (e.g., bar chart, pie chart)."
+    "\n\nIf you select to create and visualize charts, use the next dropdown menu widget to select the type of data transformation to be used for plotting ('No transformation' is the default option'). All charts involving multiple documents are automatically normalized by document size."
     "\n\nIn the NLP Suite, all CSV FILES that contain information on web links or files with their path will encode this information as hyperlinks. If you click on the hyperlink, it will automatically open the file or take you to a website. IF YOU ARE A MAC USER, YOU MUST OPEN ALL CSV FILES WITH EXCEL, RATHER THAN NUMBERS, OR THE HYPERLINK WILL BE BARRED AND DISPLAYED AS A RED TRIANGLE."
-msg_multipleDocsCoNLL="\n\nFOR CONLL FILES THAT INCLUDE MULTIPLE DOCUMENTS, THE EXCEL CHARTS PROVIDE OVERALL FREQUENCIES ACROSS ALL DOCUMENTS. FOR SPECIFIC DOCUMENT ANALYSES, PLEASE USE THE GENERAL EXCEL OUTPUT FILE."
+)
+msg_multipleDocsCoNLL = "\n\nFOR CONLL FILES THAT INCLUDE MULTIPLE DOCUMENTS, THE EXCEL CHARTS PROVIDE OVERALL FREQUENCIES ACROSS ALL DOCUMENTS. FOR SPECIFIC DOCUMENT ANALYSES, PLEASE USE THE GENERAL EXCEL OUTPUT FILE."
 
 # location of this src python file
-#one folder UP, the NLP folder
-#subdirectory of script directory where config files are saved
-#subdirectory of script directory where lib files are saved
-#subdirectory of script directory where Google maps lib files are saved
-#subdirectory of script directory where Excel lib files are saved
-#subdirectory of script directory where lib files are saved
-#subdirectory of script directory where lib files are saved
-#subdirectory of script directory where lib files are saved
-#subdirectory of script directory where gender names are saved
-#global TIPSPath
-#subdirectory of script directory where reminders file is saved
+# one folder UP, the NLP folder
+# subdirectory of script directory where config files are saved
+# subdirectory of script directory where lib files are saved
+# subdirectory of script directory where Google maps lib files are saved
+# subdirectory of script directory where Excel lib files are saved
+# subdirectory of script directory where lib files are saved
+# subdirectory of script directory where lib files are saved
+# subdirectory of script directory where lib files are saved
+# subdirectory of script directory where gender names are saved
+# global TIPSPath
+# subdirectory of script directory where reminders file is saved
 
-if getattr(sys, 'frozen', False):
+if getattr(sys, "frozen", False):
     # PyInstaller bundle: exe is at dist/NLP_Suite/NLP_Suite.exe
     # Data dirs (src, lib, config, etc.) are siblings of the exe
-    scriptPath = os.path.join(os.path.dirname(sys.executable), 'src')
+    scriptPath = os.path.join(os.path.dirname(sys.executable), "src")
     NLPPath = os.path.dirname(sys.executable)
 else:
     scriptPath = os.path.dirname(os.path.abspath(__file__))
@@ -78,56 +96,68 @@ else:
 # bug, requiring a reconfigure every release). Self-correct: if the current NLPPath has no lib/ but a
 # nearby candidate does, use that. This is a NO-OP for the known-good dev (source) and standard frozen
 # layouts (where NLPPath already contains lib/), so it can only fix a wrong guess, never break a right one.
-if not os.path.isdir(os.path.join(NLPPath, 'lib')):
+if not os.path.isdir(os.path.join(NLPPath, "lib")):
     _here = os.path.dirname(os.path.abspath(__file__))
     _cands = [os.path.dirname(_here), _here, os.path.dirname(NLPPath)]
-    if getattr(sys, 'frozen', False):
+    if getattr(sys, "frozen", False):
         _exe = os.path.dirname(os.path.abspath(sys.executable))
         _cands += [_exe, os.path.dirname(_exe)]
     for _cand in _cands:
         try:
-            if _cand and os.path.isdir(os.path.join(_cand, 'lib')):
+            if _cand and os.path.isdir(os.path.join(_cand, "lib")):
                 NLPPath = os.path.normpath(_cand)
                 break
         except Exception:
             pass
-configPath = os.path.join(NLPPath,'config')
-libPath = os.path.join(NLPPath,'lib')
-image_libPath = os.path.join(NLPPath,'lib'+os.sep+'images')
-Google_heatmaps_libPath = os.path.join(NLPPath,'lib'+os.sep+'sampleHeatmap')
-Excel_charts_libPath = os.path.join(NLPPath,'lib'+os.sep+'sampleCharts')
-sampleData_libPath = os.path.join(NLPPath,'lib'+os.sep+'sampleData')
-sentiment_libPath = os.path.join(NLPPath,'lib'+os.sep+'sentimentLib')
-iconicity_libPath = os.path.join(NLPPath,'lib'+os.sep+'iconicityLib')
-concreteness_libPath = os.path.join(NLPPath,'lib'+os.sep+'concretenessLib')
-CoreNLP_enhanced_dependencies_libPath = os.path.join(NLPPath,'lib'+os.sep+'CoreNLP_enhanced_dependencies')
-wordLists_libPath = os.path.join(NLPPath,'lib'+os.sep+'wordLists')
-namesGender_libPath = os.path.join(NLPPath, 'lib'+os.sep+'namesGender')
-GISLocations_libPath = os.path.join(NLPPath,'lib'+os.sep+'GIS')
-TIPSPath = os.path.join(NLPPath,'TIPS')
-videosPath = os.path.join(NLPPath,'videos')
-remindersPath = os.path.join(NLPPath, 'reminders')
+configPath = os.path.join(NLPPath, "config")
+libPath = os.path.join(NLPPath, "lib")
+image_libPath = os.path.join(NLPPath, "lib" + os.sep + "images")
+Google_heatmaps_libPath = os.path.join(NLPPath, "lib" + os.sep + "sampleHeatmap")
+Excel_charts_libPath = os.path.join(NLPPath, "lib" + os.sep + "sampleCharts")
+sampleData_libPath = os.path.join(NLPPath, "lib" + os.sep + "sampleData")
+sentiment_libPath = os.path.join(NLPPath, "lib" + os.sep + "sentimentLib")
+iconicity_libPath = os.path.join(NLPPath, "lib" + os.sep + "iconicityLib")
+concreteness_libPath = os.path.join(NLPPath, "lib" + os.sep + "concretenessLib")
+CoreNLP_enhanced_dependencies_libPath = os.path.join(NLPPath, "lib" + os.sep + "CoreNLP_enhanced_dependencies")
+wordLists_libPath = os.path.join(NLPPath, "lib" + os.sep + "wordLists")
+namesGender_libPath = os.path.join(NLPPath, "lib" + os.sep + "namesGender")
+GISLocations_libPath = os.path.join(NLPPath, "lib" + os.sep + "GIS")
+TIPSPath = os.path.join(NLPPath, "TIPS")
+videosPath = os.path.join(NLPPath, "videos")
+remindersPath = os.path.join(NLPPath, "reminders")
+
 
 # The function places and displays a message for each ? HELP button in the GUIs
-def place_help_button(window,x_coordinate,y_coordinate,text_title,text_info):
-    help_button = tk.Button(window, text='? HELP', command=lambda: display_help_button_info(text_title, text_info))
+def place_help_button(window, x_coordinate, y_coordinate, text_title, text_info):
+    help_button = tk.Button(window, text="? HELP", command=lambda: display_help_button_info(text_title, text_info))
     # place widget with hover-over info
-    y_multiplier_integer = placeWidget(window, x_coordinate,
-                                                   y_coordinate,
-                                                   help_button, False, False, False, False, 90,
-                                                   help_button_x_coordinate,
-                                                   "Press the ?HELP button to get information about what you can do on this line of the GUI.\n"
-                                                   "Press the Read Me button to get general information about what the algorithms behind this GUI are meant to do.")
+    y_multiplier_integer = placeWidget(
+        window,
+        x_coordinate,
+        y_coordinate,
+        help_button,
+        False,
+        False,
+        False,
+        False,
+        90,
+        help_button_x_coordinate,
+        "Press the ?HELP button to get information about what you can do on this line of the GUI.\n"
+        "Press the Read Me button to get general information about what the algorithms behind this GUI are meant to do.",
+    )
 
     # y_multiplier_integer = placeWidget(window,x_coordinate,y_coordinate,help_button,False,False,True)
     return y_multiplier_integer
 
+
 # The function displays the info for any bottom (e.g., ? HELP and ReadMe) in the GUIs
-def display_help_button_info(text_title,text_info):
+def display_help_button_info(text_title, text_info):
     mb.showinfo(title=text_title, message=text_info)
+
 
 _tooltip_window = None  # module-level reference to the current tooltip Toplevel
 _dismiss_bound_windows = set()  # windows already wired to dismiss the tooltip on focus-out
+
 
 def display_widget_info(window, e, x_coordinate, y_coordinate, x_coordinate_hover_over, text_info):
     global _tooltip_window
@@ -142,7 +172,7 @@ def display_widget_info(window, e, x_coordinate, y_coordinate, x_coordinate_hove
     # Create a Toplevel tooltip window (floats above, does not steal mouse events)
     _tooltip_window = tk.Toplevel(window)
     _tooltip_window.wm_overrideredirect(True)  # no window decorations
-    _tooltip_window.wm_attributes('-topmost', True)  # stay on top
+    _tooltip_window.wm_attributes("-topmost", True)  # stay on top
 
     # wraplength keeps a long one-line message from running off the right edge: it wraps to
     # multiple lines within (roughly) the main window's width instead of one very wide line.
@@ -152,11 +182,20 @@ def display_widget_info(window, e, x_coordinate, y_coordinate, x_coordinate_hove
         win_w = 0
     wrap = win_w - 60 if win_w and win_w > 260 else 700
 
-    tooltip_lb = tk.Label(_tooltip_window, text=text_info, foreground='blue',
-                          background='#FFFFDD', anchor='w', justify='left',
-                          relief='solid', borderwidth=1,
-                          padx=4, pady=2, wraplength=wrap,
-                          font=('TkDefaultFont', 9))
+    tooltip_lb = tk.Label(
+        _tooltip_window,
+        text=text_info,
+        foreground="blue",
+        background="#FFFFDD",
+        anchor="w",
+        justify="left",
+        relief="solid",
+        borderwidth=1,
+        padx=4,
+        pady=2,
+        wraplength=wrap,
+        font=("TkDefaultFont", 9),
+    )
     tooltip_lb.pack()
 
     # Position in screen coordinates relative to the main window
@@ -191,6 +230,7 @@ def display_widget_info(window, e, x_coordinate, y_coordinate, x_coordinate_hove
     # Safety net: guarantee the tooltip disappears even if <Leave>/<Button> never fire (e.g. a
     # pointer grab). Auto-hide THIS specific tooltip after a few seconds no matter what.
     _this_tip = _tooltip_window
+
     def _auto_hide(_w=_this_tip):
         global _tooltip_window
         try:
@@ -199,6 +239,7 @@ def display_widget_info(window, e, x_coordinate, y_coordinate, x_coordinate_hove
             pass
         if _tooltip_window is _w:
             _tooltip_window = None
+
     try:
         _this_tip.after(6000, _auto_hide)
     except Exception:
@@ -211,11 +252,12 @@ def display_widget_info(window, e, x_coordinate, y_coordinate, x_coordinate_hove
             # FocusOut: leaving the window (launching another GUI). Button: any click anywhere -- events
             # on child widgets propagate to the toplevel bindtag, so this also covers custom-bound
             # tooltips (e.g. the welcome screen's ENTER button) that never go through hover_over_widget.
-            window.bind('<FocusOut>', lambda e: delete_display_widget_lb(window, e, ''), add='+')
-            window.bind('<Button>', lambda e: delete_display_widget_lb(window, e, ''), add='+')
+            window.bind("<FocusOut>", lambda e: delete_display_widget_lb(window, e, ""), add="+")
+            window.bind("<Button>", lambda e: delete_display_widget_lb(window, e, ""), add="+")
             _dismiss_bound_windows.add(window)
     except Exception:
         pass
+
 
 def delete_display_widget_lb(window, e, text_info):
     global _tooltip_window
@@ -226,10 +268,19 @@ def delete_display_widget_lb(window, e, text_info):
             pass
         _tooltip_window = None
 
+
 # https://stackoverflow.com/questions/20399243/display-message-when-hovering-over-something-with-mouse-cursor-in-python
 # called by place_widget which is called in every GUI
-def hover_over_widget(window, x_coordinate, y_coordinate, widget_name, no_hover_over_widget=False,
-                    whole_widget_red=False, x_coordinate_hover_over= 90, text_info=''):
+def hover_over_widget(
+    window,
+    x_coordinate,
+    y_coordinate,
+    widget_name,
+    no_hover_over_widget=False,
+    whole_widget_red=False,
+    x_coordinate_hover_over=90,
+    text_info="",
+):
     if no_hover_over_widget:
         return
     # hover-over effect
@@ -245,59 +296,61 @@ def hover_over_widget(window, x_coordinate, y_coordinate, widget_name, no_hover_
     # 'combobox' in str(widget_name) is the ttk menu object
     # 'scale' in str(widget_name)
 
-# --------------------------------------------------------------------
+    # --------------------------------------------------------------------
 
     # on colors available in tkinter
 
     #   https://stackoverflow.com/questions/4969543/colour-chart-for-tkinter-and-tix
 
-# --------------------------------------------------------------------
+    # --------------------------------------------------------------------
 
     # scale, text, and combobox widgets do not have a label and code would break below
     # wording is the wording of the text value displayed in a widget (e.g, RUN, CLOSE,
     #   or, for a menu, the item currently displayed in the menu, e.g., mm/dd/yyyy for a date menu)
-    if 'scale' in str(widget_name) or \
-        'text' in str(widget_name) or \
-        'combobox' in str(widget_name) or \
-        'listbox' in str(widget_name) or \
-        'entry' in str(widget_name):
-        wording = ''
+    if (
+        "scale" in str(widget_name)
+        or "text" in str(widget_name)
+        or "combobox" in str(widget_name)
+        or "listbox" in str(widget_name)
+        or "entry" in str(widget_name)
+    ):
+        wording = ""
     else:
-        wording = widget_name.cget('text')
+        wording = widget_name.cget("text")
 
     # colors: get the original colors because must reset widget to the original color upon leaving at the end
-    if widget_name.cget('background')!='#F0F0F0' and widget_name.cget('background')!='red' : # light grey
-        background_color = '#F0F0F0'
+    if widget_name.cget("background") != "#F0F0F0" and widget_name.cget("background") != "red":  # light grey
+        background_color = "#F0F0F0"
     else:
-        background_color = widget_name.cget('background')
+        background_color = widget_name.cget("background")
 
-    if widget_name.cget('foreground')!='black' and widget_name.cget('foreground')!='red':
-        foreground_color = 'black'
+    if widget_name.cget("foreground") != "black" and widget_name.cget("foreground") != "red":
+        foreground_color = "black"
     else:
-        foreground_color = widget_name.cget('foreground')
+        foreground_color = widget_name.cget("foreground")
 
     original_foreground_color = foreground_color
-    if foreground_color == 'black':
-        change_foreground_color = 'red'
+    if foreground_color == "black":
+        change_foreground_color = "red"
     else:
-        change_foreground_color = 'black'
+        change_foreground_color = "black"
 
-    if wording != '':
-        original_foreground_color = widget_name.cget('foreground')
-        original_background_color = widget_name.cget('background')
+    if wording != "":
+        original_foreground_color = widget_name.cget("foreground")
+        original_background_color = widget_name.cget("background")
     else:
-        original_background_color = widget_name.cget('background')
+        original_background_color = widget_name.cget("background")
 
     # optionmenu widgets with no item displayed, i.e., ='', are set to red
-    if 'optionmenu' in str(widget_name):
-        if wording == '':
-            background_color = 'red'
+    if "optionmenu" in str(widget_name):
+        if wording == "":
+            background_color = "red"
 
     # # the background_color is always set to red if the parameter is true
     # # all buttons are also turned red unless disabled
-    if (whole_widget_red or ('button' in str(widget_name))) and (widget_name.cget('state') == 'normal'):
-        background_color = 'red'
-        change_foreground_color = 'black'
+    if (whole_widget_red or ("button" in str(widget_name))) and (widget_name.cget("state") == "normal"):
+        background_color = "red"
+        change_foreground_color = "black"
 
     # TODO unfortunately widget_name.cget('state') is measured when it is placed on the GUI
     #   any change to the widget state because of user's actions in the GUI
@@ -305,30 +358,36 @@ def hover_over_widget(window, x_coordinate, y_coordinate, widget_name, no_hover_
     #   thus, if a checkbutton is normal when placed on the GUI and displayed in red when hovering over
     #       it will always be displayed in red, and not in sea green, if user's actions disables the widget
     # labels and disabled widgets are set to green to distinguish them from all other widgets
-    if 'label' in str(widget_name) or widget_name.cget('state') == 'disabled':
-        background_color = 'light sea green'
+    if "label" in str(widget_name) or widget_name.cget("state") == "disabled":
+        background_color = "light sea green"
         # the next command does not seem to work as it does not display the wording of the widget
-        change_foreground_color = 'black'
+        change_foreground_color = "black"
 
+    # Enter the widget ----------------------------------------------------------
 
-# Enter the widget ----------------------------------------------------------
-
-# no text info available to be displayed ------------------------------------------------------
-    if text_info == '': # no text info to be displayed
-        if 'optionmenu' in str(widget_name):
+    # no text info available to be displayed ------------------------------------------------------
+    if text_info == "":  # no text info to be displayed
+        if "optionmenu" in str(widget_name):
             # print('widget_name','wording',wording,widget_name,'state',widget_name.cget('state') == 'disabled')
-            widget_name.bind('<Enter>', lambda e: e.widget.config(background=background_color,
-                    activeforeground=change_foreground_color, foreground=change_foreground_color))
+            widget_name.bind(
+                "<Enter>",
+                lambda e: e.widget.config(
+                    background=background_color,
+                    activeforeground=change_foreground_color,
+                    foreground=change_foreground_color,
+                ),
+            )
         else:
-            widget_name.bind('<Enter>', lambda e: e.widget.config(background=background_color,
-                    foreground=change_foreground_color))
+            widget_name.bind(
+                "<Enter>", lambda e: e.widget.config(background=background_color, foreground=change_foreground_color)
+            )
 
-# text info available -------------------------------------------------------------------------
-    else: # there is text info to be displayed
+    # text info available -------------------------------------------------------------------------
+    else:  # there is text info to be displayed
         # these are the y coordinates where the text info is displayed
         # move up the display if the ino contains line breaks
         # there should not be more than 2 line breaks
-        number_of_lines = text_info.count('\n')
+        number_of_lines = text_info.count("\n")
         if number_of_lines == 0:
             nudge = -20
         elif number_of_lines == 1:
@@ -347,38 +406,46 @@ def hover_over_widget(window, x_coordinate, y_coordinate, widget_name, no_hover_
 
         # combobox is the ttk menu object; the regular config breaks
         # https://stackoverflow.com/questions/71733010/ttkcombobox-foreground-color-change-doesnt-work-properly-whats-wrong
-        color = widget_name.cget('background')
+        color = widget_name.cget("background")
         # for ttk combox objects
         #   from tkinter import ttk
         #   print(ttk.Style().lookup('TButton', 'background'))
-        if 'combobox' in str(widget_name):
+        if "combobox" in str(widget_name):
             # TODO the widget should be turned red but it is in blue
-            widget_name.bind('<Enter>',
-                 lambda e: (e.widget.config(ttk.Style().map(
-                        'Red.TCombobox',
-                        foreground=[('readonly', 'red')],
-                        selectforeground=[('readonly', 'red')])),
-                            display_widget_info(window, e, x_coordinate,
-                                                y_coordinate,
-                                                x_coordinate_hover_over,
-                                                text_info)))
-        elif 'optionmenu' in str(widget_name):
+            widget_name.bind(
+                "<Enter>",
+                lambda e: (
+                    e.widget.config(
+                        ttk.Style().map(
+                            "Red.TCombobox", foreground=[("readonly", "red")], selectforeground=[("readonly", "red")]
+                        )
+                    ),
+                    display_widget_info(window, e, x_coordinate, y_coordinate, x_coordinate_hover_over, text_info),
+                ),
+            )
+        elif "optionmenu" in str(widget_name):
             # activeforeground sems to available only for optionmenu
-            widget_name.bind('<Enter>',
-                 lambda e: (e.widget.config(background=background_color, activeforeground=change_foreground_color, foreground=change_foreground_color),
-                            display_widget_info(window, e, x_coordinate,
-                                                y_coordinate,
-                                                x_coordinate_hover_over,
-                                                text_info)))
+            widget_name.bind(
+                "<Enter>",
+                lambda e: (
+                    e.widget.config(
+                        background=background_color,
+                        activeforeground=change_foreground_color,
+                        foreground=change_foreground_color,
+                    ),
+                    display_widget_info(window, e, x_coordinate, y_coordinate, x_coordinate_hover_over, text_info),
+                ),
+            )
         else:
-            widget_name.bind('<Enter>',
-                 lambda e: (e.widget.config(background=background_color, foreground=change_foreground_color),
-                            display_widget_info(window, e, x_coordinate,
-                                                y_coordinate,
-                                                x_coordinate_hover_over,
-                                                text_info)))
+            widget_name.bind(
+                "<Enter>",
+                lambda e: (
+                    e.widget.config(background=background_color, foreground=change_foreground_color),
+                    display_widget_info(window, e, x_coordinate, y_coordinate, x_coordinate_hover_over, text_info),
+                ),
+            )
 
-# Leave the widget ----------------------------------------------------------
+    # Leave the widget ----------------------------------------------------------
     # TODO does not work
     # https://stackoverflow.com/questions/69549437/combobox-foreground-color-setting-is-lost-when-navigating-out-through-tab-key
     # if "combobox" in str(widget_name):
@@ -388,17 +455,20 @@ def hover_over_widget(window, x_coordinate, y_coordinate, widget_name, no_hover_
     #                         selectforeground=[('readonly', 'red')],
     #                         foreground=[('readonly', 'red')]),
     #                     lambda e: delete_display_widget_lb(window, e, text_info))
-    widget_name.bind('<Leave>',
-                     # upon leaving you must resume/reset the original colors of the widget
-                     #  as set in original_background_color and original_foreground_color
-                     lambda e: (e.widget.config(background=original_background_color, foreground=original_foreground_color),
-                                   delete_display_widget_lb(window, e, text_info)))
+    widget_name.bind(
+        "<Leave>",
+        # upon leaving you must resume/reset the original colors of the widget
+        #  as set in original_background_color and original_foreground_color
+        lambda e: (
+            e.widget.config(background=original_background_color, foreground=original_foreground_color),
+            delete_display_widget_lb(window, e, text_info),
+        ),
+    )
     # Also dismiss the tooltip on a CLICK. Dropdown/OptionMenu widgets grab the pointer the moment
     # their menu opens, which swallows the <Leave> event -- without this the tooltip would stay stuck
     # on screen forever. add='+' so we never clobber the widget's own click behavior.
-    if text_info != '':
-        widget_name.bind('<Button>',
-                         lambda e: delete_display_widget_lb(window, e, text_info), add='+')
+    if text_info != "":
+        widget_name.bind("<Button>", lambda e: delete_display_widget_lb(window, e, text_info), add="+")
 
 
 # ---------------------------------------------------------------------------------------------------
@@ -437,28 +507,28 @@ grid_layout_enabled = True
 #               the smaller Mac screen, so on Mac these keep the compact hand-tuned .place coordinates.
 # To add a Windows-/Linux-only opt-out later, just use scope 'win32' / 'linux'.
 GRID_OPT_OUT = {
-    'DB_PCACE_data_analysis_main.py': 'all',
-    'DB_PCACE_data_validation_main.py': 'all',
-    'NLP_menu_main.py': 'all',
-    'NLP_setup_package_language_main.py': 'all',
-    'DB_SQL_main.py': 'all',
-    'parsers_annotators_main.py': 'all',
+    "DB_PCACE_data_analysis_main.py": "all",
+    "DB_PCACE_data_validation_main.py": "all",
+    "NLP_menu_main.py": "all",
+    "NLP_setup_package_language_main.py": "all",
+    "DB_SQL_main.py": "all",
+    "parsers_annotators_main.py": "all",
     # Under grid this GUI came out 1539px wide in a 1260px window, putting RUN and CLOSE off the
     # right-hand edge - a GUI you cannot run. The shared I/O row is the cause: its display box ends at
     # x=1372 on its own, and the four unlabelled open-file/folder buttons carry on to 1539. That row
     # belongs to all 50 GUIs, so widening the window or moving those buttons changes every one of
     # them; this GUI keeps the .place layout it had before the grid port until that is done properly.
     # Measured with tests/gui_layout_gate.py.
-    'corpus_profiler_main.py': 'all',
-    'charts_Excel_main.py': 'darwin',
-    'file_manager_main.py': 'darwin',
+    "corpus_profiler_main.py": "all",
+    "charts_Excel_main.py": "darwin",
+    "file_manager_main.py": "darwin",
 }
 
 
 def grid_opt_out(scriptName):
     """True if scriptName should use the legacy .place layout on THIS platform (see GRID_OPT_OUT)."""
     scope = GRID_OPT_OUT.get(scriptName)
-    return scope == 'all' or scope == sys.platform
+    return scope == "all" or scope == sys.platform
 
 
 _GRID_ROW_SCALE = 10
@@ -560,7 +630,7 @@ def finalize_grid_layout(window):
         for i, (x, widget) in enumerate(ordered):
             # the next DISTINCT x on this row -- widgets sharing an x share the cell, so they must not
             # cut each other's span down to zero
-            next_x = next((other_x for other_x, _ in ordered[i + 1:] if other_x > x), None)
+            next_x = next((other_x for other_x, _ in ordered[i + 1 :] if other_x > x), None)
             end_column = _grid_columns[next_x] if next_x is not None else last_column
             column = _grid_columns[x]
             try:
@@ -576,7 +646,19 @@ def finalize_grid_layout(window):
 
 # when a widget has hover-over effects, the parameter no_hover_over_widget is set to False
 # widget_name is the name of the widget that needs to be placed in any of the GUI scripts as defined by tk.
-def placeWidget(window,x_coordinate,y_multiplier_integer,widget_name,sameY=False, no_hover_over_widget=False, whole_widget_red=False, centerX=False, basic_y_coordinate=90, x_coordinate_hover_over = 90, text_info=''):
+def placeWidget(
+    window,
+    x_coordinate,
+    y_multiplier_integer,
+    widget_name,
+    sameY=False,
+    no_hover_over_widget=False,
+    whole_widget_red=False,
+    centerX=False,
+    basic_y_coordinate=90,
+    x_coordinate_hover_over=90,
+    text_info="",
+):
     # A GUI can opt out of the grid layout (GUI_util sets grid_layout_enabled = False for it) and keep
     # the original absolute .place layout. The dense PC-ACE tools do: their legacy layout deliberately
     # OVERLAPS widgets (e.g. stacked data-type checkboxes), which grid cannot reproduce -- it has to
@@ -588,8 +670,16 @@ def placeWidget(window,x_coordinate,y_multiplier_integer,widget_name,sameY=False
             widget_name.place(relx=0.5, anchor=tk.CENTER, y=y)
         else:
             widget_name.place(x=x_coordinate, y=y)
-        hover_over_widget(window, x_coordinate, y, widget_name, no_hover_over_widget, whole_widget_red,
-                          x_coordinate_hover_over, text_info)
+        hover_over_widget(
+            window,
+            x_coordinate,
+            y,
+            widget_name,
+            no_hover_over_widget,
+            whole_widget_red,
+            x_coordinate_hover_over,
+            text_info,
+        )
         if sameY == False:
             y_multiplier_integer = y_multiplier_integer + 1
         return y_multiplier_integer
@@ -601,8 +691,7 @@ def placeWidget(window,x_coordinate,y_multiplier_integer,widget_name,sameY=False
     row = _GRID_HEADER_ROWS + int(round(float(y_multiplier_integer) * _GRID_ROW_SCALE))
     if centerX:
         _grid_centered.append((row, widget_name))
-        widget_name.grid(row=row, column=0, columnspan=_GRID_TOTAL_COLUMNS,
-                         padx=6, pady=_GRID_PAD_Y, sticky='')
+        widget_name.grid(row=row, column=0, columnspan=_GRID_TOTAL_COLUMNS, padx=6, pady=_GRID_PAD_Y, sticky="")
     else:
         try:
             x = float(x_coordinate)
@@ -612,8 +701,7 @@ def placeWidget(window,x_coordinate,y_multiplier_integer,widget_name,sameY=False
         # Provisional: the real column is settled by finalize_grid_layout once every x is known. Grid
         # it now anyway so the widget is managed from the outset and anything that measures the window
         # mid-build sees a plausible layout.
-        widget_name.grid(row=row, column=_column_for_x(x),
-                         padx=_GRID_PAD_X, pady=_GRID_PAD_Y, sticky='w')
+        widget_name.grid(row=row, column=_column_for_x(x), padx=_GRID_PAD_X, pady=_GRID_PAD_Y, sticky="w")
     # use the following command to change the color of any label to any value
     # widget_name.config(foreground='red')
 
@@ -622,12 +710,13 @@ def placeWidget(window,x_coordinate,y_multiplier_integer,widget_name,sameY=False
     # under grid; the tooltip resolves its own position from the live widget at hover time instead.
     hover_over_widget(window, None, None, widget_name, no_hover_over_widget, whole_widget_red, None, text_info)
 
-    if sameY==False:
-        y_multiplier_integer = y_multiplier_integer+1
+    if sameY == False:
+        y_multiplier_integer = y_multiplier_integer + 1
     return y_multiplier_integer
 
+
 basic_y_coordinate = 90
-y_step = 40 #the line-by-line increment on the GUI
+y_step = 40  # the line-by-line increment on the GUI
 
 # Widget coordinate constants. These were once split into a Mac block and a Windows block, but the
 # grid layout (see placeWidget / finalize_grid_layout) derives pixel positions from the widgets'
@@ -655,17 +744,19 @@ show_button_width = 4
 OK_button_width = 3
 
 # top line of widgets Windows
-select_file_directory_button_width=30
-IO_button_name_width=30
+select_file_directory_button_width = 30
+IO_button_name_width = 30
 open_file_directory_button_width = 3
-IO_configuration_menu = 350 # position of menu of default and GUI specific IO options
+IO_configuration_menu = 350  # position of menu of default and GUI specific IO options
 setup_pop_up_text_widget = 560  # widget to eventually open a text widget to enter text
-setup_IO_brief_coordinate = 610 # Position of text entry for Input and Output display
-entry_box_x_coordinate = 400 #start point of all labels in the third column (second column after ? HELP)
+setup_IO_brief_coordinate = 610  # Position of text entry for Input and Output display
+entry_box_x_coordinate = 400  # start point of all labels in the third column (second column after ? HELP)
 
 # 4 small widgets to the right of top line Windows
 # reference to IO_configuration_menu+
-open_file_button_brief = 760 # the left-most button of the four buttons displayed on the far right of top line of every GUI
+open_file_button_brief = (
+    760  # the left-most button of the four buttons displayed on the far right of top line of every GUI
+)
 open_inputDir_button_brief = 800
 open_outputDir_button_brief = 840
 open_config_file_button_brief = 880
@@ -689,7 +780,7 @@ close_button_x_coordinate = 1050
 # Windows NLP_setup_package_language_main
 all_widget_pos = 450
 package_display_area_width = 80
-language_widget_width=70
+language_widget_width = 70
 plus_column = 920
 reset_column = 960
 show_column = 1020
@@ -704,8 +795,8 @@ sentence_length_pos = 800
 date_format_coordinate = 530
 date_char_sep_lb_coordinate = 620
 date_char_sep_coordinate = 745
-date_position_lb_coordinate = open_setup_x_coordinate # 810
-date_position_coordinate = open_setup_x_coordinate + 130 # 880
+date_position_lb_coordinate = open_setup_x_coordinate  # 810
+date_position_coordinate = open_setup_x_coordinate + 130  # 880
 
 # Windows NLP_setup_external_software_main.py
 missing_software_display_area_width = 85
@@ -737,11 +828,11 @@ date_position_menu = 1160
 # 120 labels_x_coordinate
 filter_S = 230
 open_S_dictionary = 320
-SVO_2nd_column = 550 # filter & dictionary options for Verbs; now open_reminders_x_coordinate
+SVO_2nd_column = 550  # filter & dictionary options for Verbs; now open_reminders_x_coordinate
 # 550 open_reminders_x_coordinate
 filter_V = 660
 open_V_dictionary = 750
-SVO_3rd_column = 940 # filter & dictionary options for Objects; now run_button_x_coordinate
+SVO_3rd_column = 940  # filter & dictionary options for Objects; now run_button_x_coordinate
 # 940 run_button_x_coordinate
 filter_O = 1050
 open_O_dictionary = 1140
@@ -749,12 +840,12 @@ open_O_dictionary = 1140
 SVO_2nd_column_top = 400
 SVO_3rd_column_top = 800
 
-dictionary_S_width=45
-dictionary_V_width=45
-dictionary_O_width=45
+dictionary_S_width = 45
+dictionary_V_width = 45
+dictionary_O_width = 45
 
 # Windows GIS_main.py
-label_columns  = 300
+label_columns = 300
 csv_file_width = 130
 country_bias_width = 35
 area_width = 50
@@ -774,8 +865,8 @@ narrative_analysis_5th_column = 980
 # Windows wordclouds_main.py
 
 wordcloud_title = labels_x_indented_coordinate + 120
-wordclouds_font_lb = 870 # 270
-wordclouds_font_menu = 910 # 310 wordclouds_collocation_pos
+wordclouds_font_lb = 870  # 270
+wordclouds_font_menu = 910  # 310 wordclouds_collocation_pos
 
 wordclouds_max_words_number = wordcloud_title
 wordclouds_stopwords_pos = 340
@@ -792,9 +883,9 @@ contour_only_pos = wordclouds_color_by_POS_tags
 
 wordclouds_select_csv_field = wordcloud_title
 wordclouds_color_checkbox_pos = wordclouds_punctuation_pos
-wordclouds_RGB_lb = wordclouds_lowercase_pos #730
-wordclouds_RGB = wordclouds_lowercase_pos + 100 #800
-wordclouds_add_button = wordclouds_color_by_POS_tags # 1010
+wordclouds_RGB_lb = wordclouds_lowercase_pos  # 730
+wordclouds_RGB = wordclouds_lowercase_pos + 100  # 800
+wordclouds_add_button = wordclouds_color_by_POS_tags  # 1010
 wordclouds_reset_button = wordclouds_color_by_POS_tags + 35
 wordclouds_show_button = wordclouds_color_by_POS_tags + 85
 
@@ -803,7 +894,7 @@ confidence_level_entry_pos = 770
 DBpedia_YAGO_ontology_width = 70
 knowledge_sub_class_entry_width = 70
 knowledge_bold_checkbox = open_TIPS_x_coordinate
-knowledge_plus_button =  labels_x_indented_coordinate
+knowledge_plus_button = labels_x_indented_coordinate
 knowledge_reset_button = knowledge_plus_button + 35
 knowledge_show_button = knowledge_reset_button + 50
 
@@ -826,7 +917,7 @@ html_annotator_gender_select_dictionary_file_annotator = 370
 html_annotator_gender_SS_folder_width = 110
 html_annotator_gender_by_type_dropdown = 470
 html_annotator_gender_firstName_entry_lb_pos = 660
-html_annotator_gender_firstName_entry_pos = 770 # 790
+html_annotator_gender_firstName_entry_pos = 770  # 790
 html_annotator_gender_select_SS_folder = 1070
 
 # Windows: html_annotator_main.py
@@ -860,7 +951,7 @@ WordNet_noun_verb_menu_pos = 570
 WordNet_keyWord_menu_pos = 690
 WordNet_keyWord_entry_lb_pos = 830
 WordNet_keyWord_entry_pos = 950
-WordNet_OK_button_pos = IO_configuration_menu+open_config_file_button_brief
+WordNet_OK_button_pos = IO_configuration_menu + open_config_file_button_brief
 
 WordNet_extract_improper_nouns_pos = 650
 WordNet_dict_WordNet_filename_pos = open_setup_x_coordinate
@@ -886,7 +977,7 @@ style_vocabulary_analysis_menu_pos = 750
 NGrams_Co_occurrences_Viewer_search_words_entry_pos = 260
 NGrams_Co_occurrences_Viewer_CoOcc_Viewer_pos = NGrams_Co_occurrences_Viewer_search_words_entry_pos
 NGrams_Co_occurrences_Viewer_date_options_pos = NGrams_Co_occurrences_Viewer_search_words_entry_pos
-NGrams_Co_occurrences_Viewer_temporal_aggregation_lb_pos =  open_reminders_x_coordinate # 500
+NGrams_Co_occurrences_Viewer_temporal_aggregation_lb_pos = open_reminders_x_coordinate  # 500
 NGrams_Co_occurrences_Viewer_temporal_aggregation_menu_pos = open_reminders_x_coordinate + 100
 NGrams_Co_occurrences_Viewer_viewer_options_menu_pos = NGrams_Co_occurrences_Viewer_date_options_pos
 NGrams_Co_occurrences_Viewer_add_viewer_button_pos = NGrams_Co_occurrences_Viewer_temporal_aggregation_lb_pos  # 500
@@ -901,20 +992,20 @@ visualization_reset_button_pos = 1140
 visualization_show_button_pos = 1190
 
 visualization_csv_field_dynamic_network_lb_pos = setup_pop_up_text_widget
-visualization_dynamic_network_field_pos = open_setup_x_coordinate # 830
+visualization_dynamic_network_field_pos = open_setup_x_coordinate  # 830
 
-visualization_filename_label_lb_pos = 320 # IO_configuration_menu
-visualization_filename_label_pos = 470 #open_reminders_x_coordinate
+visualization_filename_label_lb_pos = 320  # IO_configuration_menu
+visualization_filename_label_pos = 470  # open_reminders_x_coordinate
 
-visualization_csv_field2_lb_pos = run_button_x_coordinate # 920
-visualization_csv_field2_menu_pos = visualization_csv_field2_lb_pos + 90#1020
+visualization_csv_field2_lb_pos = run_button_x_coordinate  # 920
+visualization_csv_field2_menu_pos = visualization_csv_field2_lb_pos + 90  # 1020
 
 visualization_K_sent_begin_lb = visualization_csv_field_menu_pos
 visualization_K_sent_begin_pos = visualization_csv_field_menu_pos
 visualization_K_sent_end_lb_pos = visualization_filename_label_lb_pos
 visualization_K_sent_end_pos = visualization_filename_label_pos
 visualization_split_pos = open_setup_x_coordinate
-visualization_do_not_split_pos = visualization_csv_field2_menu_pos # open_reminders_x_coordinate + 400
+visualization_do_not_split_pos = visualization_csv_field2_menu_pos  # open_reminders_x_coordinate + 400
 
 # Windows: shape_of_stories
 
@@ -925,8 +1016,8 @@ shape_of_stories_memory_pos = 890
 
 # Windows: parsers_annotators
 
-parsers_annotators_parser_lb_pos = labels_x_indented_coordinate + 10 # 150
-parsers_annotators_parser_menu_pos = open_TIPS_x_coordinate # IO_configuration_menu
+parsers_annotators_parser_lb_pos = labels_x_indented_coordinate + 10  # 150
+parsers_annotators_parser_menu_pos = open_TIPS_x_coordinate  # IO_configuration_menu
 parsers_annotators_parser_open_CoNLL_pos = open_TIPS_x_coordinate
 parsers_annotators_parser_annotator_pos = open_TIPS_x_coordinate
 parsers_annotators_parser_manual_coref_edit_pos = 800
@@ -937,8 +1028,8 @@ parsers_annotators_parser_openGUI_pos = 920
 file_search_byWord_widget_width = 100
 file_search_byWord_selectedCsvFile_pos = 430
 file_search_byWord_add_search_button_pos = setup_IO_brief_coordinate
-file_search_byWord_reset_search_button_pos = setup_IO_brief_coordinate+35
-file_search_byWord_show_search_button_pos = setup_IO_brief_coordinate+85
+file_search_byWord_reset_search_button_pos = setup_IO_brief_coordinate + 35
+file_search_byWord_show_search_button_pos = setup_IO_brief_coordinate + 85
 file_search_byWord_openInputFile_button_pos = IO_configuration_menu
 file_search_byWord_keyword_value_pos = 430
 file_search_byWord_extract_sentences_search_words_entry_pos = 430
@@ -946,9 +1037,9 @@ file_search_byWord_extract_sentences_search_words_entry_pos = 430
 # Windows Word2Vec
 Word2Vec_vector_size_entry_pos = 260
 Word2Vec_window_size_lb_pos = Word2Vec_vector_size_entry_pos
-Word2Vec_window_size_entry_pos= Word2Vec_window_size_lb_pos+220
-Word2Vec_min_count_lb_pos=setup_pop_up_text_widget
-Word2Vec_min_count_entry_pos = Word2Vec_min_count_lb_pos +150
+Word2Vec_window_size_entry_pos = Word2Vec_window_size_lb_pos + 220
+Word2Vec_min_count_lb_pos = setup_pop_up_text_widget
+Word2Vec_min_count_entry_pos = Word2Vec_min_count_lb_pos + 150
 Word2Vec_top_words_pos = 800
 
 # Windows statistics_csv
@@ -959,7 +1050,7 @@ statistics_csv_csv_field_lb_pos = 550
 statistics_csv_csv_field_menu_pos = 620
 statistics_csv_csv_groupBy_field_lb_pos = 180
 statistics_csv_csv_groupBy_field_menu_pos = 280
-statistics_csv_add_field2_button_pos = statistics_csv_csv_field_menu_pos #620
+statistics_csv_add_field2_button_pos = statistics_csv_csv_field_menu_pos  # 620
 statistics_csv_csv_hover_over_field_lb_pos = 660
 statistics_csv_csv_hover_over_field_menu_pos = 760
 
@@ -1000,9 +1091,10 @@ NER_reset_NER_button_pos = 590
 NER_NER_entry_lb_pos = 660
 NER_NER_entry_pos = 720
 
+
 def get_GUI_width(size_type=1):
-    if sys.platform == 'darwin':  # Mac OS
-        if size_type == 1: # for now we have one basic size
+    if sys.platform == "darwin":  # Mac OS
+        if size_type == 1:  # for now we have one basic size
             return 1250
         if size_type == 2:
             return 1350
@@ -1010,24 +1102,26 @@ def get_GUI_width(size_type=1):
             return 1350
         if size_type == 4:
             return 1400
-    elif sys.platform == 'linux': # for now we have two basic sizes
+    elif sys.platform == "linux":  # for now we have two basic sizes
         if size_type == 1:
-            return 1200 # increased from 1100 to account for the new SETUP widget on the last line of any GUI
+            return 1200  # increased from 1100 to account for the new SETUP widget on the last line of any GUI
         if size_type == 2:
-                return 1200
-        elif size_type==3:
+            return 1200
+        elif size_type == 3:
             return 1300
-        elif size_type==4:
-            return 1300    
-    elif sys.platform == 'win32': # for now we have two basic sizes
+        elif size_type == 4:
+            return 1300
+    elif sys.platform == "win32":  # for now we have two basic sizes
         if size_type == 1:
-            return 1200 # increased from 1100 to account for the new SETUP widget on the last line of any GUI
+            return 1200  # increased from 1100 to account for the new SETUP widget on the last line of any GUI
         if size_type == 2:
-                return 1200
-        elif size_type==3:
+            return 1200
+        elif size_type == 3:
             return 1300
-        elif size_type==4:
+        elif size_type == 4:
             return 1300
+
+
 def about():
     url = "https://github.com/NLP-Suite/NLP-Suite/wiki/About"
     IO_libraries_util.open_url(NLP_Suite_website_name, url)
@@ -1035,6 +1129,7 @@ def about():
     # if not IO_internet_util.check_internet_availability_warning("Check on GitHub what the NLP Suite is all about"):
     #     return
     # webbrowser.open_new_tab("https://github.com/NLP-Suite/NLP-Suite/wiki/About")
+
 
 def release_history():
     url = "https://github.com/NLP-Suite/NLP-Suite/wiki/NLP-Suite-Release-History"
@@ -1044,14 +1139,16 @@ def release_history():
     #     return
     # webbrowser.open_new_tab("https://github.com/NLP-Suite/NLP-Suite/wiki/NLP-Suite-Release-History")
 
+
 # The function displays the contributors to the development of the NLP Suite
 def list_team():
-    url = 'https://github.com/NLP-Suite/NLP-Suite/wiki/The-NLP-Suite-Team'
+    url = "https://github.com/NLP-Suite/NLP-Suite/wiki/The-NLP-Suite-Team"
     IO_libraries_util.open_url(NLP_Suite_website_name, url)
     # check internet connection
     # if not IO_internet_util.check_internet_availability_warning("Check on GitHub the NLP Suite team"):
     #     return
     # webbrowser.open_new_tab("https://github.com/NLP-Suite/NLP-Suite/wiki/The-NLP-Suite-Team")
+
 
 def cite_NLP():
     # The How-to-Cite page is its own wiki page now, not an anchor under About.
@@ -1063,13 +1160,22 @@ def cite_NLP():
     #     return
     # webbrowser.open_new_tab("https://github.com/NLP-Suite/NLP-Suite/wiki/About#How-to-Cite-the-NLP-Suite")
 
-def GUI_settings(IO_setup_display_brief,GUI_width,GUI_height_brief,GUI_height_full,y_multiplier_integer,y_multiplier_integer_add,increment):
+
+def GUI_settings(
+    IO_setup_display_brief,
+    GUI_width,
+    GUI_height_brief,
+    GUI_height_full,
+    y_multiplier_integer,
+    y_multiplier_integer_add,
+    increment,
+):
     # the GUIs are all setup to run with a brief I/O display or full display (with filename, inputDir, outputDir)
     #   just change the next statement to True or False IO_setup_display_brief=True
     # GUI_height height of GUI with full I/O display
 
     if IO_setup_display_brief:
-        GUI_height = GUI_height_brief # - 40
+        GUI_height = GUI_height_brief  # - 40
         y_multiplier_integer = y_multiplier_integer  # IO BRIEF display
         increment = 0  # used in the display of HELP messages
     else:  # full display
@@ -1079,33 +1185,36 @@ def GUI_settings(IO_setup_display_brief,GUI_width,GUI_height_brief,GUI_height_fu
         GUI_height = GUI_height_full
         y_multiplier_integer = y_multiplier_integer + y_multiplier_integer_add  # IO FULL display
         increment = increment
-    GUI_size = str(GUI_width) + 'x' + str(GUI_height)
+    GUI_size = str(GUI_width) + "x" + str(GUI_height)
     return GUI_size, y_multiplier_integer, increment
 
+
 from tkinter import Toplevel
+
+
 def Dialog2Display(title: str):
     Dialog2 = Toplevel(height=1000, width=1000)
 
 
-def message_box_widget(window, message_title, message_text, buttonType='OK', timeout=3000):
+def message_box_widget(window, message_title, message_text, buttonType="OK", timeout=3000):
     global yes_no_button
     yes_no_button = ""
     # if not 'Started' in message_text and not 'Finished' in message_text:
-#    if 'Started' in message_text or 'Finished' in message_text:
-#        return yes_no_button
-    if buttonType != 'OK':
-        message_title = 'Reminder: ' + message_title
+    #    if 'Started' in message_text or 'Finished' in message_text:
+    #        return yes_no_button
+    if buttonType != "OK":
+        message_title = "Reminder: " + message_title
     global top_message
     top_message = tk.Toplevel()
     top_message.title(message_title)
 
     # define the countdown func.
     def countdown(countdown_timer):
-        if countdown_timer==0:
+        if countdown_timer == 0:
             try:
                 top_message.destroy()
             except:
-                print('Closing message due to timeout.')
+                print("Closing message due to timeout.")
         else:
             countdown_timer -= 1
             countdownLabel2.configure(text=f"{countdown_timer}")
@@ -1114,19 +1223,18 @@ def message_box_widget(window, message_title, message_text, buttonType='OK', tim
     # timer
     def wait_for_answer(button_type):
         global yes_no_button
-        if button_type == 'Yes':
+        if button_type == "Yes":
             yes_no_button = "Yes"
             top_message.destroy()
-        elif button_type == 'No':
+        elif button_type == "No":
             yes_no_button = "No"
             top_message.destroy()
-        elif button_type == 'Cancel':
+        elif button_type == "Cancel":
             top_message.destroy()
 
-    if buttonType == 'OK':
-        mbox = tk.Message(top_message, width=600,
-                          text=message_text + '\n\n\n\n')
-        top_message.attributes('-topmost', 'true')
+    if buttonType == "OK":
+        mbox = tk.Message(top_message, width=600, text=message_text + "\n\n\n\n")
+        top_message.attributes("-topmost", "true")
         mbox.pack()  # put the widget on the window
         top_message.update_idletasks()
 
@@ -1185,10 +1293,9 @@ def message_box_widget(window, message_title, message_text, buttonType='OK', tim
 
         countdown(int(timeout / denominator2))
 
-    elif buttonType == 'Yes-No':
-        mbox = tk.Message(top_message, width=600,
-                          text=message_text + '\n\n\n\n')
-        top_message.attributes('-topmost', 'true')
+    elif buttonType == "Yes-No":
+        mbox = tk.Message(top_message, width=600, text=message_text + "\n\n\n\n")
+        top_message.attributes("-topmost", "true")
         mbox.pack()  # put the widget on the window
         top_message.update_idletasks()
         screen_height = top_message.winfo_height()
@@ -1232,11 +1339,7 @@ def message_box_widget(window, message_title, message_text, buttonType='OK', tim
 
             no_x = yes_x + Yes.winfo_reqwidth() + 8
             countdown_label_x = no_x + No.winfo_reqwidth() + 12
-            countdown_value_x = (
-                countdown_label_x
-                + countdownLabel1.winfo_reqwidth()
-                + 10
-            )
+            countdown_value_x = countdown_label_x + countdownLabel1.winfo_reqwidth() + 10
 
         Yes.place(x=yes_x, y=screen_height - 35)
         No.place(x=no_x, y=screen_height - 35)
@@ -1252,26 +1355,25 @@ def message_box_widget(window, message_title, message_text, buttonType='OK', tim
 
         countdown(int(timeout / 1000))
 
-    elif buttonType == 'Yes-No-Cancel':
-        mbox = tk.Message(top_message, width=600,
-                          text=message_text + '\n\n\n\n')
-        top_message.attributes('-topmost', 'true')
+    elif buttonType == "Yes-No-Cancel":
+        mbox = tk.Message(top_message, width=600, text=message_text + "\n\n\n\n")
+        top_message.attributes("-topmost", "true")
         mbox.pack()  # put the widget on the window
         top_message.update_idletasks()
         screen_height = top_message.winfo_height()
 
-        Yes = tk.Button(top_message, text="Yes", command=lambda: wait_for_answer('Yes'))
-        No = tk.Button(top_message, text="No", command=lambda: wait_for_answer('No'))
-        Cancel = tk.Button(top_message, text="Cancel", command=lambda: wait_for_answer('Cancel'))
+        Yes = tk.Button(top_message, text="Yes", command=lambda: wait_for_answer("Yes"))
+        No = tk.Button(top_message, text="No", command=lambda: wait_for_answer("No"))
+        Cancel = tk.Button(top_message, text="Cancel", command=lambda: wait_for_answer("Cancel"))
 
         Yes.place(x=0, y=screen_height - 35)
         No.place(x=50, y=screen_height - 35)
         Cancel.place(x=100, y=screen_height - 35)
         question.place(x=0, y=screen_height - 60)
 
-        question = tk.Label(top_message, text="Do you want to see this message again?", fg='red')
-        countdownLabel1 = tk.Label(top_message, text='Countdown to automatic closing:')
-        countdownLabel2 = tk.Label(top_message, text=f'{int(timeout / 1000)}', fg='red')
+        question = tk.Label(top_message, text="Do you want to see this message again?", fg="red")
+        countdownLabel1 = tk.Label(top_message, text="Countdown to automatic closing:")
+        countdownLabel2 = tk.Label(top_message, text=f"{int(timeout / 1000)}", fg="red")
 
         countdownLabel1.place(x=200, y=screen_height - 35)
         countdownLabel2.place(x=410, y=screen_height - 35)
@@ -1298,23 +1400,23 @@ def combobox_with_search_widget(item_names):
 
     def search_items(search_value):
         # print (combo.get())
-        print('search_value', search_value)
+        print("search_value", search_value)
         # print('entry1', entry1.get())
         # print('search_variable',search_variable.get())
         # search_value =search_variable.get()
         if search_value == "" or search_value == " ":
-            combo['values'] = item_names
+            combo["values"] = item_names
         else:
             value_to_display = []
             for value in item_names:
                 if search_value in value:
                     value_to_display.append(value)
-            combo['values'] = value_to_display
-            combo.set(combo['values'][0])
+            combo["values"] = value_to_display
+            combo.set(combo["values"][0])
 
     # global combo
-    combo = ttk.Combobox(ws, width=300, state='readonly')
-    combo['values'] = item_names
+    combo = ttk.Combobox(ws, width=300, state="readonly")
+    combo["values"] = item_names
     combo.pack()
 
     # global search_variable, entry1
@@ -1324,29 +1426,30 @@ def combobox_with_search_widget(item_names):
     # print('variable',search_variable.get())
     # print('entry1',entry1.get())
 
-    button = tk.Button(ws, text="Search", command=lambda:search_items(entry1.get()))
+    button = tk.Button(ws, text="Search", command=lambda: search_items(entry1.get()))
     button.pack()
     # ws.destroy()
 
     ws.mainloop()
     return combo.get()
 
-# creating popup menu in tkinter
-def dropdown_menu_widget(window,textCaption, menu_values, default_value, callback):
 
-    class App():
-        def __init__(self,master):
+# creating popup menu in tkinter
+def dropdown_menu_widget(window, textCaption, menu_values, default_value, callback):
+
+    class App:
+        def __init__(self, master):
             top = self.top = Toplevel()
             top.wm_title(textCaption)
             top.focus_force()
-            self.menuButton = ttk.Combobox(top, width=len(textCaption)+30)
-            self.menuButton['values'] = menu_values
-            self.menuButton.pack() # put the widget on the window
+            self.menuButton = ttk.Combobox(top, width=len(textCaption) + 30)
+            self.menuButton["values"] = menu_values
+            self.menuButton.pack()  # put the widget on the window
 
-            self.menuButton.grid(row=0, column=1) # , sticky=W)
+            self.menuButton.grid(row=0, column=1)  # , sticky=W)
             self.callback = callback
 
-            ok_button = tk.Button(self.top, text='OK', command=self.get_value)
+            ok_button = tk.Button(self.top, text="OK", command=self.get_value)
             ok_button.grid(row=0, column=1)
 
         def get_value(self):
@@ -1356,8 +1459,9 @@ def dropdown_menu_widget(window,textCaption, menu_values, default_value, callbac
 
     App(window)
 
+
 # modified dropdown_menu_widget that will stay open without command=lambda:
-def dropdown_menu_widget2(window,textCaption, menu_values, default_value, callback):
+def dropdown_menu_widget2(window, textCaption, menu_values, default_value, callback):
     def get_value():
         global val
         val = menuButton.get()
@@ -1368,30 +1472,31 @@ def dropdown_menu_widget2(window,textCaption, menu_values, default_value, callba
     top = Toplevel()
     top.wm_title(textCaption)
     top.focus_force()
-    menuButton = ttk.Combobox(top, width=len(textCaption)+30)
-    menuButton['values'] = menu_values
-    menuButton.pack() # put the widget on the window
+    menuButton = ttk.Combobox(top, width=len(textCaption) + 30)
+    menuButton["values"] = menu_values
+    menuButton.pack()  # put the widget on the window
 
-    menuButton.grid(row=0, column=1) # , sticky=W)
+    menuButton.grid(row=0, column=1)  # , sticky=W)
     callback = callback
 
-    ok_button = tk.Button(top, text='OK', command=get_value)
+    ok_button = tk.Button(top, text="OK", command=get_value)
     ok_button.grid(row=0, column=1)
 
     window.wait_window(top)
 
     return val
 
-def slider_widget(window,textCaption, lower_bound, upper_bound, default_value):
+
+def slider_widget(window, textCaption, lower_bound, upper_bound, default_value):
     # unattended/silent mode (NLP_SILENT): skip the modal, return the recommended default
-    if os.environ.get('NLP_SILENT','').strip().lower() not in ('','0','false','no','off'):
+    if os.environ.get("NLP_SILENT", "").strip().lower() not in ("", "0", "false", "no", "off"):
         return default_value
     top = tk.Toplevel(window)
-    l = tk.Label(top, text= textCaption)
-    l.pack() # put the widget on the window
-    s = tk.Scale(top, from_= lower_bound, to=upper_bound, orient=tk.HORIZONTAL)
+    l = tk.Label(top, text=textCaption)
+    l.pack()  # put the widget on the window
+    s = tk.Scale(top, from_=lower_bound, to=upper_bound, orient=tk.HORIZONTAL)
     s.set(default_value)
-    s.pack() # put the widget on the window
+    s.pack()  # put the widget on the window
 
     def get_value():
         global val
@@ -1400,79 +1505,75 @@ def slider_widget(window,textCaption, lower_bound, upper_bound, default_value):
         top.update()
 
     def _delete_window():
-        mb.showwarning(title = "Invalid Operation", message = "Please click OK to save your choice of parameter.")
+        mb.showwarning(title="Invalid Operation", message="Please click OK to save your choice of parameter.")
 
     top.protocol("WM_DELETE_WINDOW", _delete_window)
 
-    tk.Button(top, text='OK', command=lambda: get_value()).pack()
+    tk.Button(top, text="OK", command=lambda: get_value()).pack()
     window.wait_window(top)
     return val
+
 
 # TODO
 # 2 widgets max for now; should allow more, dynamically
 # return a list; see comment at end of function
-def enter_value_widget(masterTitle,textCaption,numberOfWidgets=1,defaultValue='',textCaption2='',defaultValue2=''):
+def enter_value_widget(masterTitle, textCaption, numberOfWidgets=1, defaultValue="", textCaption2="", defaultValue2=""):
     # unattended/silent mode (NLP_SILENT): skip the modal, return the default value(s)
-    if os.environ.get('NLP_SILENT','').strip().lower() not in ('','0','false','no','off'):
+    if os.environ.get("NLP_SILENT", "").strip().lower() not in ("", "0", "false", "no", "off"):
         return defaultValue, defaultValue2
-    value1=defaultValue
-    value2=defaultValue2
-    masterTitle=masterTitle + " (Esc to quit)"
+    value1 = defaultValue
+    value2 = defaultValue2
+    masterTitle = masterTitle + " (Esc to quit)"
 
     # TODO should not restrict to 2; should have a loop
-    if numberOfWidgets==2:
+    if numberOfWidgets == 2:
         # TODO should have a list and break it up assigning values in a loop
-        value2=defaultValue2
+        value2 = defaultValue2
     master = tk.Tk()
     master.focus_force()
 
-    tk.Label(master,width=len(textCaption),text=textCaption).grid(row=0)
+    tk.Label(master, width=len(textCaption), text=textCaption).grid(row=0)
     # TODO should not restrict to 2; should have a loop
-    if numberOfWidgets==2:
-        tk.Label(master, width=len(textCaption2),text=textCaption2).grid(row=1)
+    if numberOfWidgets == 2:
+        tk.Label(master, width=len(textCaption2), text=textCaption2).grid(row=1)
 
     master.title(masterTitle)
     # the width in tk.Entry determines the overall width of the widget;
     #   MUST be entered
     #   + 30 to add room for - [] and X in a widget window
-    e1 = tk.Entry(master,width=len(masterTitle)+30)
+    e1 = tk.Entry(master, width=len(masterTitle) + 30)
     e1.focus_force()
 
     # TODO 2 could be a larger number; should have a loop
-    if numberOfWidgets==2:
-        e2 = tk.Entry(master,width=len(masterTitle)+30)
+    if numberOfWidgets == 2:
+        e2 = tk.Entry(master, width=len(masterTitle) + 30)
 
     e1.grid(row=0, column=1)
     # TODO 2 could be a larger number; should have a loop
-    if numberOfWidgets==2:
+    if numberOfWidgets == 2:
         e2.grid(row=1, column=1)
 
-    e1.insert(len(textCaption), defaultValue) # display a default value
+    e1.insert(len(textCaption), defaultValue)  # display a default value
     # TODO 2 could be a larger number; should have a loop
-    if numberOfWidgets==2:
-        e2.insert(len(textCaption2), defaultValue2) # display a default value
+    if numberOfWidgets == 2:
+        e2.insert(len(textCaption2), defaultValue2)  # display a default value
 
-    tk.Button(master,
-              text='OK',
-              command=master.quit).grid(row=3,
-                                        column=0,
-                                        sticky=tk.W,
-                                        pady=4)
+    tk.Button(master, text="OK", command=master.quit).grid(row=3, column=0, sticky=tk.W, pady=4)
+
     def func(event):
         master.quit()
-    master.bind('<Return>', func)
-    master.bind('<Escape>', func)
+
+    master.bind("<Return>", func)
+    master.bind("<Escape>", func)
 
     master.mainloop()
-    value1=str(e1.get())
+    value1 = str(e1.get())
     # TODO 2 could be a larger number; should have a loop
-    if numberOfWidgets==2:
-        value2=str(e2.get())
+    if numberOfWidgets == 2:
+        value2 = str(e2.get())
     master.destroy()
     # convert to list; value1 is checked for length in calling function
     #   so do not convert if empty or its length will be the length of ['']
     # if value1!='':
     #     value1=list(value1.split(" "))
     return value1, value2
-
-

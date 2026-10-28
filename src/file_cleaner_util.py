@@ -1,48 +1,53 @@
-
 #!/usr/bin/python
 # Python version target: 3.6.3 Anaconda
 
 import sys
+
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_Python_packages(GUI_util.window,"Newspaper titles",['os','re','stanza','glob','pandas','string','tkinter'])==False:
+if (
+    IO_libraries_util.install_all_Python_packages(
+        GUI_util.window, "Newspaper titles", ["os", "re", "stanza", "glob", "pandas", "string", "tkinter"]
+    )
+    == False
+):
     sys.exit(0)
 
-import glob
 import os
-# from Stanza_functions_util import stanzaPipeLine, tokenize_stanza_text
-import string
-import tkinter as tk
-import tkinter.messagebox as mb
 import re
 
-import IO_files_util
+# from Stanza_functions_util import stanzaPipeLine, tokenize_stanza_text
+import tkinter as tk
+import tkinter.messagebox as mb
+
 import GUI_IO_util
-import IO_user_interface_util
 import IO_csv_util
+import IO_files_util
+import IO_user_interface_util
+
 
 def create_input_subdir(inputDir, label):
     # create a subdirectory of the input directory
     inputDirBase = os.path.basename(inputDir)
     outputDir = inputDir + os.sep + inputDirBase + label
-    outputDir = IO_files_util.make_output_subdirectory('', '', outputDir,
-                                                       label='',
-                                                       silent=True)
+    outputDir = IO_files_util.make_output_subdirectory("", "", outputDir, label="", silent=True)
     return outputDir
+
 
 # get all the paragraphs in the file fn based on hard returns \r
 # the function returns a list [] of paragraphs
 def get_paragraphs(fn):
     paragraphs = []
-    paragraphs = fn.read().split('\r')  # carriage return/hard return
+    paragraphs = fn.read().split("\r")  # carriage return/hard return
     lst = []
     for paragraph in paragraphs:
-        for s in paragraph.split('\n'):
+        for s in paragraph.split("\n"):
             lst.append(s)
     paragraphs = lst
     paragraphs = [fn.strip() for fn in paragraphs if fn.strip()]
     return paragraphs
+
 
 # the function checks for end of paragraph punctuation
 #   where a paragraph is any chunk of text followed by a carriage return/hard return
@@ -52,23 +57,43 @@ def get_paragraphs(fn):
 #       potentially creating unduly long sentences that may lead to efficiency issues
 #       https://stanfordnlp.github.io/CoreNLP/memory-time.html
 
+
 # extra parameters passed to uniform the funct call
 # paragraphs are separated by hard returns \r
-def add_full_stop_to_paragraph(window, inputFilename, inputDir, outputDir, configFileName, openOutputFiles,chartPackage='Excel', dataTransformation='No transformation'):
-    import file_filename_util
+def add_full_stop_to_paragraph(
+    window,
+    inputFilename,
+    inputDir,
+    outputDir,
+    configFileName,
+    openOutputFiles,
+    chartPackage="Excel",
+    dataTransformation="No transformation",
+):
     # result=file_filename_util.backup_files(inputFilename, inputDir,'Add full-stops to paragraphs', '.txt', configFileName)
     # if result==False:
     #     return
 
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running the add fullstop function at',
-                                                 True, '', True, '', False)
+    startTime = IO_user_interface_util.timed_alert(
+        GUI_util.window,
+        2000,
+        "Analysis start",
+        "Started running the add fullstop function at",
+        True,
+        "",
+        True,
+        "",
+        False,
+    )
 
-    label = '_FullStops'
-    if inputDir != '':
+    label = "_FullStops"
+    if inputDir != "":
         outputDir = create_input_subdir(inputDir, label)
 
     # collecting input txt files
-    inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt', silent=False, configFileName=configFileName)
+    inputDocs = IO_files_util.getFileList(
+        inputFilename, inputDir, fileType=".txt", silent=False, configFileName=configFileName
+    )
     nDocs = len(inputDocs)
     docID = 0
     if nDocs == 0:
@@ -81,359 +106,570 @@ def add_full_stop_to_paragraph(window, inputFilename, inputDir, outputDir, confi
     for filename in inputDocs:
         docID = docID + 1
         head, tail = os.path.split(filename)
-        print("Processing file " + str(docID) + "/" + str(nDocs) + ' ' + tail)
+        print("Processing file " + str(docID) + "/" + str(nDocs) + " " + tail)
         edited = False
-        with open(filename,'r', encoding='utf-8', errors='ignore') as fn:
+        with open(filename, encoding="utf-8", errors="ignore") as fn:
             # add_full_stop_to_paragraph
-            outfile = outputDir + os.sep + tail.replace('.txt', label + '.txt')
+            outfile = outputDir + os.sep + tail.replace(".txt", label + ".txt")
             paragraphs = get_paragraphs(fn)
-            with open(outfile, 'w', encoding='utf-8', errors='ignore') as out:
+            with open(outfile, "w", encoding="utf-8", errors="ignore") as out:
                 for paragraph in paragraphs:
                     check_index = -1
-                    if paragraph and paragraph[-1] in ['\'', '"']:
-                        if (len(paragraph) >= 2):
+                    if paragraph and paragraph[-1] in ["'", '"']:
+                        if len(paragraph) >= 2:
                             check_index = -2
                     # check for enf of paragraph punctuation, quotation and single quotation first, then check for .!?
-                    if paragraph and paragraph[check_index] not in ['.', '!', '?']:
-                        out.write(paragraph + '.\n')
+                    if paragraph and paragraph[check_index] not in [".", "!", "?"]:
+                        out.write(paragraph + ".\n")
                         edited = True
                     else:
                         out.write(paragraph)
-                        out.write('\n')
-        if (edited):
+                        out.write("\n")
+        if edited:
             count += 1
 
-    msgString = ''
-    if count==0:
-        if nDocs==1:
-            msgString="The document has no added full stops."
+    msgString = ""
+    if count == 0:
+        if nDocs == 1:
+            msgString = "The document has no added full stops."
         else:
-            msgString="No documents have been edited for added full stops."
+            msgString = "No documents have been edited for added full stops."
     else:
-        msgString = "%s documents out of %d have been edited for full stops." % (nDocs,count) + "\n\nThe percentage of documents processed is %.2f" % ((float(count)/nDocs) * 100)
-    if count>0:
-        if inputFilename!="":
-            msgString=msgString+"\n\nAll edits were saved directly in the input file."
+        msgString = "%s documents out of %d have been edited for full stops." % (
+            nDocs,
+            count,
+        ) + "\n\nThe percentage of documents processed is %.2f" % ((float(count) / nDocs) * 100)
+    if count > 0:
+        if inputFilename != "":
+            msgString = msgString + "\n\nAll edits were saved directly in the input file."
         else:
-            msgString=msgString+"\n\nAll edits were saved directly in all affected input files."
+            msgString = msgString + "\n\nAll edits were saved directly in all affected input files."
 
-    mb.showwarning(title='End of paragraph punctuation', message=msgString)
+    mb.showwarning(title="End of paragraph punctuation", message=msgString)
     # always open outputDir
     IO_files_util.openExplorer(window, head)
-    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running the add fullstop function at', True, '', True, startTime, False)
+    IO_user_interface_util.timed_alert(
+        GUI_util.window,
+        2000,
+        "Analysis end",
+        "Finished running the add fullstop function at",
+        True,
+        "",
+        True,
+        startTime,
+        False,
+    )
 
-def check_typesetting_hyphenation(window,inputFilename,inputDir, outputDir='',configFileName='',openOutputFiles=False,chartPackage='Excel', dataTransformation='No transformation'):
-    filesToOpen=[]
+
+def check_typesetting_hyphenation(
+    window,
+    inputFilename,
+    inputDir,
+    outputDir="",
+    configFileName="",
+    openOutputFiles=False,
+    chartPackage="Excel",
+    dataTransformation="No transformation",
+):
+    filesToOpen = []
     docID = 0
-    files=IO_files_util.getFileList(inputFilename, inputDir, fileType='txt', silent=False, configFileName=configFileName)
+    files = IO_files_util.getFileList(
+        inputFilename, inputDir, fileType="txt", silent=False, configFileName=configFileName
+    )
     nDocs = len(files)
-    if nDocs==0:
+    if nDocs == 0:
         return
     for infile in files:
         docID = docID + 1
         head, tail = os.path.split(infile)
-        print("Processing file " + str(docID) + "/" + str(nDocs) + ' ' + tail)
-        hyphenated_lines=0
-        lines=[]
-        with open(infile, encoding='utf-8', errors='ignore') as source:
+        print("Processing file " + str(docID) + "/" + str(nDocs) + " " + tail)
+        hyphenated_lines = 0
+        lines = []
+        with open(infile, encoding="utf-8", errors="ignore") as source:
             for line in source.readlines():
                 line = line.rstrip("\n")
                 if line.endswith("-"):
-                    if len(line)>=2:
-                        if line[-2]==' ':
+                    if len(line) >= 2:
+                        if line[-2] == " ":
                             continue
                     hyphenated_lines += 1
                     lin, _, e = line.rpartition(" ")
                     lines.append(line)
 
     if hyphenated_lines > 0:
-        mb.showwarning('Warning', 'There are ' + str(
-            hyphenated_lines) + ' typesetting hyphenated lines in the input file(s).\n\nPlease, check carefully the output csv file to make sure that there are no legitimate end-of-line hyphens (e.g., pretty-smart) that should not be joined together. In such legitimate cases, please, manually move the line end to the next line.')
-        outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'lines with end hyphen')
-        lines.insert(0,'Line ending with -')
+        mb.showwarning(
+            "Warning",
+            "There are "
+            + str(hyphenated_lines)
+            + " typesetting hyphenated lines in the input file(s).\n\nPlease, check carefully the output csv file to make sure that there are no legitimate end-of-line hyphens (e.g., pretty-smart) that should not be joined together. In such legitimate cases, please, manually move the line end to the next line.",
+        )
+        outputFilename = IO_files_util.generate_output_file_name(
+            inputFilename, inputDir, outputDir, ".csv", "lines with end hyphen"
+        )
+        lines.insert(0, "Line ending with -")
         IO_error = IO_csv_util.list_to_csv(window, lines, outputFilename)
         if not IO_error:
             filesToOpen.append(outputFilename)
         if openOutputFiles:
             IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
     else:
-        mb.showwarning('Warning', 'There are ' + str(hyphenated_lines) + ' typesetting hyphenated lines in the input file(s).')
+        mb.showwarning(
+            "Warning", "There are " + str(hyphenated_lines) + " typesetting hyphenated lines in the input file(s)."
+        )
+
 
 # replace - followed by a hard carriage return \r at the end of a line with a blank joined to the beginning of the next line
-def remove_typeseting_hyphenation(window,inputFilename,inputDir, outputDir='', configFileName='',openOutputFiles=False,chartPackage='Excel',dataTransformation='No transformation'):
+def remove_typeseting_hyphenation(
+    window,
+    inputFilename,
+    inputDir,
+    outputDir="",
+    configFileName="",
+    openOutputFiles=False,
+    chartPackage="Excel",
+    dataTransformation="No transformation",
+):
 
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running the typesetting hyphenation function at',
-                                                 True, '', True, '', False)
+    startTime = IO_user_interface_util.timed_alert(
+        GUI_util.window,
+        2000,
+        "Analysis start",
+        "Started running the typesetting hyphenation function at",
+        True,
+        "",
+        True,
+        "",
+        False,
+    )
 
-    label = '_NoHyph'
-    if inputDir != '':
-        outputDir = create_input_subdir(inputDir, '_NoHyph')
+    label = "_NoHyph"
+    if inputDir != "":
+        outputDir = create_input_subdir(inputDir, "_NoHyph")
 
-    message='The input file(s) may contain legitimate end-of-line hyphens (e.g., pretty-smart with pretty- at the end of a line and smart at the beginning of the next line). In such legitimate cases, the two-parts of the hyphenated compound should not be joined together (rather, the line end, pretty- should be manually moved to the next line.\n\nDo you want to check, first, that there are no legitimate uses of end-of-line hyphens, before removing them all automatically, whether legitimate or not?'
+    message = "The input file(s) may contain legitimate end-of-line hyphens (e.g., pretty-smart with pretty- at the end of a line and smart at the beginning of the next line). In such legitimate cases, the two-parts of the hyphenated compound should not be joined together (rather, the line end, pretty- should be manually moved to the next line.\n\nDo you want to check, first, that there are no legitimate uses of end-of-line hyphens, before removing them all automatically, whether legitimate or not?"
     answer = tk.messagebox.askyesno("Warning", message)
     if answer:
-        check_typesetting_hyphenation(window, inputFilename, inputDir, outputDir, openOutputFiles,
-                                       chartPackage='Excel',dataTransformation='No transformation', configFileName=configFileName)
+        check_typesetting_hyphenation(
+            window,
+            inputFilename,
+            inputDir,
+            outputDir,
+            openOutputFiles,
+            chartPackage="Excel",
+            dataTransformation="No transformation",
+            configFileName=configFileName,
+        )
         return
 
     docID = 0
-    files=IO_files_util.getFileList(inputFilename, inputDir, fileType='txt', silent=False, configFileName=configFileName)
+    files = IO_files_util.getFileList(
+        inputFilename, inputDir, fileType="txt", silent=False, configFileName=configFileName
+    )
     nDocs = len(files)
-    if nDocs==0:
+    if nDocs == 0:
         return
     for infile in files:
         docID = docID + 1
         head, tail = os.path.split(infile)
-        print("Processing file " + str(docID) + "/" + str(nDocs) + ' ' + tail)
-        removed_hyphens=0
+        print("Processing file " + str(docID) + "/" + str(nDocs) + " " + tail)
+        removed_hyphens = 0
         # remove_typeseting_hyphenation
-        if inputDir != '':
+        if inputDir != "":
             # do not modify the filename when processing multiple files in a directory
             #   this way, they can be copied directly over the inputDir
             outfile = outputDir + os.sep + tail
         else:
-            outfile = outputDir + os.sep + tail.replace('.txt', label + '.txt')
+            outfile = outputDir + os.sep + tail.replace(".txt", label + ".txt")
         # outfile = outputDir + os.sep + tail.replace('.txt',label+'.txt')
-        with open(infile, encoding='utf-8', errors='ignore') as source, open(outfile, "w", encoding='utf-8', errors='ignore') as dest:
+        with (
+            open(infile, encoding="utf-8", errors="ignore") as source,
+            open(outfile, "w", encoding="utf-8", errors="ignore") as dest,
+        ):
             holdover = ""
             for line in source.readlines():
                 line = line.rstrip("\n")
                 if line.endswith("-"):
                     if len(line) >= 2:
-                        if line[-2] == ' ': # do not convert - preceded by a space
+                        if line[-2] == " ":  # do not convert - preceded by a space
                             continue
-                    removed_hyphens +=1
+                    removed_hyphens += 1
                     lin, _, e = line.rpartition(" ")
                 else:
                     lin, e = line, ""
                 dest.write(f"{holdover}{lin}\n")
                 holdover = e[:-1]
     if removed_hyphens > 0:
-        if inputDir!='':
-            save_msg = '\n\nOutput files saved in the subdirectory ' + outputDir + ' of the same directory of input files.'
+        if inputDir != "":
+            save_msg = (
+                "\n\nOutput files saved in the subdirectory " + outputDir + " of the same directory of input files."
+            )
         else:
-            save_msg = '\n\nOutput file saved in the same directory of the input file with ' + label + '.txt ending.'
+            save_msg = "\n\nOutput file saved in the same directory of the input file with " + label + ".txt ending."
     else:
-        save_msg = ''
-    mb.showwarning('Warning',str(removed_hyphens) + ' end-line typesetting hyphens removed from the input file(s).'+ save_msg)
+        save_msg = ""
+    mb.showwarning(
+        "Warning", str(removed_hyphens) + " end-line typesetting hyphens removed from the input file(s)." + save_msg
+    )
     # always open outputDir
     IO_files_util.openExplorer(window, head)
 
-    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running the typesetting hyphenation function at', True, '', True, startTime, False)
+    IO_user_interface_util.timed_alert(
+        GUI_util.window,
+        2000,
+        "Analysis end",
+        "Finished running the typesetting hyphenation function at",
+        True,
+        "",
+        True,
+        startTime,
+        False,
+    )
 
-def remove_hard_carriage_returns(window,inputFilename,inputDir, outputDir='', configFileName='', openOutputFiles=False,chartPackage='Excel',dataTransformation='No transformation'):
 
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running the hard-carriage returns function at',
-                                                 True, '', True, '', False)
+def remove_hard_carriage_returns(
+    window,
+    inputFilename,
+    inputDir,
+    outputDir="",
+    configFileName="",
+    openOutputFiles=False,
+    chartPackage="Excel",
+    dataTransformation="No transformation",
+):
 
-    label = '_NoHcR'
-    if inputDir != '':
+    startTime = IO_user_interface_util.timed_alert(
+        GUI_util.window,
+        2000,
+        "Analysis start",
+        "Started running the hard-carriage returns function at",
+        True,
+        "",
+        True,
+        "",
+        False,
+    )
+
+    label = "_NoHcR"
+    if inputDir != "":
         outputDir = create_input_subdir(inputDir, label)
 
-    message='The input file(s) may contain legitimate hard-carriage returns at the end of pargraphs (e.g., pretty-smart with pretty- at the end of a line and smart at the beginning of the next line). In such legitimate cases, the two-parts of the hyphenated compound should not be joined together (rather, the line end, pretty- should be manually moved to the next line.\n\nDo you want to check, first, that there are no legitimate uses of end-of-line hyphens, before removing them all automatically, whether legitimate or not?'
+    message = "The input file(s) may contain legitimate hard-carriage returns at the end of pargraphs (e.g., pretty-smart with pretty- at the end of a line and smart at the beginning of the next line). In such legitimate cases, the two-parts of the hyphenated compound should not be joined together (rather, the line end, pretty- should be manually moved to the next line.\n\nDo you want to check, first, that there are no legitimate uses of end-of-line hyphens, before removing them all automatically, whether legitimate or not?"
     answer = tk.messagebox.askyesno("Warning", message)
     if answer:
-        check_typesetting_hyphenation(window, inputFilename, inputDir, outputDir, openOutputFiles,
-                                       chartPackage='Excel',dataTransformation='No transformation', configFileName=configFileName)
+        check_typesetting_hyphenation(
+            window,
+            inputFilename,
+            inputDir,
+            outputDir,
+            openOutputFiles,
+            chartPackage="Excel",
+            dataTransformation="No transformation",
+            configFileName=configFileName,
+        )
         return
 
     docID = 0
-    files=IO_files_util.getFileList(inputFilename, inputDir, fileType='txt', silent=False, configFileName=configFileName)
+    files = IO_files_util.getFileList(
+        inputFilename, inputDir, fileType="txt", silent=False, configFileName=configFileName
+    )
     nDocs = len(files)
-    if nDocs==0:
+    if nDocs == 0:
         return
     for infile in files:
         docID = docID + 1
         head, tail = os.path.split(infile)
-        print("Processing file " + str(docID) + "/" + str(nDocs) + ' ' + tail)
-        removed_hard_returns=0
+        print("Processing file " + str(docID) + "/" + str(nDocs) + " " + tail)
+        removed_hard_returns = 0
         # remove_hard_carriage_returns
-        if inputDir != '':
+        if inputDir != "":
             # do not modify the filename when processing multiple files in a directory
             #   this way, they can be copied directly over the inputDir
             outfile = outputDir + os.sep + tail
         else:
-            outfile = head + os.sep + tail.replace('.txt', label + '.txt')
+            outfile = head + os.sep + tail.replace(".txt", label + ".txt")
         # outfile = outputDir + os.sep + tail.replace('.txt',label+'.txt')
-        new_paragraph=''
-        with open(infile,'r', encoding='utf-8', errors='ignore') as fn:
+        new_paragraph = ""
+        with open(infile, encoding="utf-8", errors="ignore") as fn:
             # remove_hard_carriage_returns
             paragraphs = get_paragraphs(fn)
-            with open(outfile, 'w', encoding='utf-8',errors='ignore') as out:
+            with open(outfile, "w", encoding="utf-8", errors="ignore") as out:
                 for paragraph in paragraphs:
-                    new_paragraph = new_paragraph + paragraph + ' '
+                    new_paragraph = new_paragraph + paragraph + " "
                     removed_hard_returns += 1
                 out.write(new_paragraph)
     if removed_hard_returns > 0:
-        if inputDir!='':
-            save_msg = '\n\nOutput files saved in the subdirectory ' + outputDir + ' of the same directory of input files.'
+        if inputDir != "":
+            save_msg = (
+                "\n\nOutput files saved in the subdirectory " + outputDir + " of the same directory of input files."
+            )
         else:
-            save_msg = '\n\nOutput file saved in the same directory of the input file with ' + label + '.txt ending.'
+            save_msg = "\n\nOutput file saved in the same directory of the input file with " + label + ".txt ending."
     else:
-        save_msg = ''
-    mb.showwarning('Warning',str(removed_hard_returns) + ' hard-carriage returns removed from the input file(s).'+ save_msg)
+        save_msg = ""
+    mb.showwarning(
+        "Warning", str(removed_hard_returns) + " hard-carriage returns removed from the input file(s)." + save_msg
+    )
     # always open outputDir
     IO_files_util.openExplorer(window, head)
 
-    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running the hard-carriage returns function at', True, '', True, startTime, False)
+    IO_user_interface_util.timed_alert(
+        GUI_util.window,
+        2000,
+        "Analysis end",
+        "Finished running the hard-carriage returns function at",
+        True,
+        "",
+        True,
+        startTime,
+        False,
+    )
 
 
 # add space between punctuation and quotation marks
 def process_text_add_blank(text):
-    text = re.sub(r'([.!?"])(?=")', r'\1 ', text)
+    text = re.sub(r'([.!?"])(?=")', r"\1 ", text)
     # Remove spaces between periods in ellipses #(e.g., Max add a couple of short examples)
-    text = re.sub(r'\.\s*\.\s*\.\s*', '...', text)
+    text = re.sub(r"\.\s*\.\s*\.\s*", "...", text)
     # Remove ¨C # (Max has this got to do with blanks? ????)
-    text = text.replace('¨C', '')
+    text = text.replace("¨C", "")
     # Add space after any punctuation if followed by a letter (e.g., ) #(e.g., Max add a couple of short examples)
-    text = re.sub(r'([.!?])([A-Za-z"])', r'\1 \2', text)
+    text = re.sub(r'([.!?])([A-Za-z"])', r"\1 \2", text)
     # shrink 2 spaces into 1 # (Max add a couple of examples, although this is very clear)
-    text = re.sub(r'\s{2,}', ' ', text)
+    text = re.sub(r"\s{2,}", " ", text)
     return text
 
-def add_missing_blank_after_punctuation(window,inputFilename,inputDir, outputDir='', configFileName='', openOutputFiles=False,chartPackage='Excel',dataTransformation='No transformation'):
 
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running the add missing blank after punctuation function at',
-                                                 True, '', True, '', False)
+def add_missing_blank_after_punctuation(
+    window,
+    inputFilename,
+    inputDir,
+    outputDir="",
+    configFileName="",
+    openOutputFiles=False,
+    chartPackage="Excel",
+    dataTransformation="No transformation",
+):
 
-    label = '_add_blank'
-    if inputDir != '':
+    startTime = IO_user_interface_util.timed_alert(
+        GUI_util.window,
+        2000,
+        "Analysis start",
+        "Started running the add missing blank after punctuation function at",
+        True,
+        "",
+        True,
+        "",
+        False,
+    )
+
+    label = "_add_blank"
+    if inputDir != "":
         outputDir = create_input_subdir(inputDir, label)
 
     docID = 0
-    files=IO_files_util.getFileList(inputFilename, inputDir, fileType='txt', silent=False, configFileName=configFileName)
+    files = IO_files_util.getFileList(
+        inputFilename, inputDir, fileType="txt", silent=False, configFileName=configFileName
+    )
     nDocs = len(files)
-    if nDocs==0:
+    if nDocs == 0:
         return
     blanks_added = 0
     for infile in files:
         docID = docID + 1
         head, tail = os.path.split(infile)
-        print("Processing file " + str(docID) + "/" + str(nDocs) + ' ' + tail)
-        if inputDir != '':
+        print("Processing file " + str(docID) + "/" + str(nDocs) + " " + tail)
+        if inputDir != "":
             # do not modify the filename when processing multiple files in a directory
             #   this way, they can be copied directly over the inputDir
             outfile = outputDir + os.sep + tail
         else:
-            outfile = head + os.sep + tail.replace('.txt', label + '.txt')
+            outfile = head + os.sep + tail.replace(".txt", label + ".txt")
         # outfile = outputDir + os.sep + tail.replace('.txt',label+'.txt')
-        split_sentences=''
-        with open(infile,'r', encoding='utf-8', errors='ignore') as f_in:
+        split_sentences = ""
+        with open(infile, encoding="utf-8", errors="ignore") as f_in:
             text = f_in.read()
             processed_text = process_text_add_blank(text)
-            if processed_text!=text:
+            if processed_text != text:
                 blanks_added += 1
-                with open(outfile, 'w', encoding='utf-8',errors='ignore') as f_out:
+                with open(outfile, "w", encoding="utf-8", errors="ignore") as f_out:
                     f_out.write(processed_text)
     if blanks_added > 0:
-        if inputDir!='':
-            save_msg = '\n\nOutput files saved in the subdirectory ' + outputDir + ' of the same directory of input files.'
+        if inputDir != "":
+            save_msg = (
+                "\n\nOutput files saved in the subdirectory " + outputDir + " of the same directory of input files."
+            )
         else:
-            save_msg = '\n\nOutput file saved in the same directory of the input file with ' + label + '.txt ending.'
+            save_msg = "\n\nOutput file saved in the same directory of the input file with " + label + ".txt ending."
     else:
-        save_msg = ''
-    mb.showwarning('Warning','Missing blanks were inserted after punctuation in ' + str(blanks_added) + ' input file(s).'+ save_msg)
+        save_msg = ""
+    mb.showwarning(
+        "Warning",
+        "Missing blanks were inserted after punctuation in " + str(blanks_added) + " input file(s)." + save_msg,
+    )
     # always open outputDir
     IO_files_util.openExplorer(window, head)
 
-    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running the add missing blank after punctuation function at', True, '', True, startTime, False)
+    IO_user_interface_util.timed_alert(
+        GUI_util.window,
+        2000,
+        "Analysis end",
+        "Finished running the add missing blank after punctuation function at",
+        True,
+        "",
+        True,
+        startTime,
+        False,
+    )
 
-def remove_characters_between_characters(window,inputFilename,inputDir, outputDir='', configFileName='', openOutputFiles=False, chartPackage='Excel',dataTransformation='No transformation', startCharacter='', endCharacter=''):
 
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running the remove characters between characters function at',
-                                                 True, '', True, '', False)
+def remove_characters_between_characters(
+    window,
+    inputFilename,
+    inputDir,
+    outputDir="",
+    configFileName="",
+    openOutputFiles=False,
+    chartPackage="Excel",
+    dataTransformation="No transformation",
+    startCharacter="",
+    endCharacter="",
+):
+
+    startTime = IO_user_interface_util.timed_alert(
+        GUI_util.window,
+        2000,
+        "Analysis start",
+        "Started running the remove characters between characters function at",
+        True,
+        "",
+        True,
+        "",
+        False,
+    )
 
     # if not IO_user_interface_util.input_output_save('Remove all characters between characters'):
     #     return
 
-    label = '_NoChars'
-    if inputDir != '':
+    label = "_NoChars"
+    if inputDir != "":
         outputDir = create_input_subdir(inputDir, label)
     else:
         head, tail = os.path.split(inputFilename)
         outputDir = head
 
-    if startCharacter=='':
-        startCharacter, useless = GUI_IO_util.enter_value_widget("Enter the single start character (e.g., [)", '',
-                                                               1, '', '', '')
-        if startCharacter == '':
-            mb.showwarning(title='Blank start character',
-                           message='No start character entered. Routine aborted.')
+    if startCharacter == "":
+        startCharacter, useless = GUI_IO_util.enter_value_widget(
+            "Enter the single start character (e.g., [)", "", 1, "", "", ""
+        )
+        if startCharacter == "":
+            mb.showwarning(title="Blank start character", message="No start character entered. Routine aborted.")
             return
-        endCharacter, useless = GUI_IO_util.enter_value_widget("Enter the single end character (e.g., ])", '',
-                                                               1, '', '', '')
-        if endCharacter == '':
-            mb.showwarning(title='Blank end character',
-                           message='No end character entered. Routine aborted.')
+        endCharacter, useless = GUI_IO_util.enter_value_widget(
+            "Enter the single end character (e.g., ])", "", 1, "", "", ""
+        )
+        if endCharacter == "":
+            mb.showwarning(title="Blank end character", message="No end character entered. Routine aborted.")
             return
 
     No_files_edited = 0
     No_odd_pairs = 0
-    edited_files_list=[]
-    odd_pairs_files_list=[]
-    file_sizes=[]
+    edited_files_list = []
+    odd_pairs_files_list = []
+    file_sizes = []
     docID = 0
-    files=IO_files_util.getFileList(inputFilename, inputDir, fileType='txt', silent=False, configFileName=configFileName)
+    files = IO_files_util.getFileList(
+        inputFilename, inputDir, fileType="txt", silent=False, configFileName=configFileName
+    )
     nDocs = len(files)
-    if nDocs==0:
+    if nDocs == 0:
         return
     for file in files:
         docID = docID + 1
         head, tail = os.path.split(file)
-        print("Processing file " + str(docID) + "/" + str(nDocs) + ' ' + tail)
-        with open(file,encoding='utf_8',errors='ignore') as infile:
+        print("Processing file " + str(docID) + "/" + str(nDocs) + " " + tail)
+        with open(file, encoding="utf_8", errors="ignore") as infile:
             fullText = infile.read()
             number_of_characters_start = fullText.count(startCharacter)
             if number_of_characters_start == 0:
-                IO_user_interface_util.timed_alert(GUI_util.window, 1000, 'Warning',
-                                                   '   No Start character ' + startCharacter + ' was found in the input file ' + tail + '.',
-                                                   True, '', True, '', True)
-                continue # skip to next file
+                IO_user_interface_util.timed_alert(
+                    GUI_util.window,
+                    1000,
+                    "Warning",
+                    "   No Start character " + startCharacter + " was found in the input file " + tail + ".",
+                    True,
+                    "",
+                    True,
+                    "",
+                    True,
+                )
+                continue  # skip to next file
             number_of_characters_end = fullText.count(endCharacter)
             if number_of_characters_end == 0:
-                IO_user_interface_util.timed_alert(GUI_util.window, 1000, 'Warning',
-                                                   '   No End character ' + endCharacter + ' was found in the input file ' + tail + '.',
-                                                   True, '', True, '', True)
-                continue # skip to next file
+                IO_user_interface_util.timed_alert(
+                    GUI_util.window,
+                    1000,
+                    "Warning",
+                    "   No End character " + endCharacter + " was found in the input file " + tail + ".",
+                    True,
+                    "",
+                    True,
+                    "",
+                    True,
+                )
+                continue  # skip to next file
             if startCharacter == endCharacter:
-                if number_of_characters_start % 2 != 0: # ODD integer
-                    IO_user_interface_util.timed_alert(GUI_util.window, 1000, 'Warning',
-                                                       '   ODD NUMBER of ' + startCharacter + ' and ' + endCharacter + ' was found in the input file ' + tail + '.\n   File skipped. Please, check carefully the input file for start/end pairs.',
-                                                       True, '', True, '', True)
+                if number_of_characters_start % 2 != 0:  # ODD integer
+                    IO_user_interface_util.timed_alert(
+                        GUI_util.window,
+                        1000,
+                        "Warning",
+                        "   ODD NUMBER of "
+                        + startCharacter
+                        + " and "
+                        + endCharacter
+                        + " was found in the input file "
+                        + tail
+                        + ".\n   File skipped. Please, check carefully the input file for start/end pairs.",
+                        True,
+                        "",
+                        True,
+                        "",
+                        True,
+                    )
                     No_odd_pairs += 1
                     odd_pairs_files_list.append(tail)
                     continue  # skip to next file
 
-                number_of_characters_pairs = int(number_of_characters_start/2)
+                number_of_characters_pairs = int(number_of_characters_start / 2)
             else:
                 number_of_characters_pairs = int(number_of_characters_start)
             i = 0
             while i < number_of_characters_pairs:
-                split_string_A = fullText.split(startCharacter, 1) # Split into "ab" and "cd"
+                split_string_A = fullText.split(startCharacter, 1)  # Split into "ab" and "cd"
                 split_string_A = split_string_A[0]
                 # print("split_string_A",split_string_A)
-                split_string_B = fullText.split(endCharacter, 1) # Split into "ab" and "cd"
-                if len(split_string_B)>1:
+                split_string_B = fullText.split(endCharacter, 1)  # Split into "ab" and "cd"
+                if len(split_string_B) > 1:
                     split_string_B = split_string_B[1]
                     if startCharacter == endCharacter:
-                        split_string_B = split_string_B.split(endCharacter, 1) # Split into "ab" and "cd"
+                        split_string_B = split_string_B.split(endCharacter, 1)  # Split into "ab" and "cd"
                         split_string_B = split_string_B[1]
                 else:
                     split_string_B = split_string_B[0]
 
                 # print("split_string_B",split_string_B)
                 fullText = split_string_A + split_string_B
-                i +=1
+                i += 1
             # print("\n\n\n\ncleaned_text", fullText)
             # remove_characters_between_characters
 
-            if inputDir!='':
+            if inputDir != "":
                 # do not modify the filename when processing multiple files in a directory
                 #   this way, they can be copied directly over the inputDir
                 outfile = outputDir + os.sep + tail
             else:
-                outfile = outputDir + os.sep + tail.replace('.txt',label+'.txt')
-            with open(outfile, 'w+',encoding='utf_8',errors='ignore') as out:
+                outfile = outputDir + os.sep + tail.replace(".txt", label + ".txt")
+            with open(outfile, "w+", encoding="utf_8", errors="ignore") as out:
                 out.write(fullText)
 
                 # export file sizes as a check
@@ -442,118 +678,236 @@ def remove_characters_between_characters(window,inputFilename,inputDir, outputDi
                 os.stat(outfile)
                 os.stat(outfile).st_size
                 # file_sizes.append(tail + ' FILE SIZES (in bytes) - ORIGINAL ' + str(os.stat(file).st_size) + ' EDITED ' + str(os.stat(outfile).st_size))
-                file_sizes.append([IO_csv_util.dressFilenameForCSVHyperlink(file), IO_csv_util.dressFilenameForCSVHyperlink(outfile), str(os.stat(file).st_size), str(os.stat(outfile).st_size), str(os.stat(file).st_size - os.stat(outfile).st_size)])
-                print('   FILE SIZES (in bytes) - ORIGINAL ',os.stat(file).st_size,' EDITED ',os.stat(outfile).st_size)
+                file_sizes.append(
+                    [
+                        IO_csv_util.dressFilenameForCSVHyperlink(file),
+                        IO_csv_util.dressFilenameForCSVHyperlink(outfile),
+                        str(os.stat(file).st_size),
+                        str(os.stat(outfile).st_size),
+                        str(os.stat(file).st_size - os.stat(outfile).st_size),
+                    ]
+                )
+                print(
+                    "   FILE SIZES (in bytes) - ORIGINAL ", os.stat(file).st_size, " EDITED ", os.stat(outfile).st_size
+                )
 
-                if inputDir!='':
+                if inputDir != "":
                     No_files_edited += 1
                     edited_files_list.append(tail)
-                    IO_user_interface_util.timed_alert(GUI_util.window, 1000, 'Warning',
-                                                       '   ' + str(i) + ' substrings contained between ' + startCharacter + ' ' + endCharacter + ' were removed.',
-                                                       True, '', True, '', True)
+                    IO_user_interface_util.timed_alert(
+                        GUI_util.window,
+                        1000,
+                        "Warning",
+                        "   "
+                        + str(i)
+                        + " substrings contained between "
+                        + startCharacter
+                        + " "
+                        + endCharacter
+                        + " were removed.",
+                        True,
+                        "",
+                        True,
+                        "",
+                        True,
+                    )
                 else:
-                    mb.showwarning(title='Edits saved', message=str(
-                        i) + ' substrings contained between ' + startCharacter + ' ' + endCharacter + ' were removed.\n\nThe edits were saved to the file \n\n' + str(
-                        outfile) + '\n\nin the input directory\n\n' + inputDir)
+                    mb.showwarning(
+                        title="Edits saved",
+                        message=str(i)
+                        + " substrings contained between "
+                        + startCharacter
+                        + " "
+                        + endCharacter
+                        + " were removed.\n\nThe edits were saved to the file \n\n"
+                        + str(outfile)
+                        + "\n\nin the input directory\n\n"
+                        + inputDir,
+                    )
 
-
-    if inputDir!='':
-        if No_files_edited>0:
-            mb.showwarning(title='Warning', message=str(
-                No_files_edited) + ' files were edited removing ALL substrings contained between ' + startCharacter + ' ' + endCharacter + '.\n\nThe edits were saved to files in a subdirectory of the input directory\n\n' + head + '\n\nList of edited files:\n\n' + str(
-                edited_files_list))
+    if inputDir != "":
+        if No_files_edited > 0:
+            mb.showwarning(
+                title="Warning",
+                message=str(No_files_edited)
+                + " files were edited removing ALL substrings contained between "
+                + startCharacter
+                + " "
+                + endCharacter
+                + ".\n\nThe edits were saved to files in a subdirectory of the input directory\n\n"
+                + head
+                + "\n\nList of edited files:\n\n"
+                + str(edited_files_list),
+            )
             # mb.showwarning(title='Warning', message='List of edited files with file sizes. CHECK FILE SIZES CAREFULLY! Too large discrepancies may indicate unbalanced start/end characters and too much text removed.\n\n' + str(file_sizes))
-            print(str(
-                No_files_edited) + ' files edited removing ALL substrings between ' + startCharacter + ' ' + endCharacter + '.\n'+str(edited_files_list))
+            print(
+                str(No_files_edited)
+                + " files edited removing ALL substrings between "
+                + startCharacter
+                + " "
+                + endCharacter
+                + ".\n"
+                + str(edited_files_list)
+            )
             # print('\n\nList of edited files with file sizes.  CHECK FILE SIZES CAREFULLY! Too large discrepancies may indicate unbalanced start/end characters and too much text removed.\n\n' + str(file_sizes))
-            header = ['Original file', 'Edited file', 'Original file size in bytes', 'Edited file size in bytes', 'Difference in bytes (should be >0)']
+            header = [
+                "Original file",
+                "Edited file",
+                "Original file size in bytes",
+                "Edited file size in bytes",
+                "Difference in bytes (should be >0)",
+            ]
             file_sizes.insert(0, header)
-            IO_csv_util.list_to_csv(window, file_sizes, outputDir+os.sep+"file_sizes.csv")
-            IO_files_util.openFile(window, outputDir+os.sep+"file_sizes.csv")
+            IO_csv_util.list_to_csv(window, file_sizes, outputDir + os.sep + "file_sizes.csv")
+            IO_files_util.openFile(window, outputDir + os.sep + "file_sizes.csv")
 
-    if No_odd_pairs>0:
-        mb.showwarning(title='Warning', message='ODD PAIRS of start/end values ' + startCharacter + ' ' + endCharacter + ' were found in '+ str(No_odd_pairs)+' files.\n\nTHE FILES WERE SKIPPED FROM PROCESSING. PLEASE, CHECK THOSE FILES CAREFULLY.\n\n'+str(odd_pairs_files_list))
-        print('\n\nODD PAIRS of start/end values ' + startCharacter + ' ' + endCharacter + ' were found in '+ str(No_odd_pairs)+' files. FILES WERE SKIPPED FROM PROCESSING. CHECK CAREFULLY.\n   '+str(odd_pairs_files_list))
+    if No_odd_pairs > 0:
+        mb.showwarning(
+            title="Warning",
+            message="ODD PAIRS of start/end values "
+            + startCharacter
+            + " "
+            + endCharacter
+            + " were found in "
+            + str(No_odd_pairs)
+            + " files.\n\nTHE FILES WERE SKIPPED FROM PROCESSING. PLEASE, CHECK THOSE FILES CAREFULLY.\n\n"
+            + str(odd_pairs_files_list),
+        )
+        print(
+            "\n\nODD PAIRS of start/end values "
+            + startCharacter
+            + " "
+            + endCharacter
+            + " were found in "
+            + str(No_odd_pairs)
+            + " files. FILES WERE SKIPPED FROM PROCESSING. CHECK CAREFULLY.\n   "
+            + str(odd_pairs_files_list)
+        )
 
     # \n\nThe edits were saved to the files in the subdirectory\n\n' + str(outputDir) + '\n\nof the input directory\n\n'+inputDir
     # always open outputDir
     IO_files_util.openExplorer(window, head)
 
-    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running the remove characters between characters function at', True, '', True, startTime, False)
+    IO_user_interface_util.timed_alert(
+        GUI_util.window,
+        2000,
+        "Analysis end",
+        "Finished running the remove characters between characters function at",
+        True,
+        "",
+        True,
+        startTime,
+        False,
+    )
+
 
 # inputFilename contains path
 # remove extra blank lines in input files
-def remove_blank_lines(window,inputFilename,inputDir, outputDir='', configFileName='', openOutputFiles=False,chartPackage='Excel',dataTransformation='No transformation'):
-    import file_filename_util
+def remove_blank_lines(
+    window,
+    inputFilename,
+    inputDir,
+    outputDir="",
+    configFileName="",
+    openOutputFiles=False,
+    chartPackage="Excel",
+    dataTransformation="No transformation",
+):
 
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running the remove blank lines function at',
-                                                 True, '', True, '', False)
+    startTime = IO_user_interface_util.timed_alert(
+        GUI_util.window,
+        2000,
+        "Analysis start",
+        "Started running the remove blank lines function at",
+        True,
+        "",
+        True,
+        "",
+        False,
+    )
 
-    label = '_NoBlanks'
-    if inputDir != '':
+    label = "_NoBlanks"
+    if inputDir != "":
         outputDir = create_input_subdir(inputDir, label)
 
     # result=file_filename_util.backup_files(inputFilename, inputDir,"Remove blank lines", '.txt', configFileName)
     # if result==False:
     #     return
 
-    files=IO_files_util.getFileList(inputFilename, inputDir, fileType='txt', silent=False, configFileName=configFileName)
+    files = IO_files_util.getFileList(
+        inputFilename, inputDir, fileType="txt", silent=False, configFileName=configFileName
+    )
     nDocs = len(files)
-    if nDocs==0:
+    if nDocs == 0:
         return
     docID = 0
-    filesWithEmptyLines=0
+    filesWithEmptyLines = 0
     for file in files:
         docID = docID + 1
         head, tail = os.path.split(file)
-        print("Processing file " + str(docID) + "/" + str(nDocs) + ' ' + tail)
+        print("Processing file " + str(docID) + "/" + str(nDocs) + " " + tail)
         withEmptyLines = False
         outputLines = ""
-        with open(file,encoding='utf_8',errors='ignore') as infile:
-            for line in infile.read().split("\n"): # check if any line is empty line
-                if line.strip() == '':
+        with open(file, encoding="utf_8", errors="ignore") as infile:
+            for line in infile.read().split("\n"):  # check if any line is empty line
+                if line.strip() == "":
                     withEmptyLines = True
                 else:
                     outputLines += line + "\n"
         # remove_blank_lines
-        if inputDir != '':
+        if inputDir != "":
             # do not modify the filename when processing multiple files in a directory
             #   this way, they can be copied directly over the inputDir
             outfile = outputDir + os.sep + tail
         else:
-            outfile = outputDir + os.sep + tail.replace('.txt', label + '.txt')
+            outfile = outputDir + os.sep + tail.replace(".txt", label + ".txt")
         # outfile = outputDir + os.sep + tail.replace('.txt',label+'.txt')
-        with open(outfile, 'w+',encoding='utf_8',errors='ignore') as outfile:
+        with open(outfile, "w+", encoding="utf_8", errors="ignore") as outfile:
             outfile.write(outputLines[:-1])  # non-empty line. Write it to output
-        if withEmptyLines: # if there is any empty line, increment count
+        if withEmptyLines:  # if there is any empty line, increment count
             filesWithEmptyLines += 1
-    if inputFilename!="":
-        if filesWithEmptyLines==0:
-            mb.showwarning(title='Blank lines removed',
-                           message='No blank lines were removed from the input file.')
+    if inputFilename != "":
+        if filesWithEmptyLines == 0:
+            mb.showwarning(title="Blank lines removed", message="No blank lines were removed from the input file.")
         else:
-            mb.showwarning(title='Blank lines removed',
-                           message='Blank lines were removed from the input file.')
+            mb.showwarning(title="Blank lines removed", message="Blank lines were removed from the input file.")
+    elif filesWithEmptyLines == 0:
+        mb.showwarning(
+            title="Blank lines removed",
+            message="No files contained blank lines" + " out of " + str(nDocs) + " files in the input directory.",
+        )
     else:
-        if filesWithEmptyLines==0:
-            mb.showwarning(title='Blank lines removed',
-                           message='No files contained blank lines' + ' out of ' + str(
-                               nDocs) + ' files in the input directory.')
-        else:
-            mb.showwarning(title='Blank lines removed',
-                       message='Blank lines were removed from ' +str(filesWithEmptyLines) +' out of '+str(nDocs) +' files in the input directory.')
+        mb.showwarning(
+            title="Blank lines removed",
+            message="Blank lines were removed from "
+            + str(filesWithEmptyLines)
+            + " out of "
+            + str(nDocs)
+            + " files in the input directory.",
+        )
     # always open outputDir
     IO_files_util.openExplorer(window, head)
 
-    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running the remove blank lines function at', True, '', True, startTime, False)
+    IO_user_interface_util.timed_alert(
+        GUI_util.window,
+        2000,
+        "Analysis end",
+        "Finished running the remove blank lines function at",
+        True,
+        "",
+        True,
+        startTime,
+        False,
+    )
+
 
 # criteria for title are no punctuation and
-#	a shorter (user determined) sentence in number of words
+# a shorter (user determined) sentence in number of words
 
-#Title_length_limit = int(sys.argv[1])
-#TITLENESS = sys.argv[2]
-#inputDir = sys.argv[3]
-#outputDir = sys.argv[4]
+# Title_length_limit = int(sys.argv[1])
+# TITLENESS = sys.argv[2]
+# inputDir = sys.argv[3]
+# outputDir = sys.argv[4]
 
 
 # Newspaper titles (headlines) --------------------------------------------------------------------
@@ -567,7 +921,7 @@ def remove_blank_lines(window,inputFilename,inputDir, outputDir='', configFileNa
 
 # Only these END a sentence for a splitter. The previous test used all of string.punctuation, so a
 # headline closing with a comma or a quotation mark counted as already punctuated and was left alone.
-TITLE_SENTENCE_STOPPERS = '.!?'
+TITLE_SENTENCE_STOPPERS = ".!?"
 
 # Headlines and subheads lead the article. Without a positional test any unpunctuated fragment
 # anywhere in the document -- an OCR break, a table row, a truncated final line -- read as a title.
@@ -580,11 +934,11 @@ def isTitle(sentence, Title_length_limit, position=0, lead_paragraphs=TITLE_LEAD
     Returns a real boolean: the previous version fell off the end and returned None, which reads as
     false in an if-statement but is not false, and cannot be asserted on in a test.
     """
-    text = (sentence or '').strip()
+    text = (sentence or "").strip()
     if not text:
         return False
     if text[-1] in TITLE_SENTENCE_STOPPERS:
-        return False                      # already ends a sentence; the splitter handles it
+        return False  # already ends a sentence; the splitter handles it
     if lead_paragraphs is not None and position >= lead_paragraphs:
         return False
     if len(text) < Title_length_limit:
@@ -598,40 +952,59 @@ def isTitle(sentence, Title_length_limit, position=0, lead_paragraphs=TITLE_LEAD
 
 def punctuate_title(title):
     """Add the full stop the headline lacks -- the whole point of the routine."""
-    text = (title or '').strip()
+    text = (title or "").strip()
     if not text:
-        return ''
-    return text if text[-1] in TITLE_SENTENCE_STOPPERS else text + '.'
+        return ""
+    return text if text[-1] in TITLE_SENTENCE_STOPPERS else text + "."
 
 
-def newspaper_titles(window,inputFilename,inputDir,outputDir, configFileName, openOutputFiles,chartPackage, dataTransformation):
+def newspaper_titles(
+    window, inputFilename, inputDir, outputDir, configFileName, openOutputFiles, chartPackage, dataTransformation
+):
     from Stanza_functions_util import stanzaPipeLine, tokenize_stanza_text
 
-    #collecting input txt files; getFileList accepts a single file OR a directory
-    inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt', silent=False, configFileName=configFileName)
+    # collecting input txt files; getFileList accepts a single file OR a directory
+    inputDocs = IO_files_util.getFileList(
+        inputFilename, inputDir, fileType=".txt", silent=False, configFileName=configFileName
+    )
     nDocs = len(inputDocs)
     if nDocs == 0:
         return
 
-    Title_length_limit = 20   # the default the TIPS documents; 100 characters is a whole sentence
+    Title_length_limit = 20  # the default the TIPS documents; 100 characters is a whole sentence
 
     # Title length pop up widget
     # window, textCaption, lower_bound, upper_bound, default_value
-    val = GUI_IO_util.slider_widget(GUI_util.window,
-                                         "Please, select the value for number of characters in a document title. The suggested value is " + str(
-                                             Title_length_limit) + ".", 1, 1000, Title_length_limit)
+    val = GUI_IO_util.slider_widget(
+        GUI_util.window,
+        "Please, select the value for number of characters in a document title. The suggested value is "
+        + str(Title_length_limit)
+        + ".",
+        1,
+        1000,
+        Title_length_limit,
+    )
     Title_length_limit = val
 
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running the newspaper titles function at',
-                                                 True, '', True, '', False)
+    startTime = IO_user_interface_util.timed_alert(
+        GUI_util.window,
+        2000,
+        "Analysis start",
+        "Started running the newspaper titles function at",
+        True,
+        "",
+        True,
+        "",
+        False,
+    )
 
     # The three folders the TIPS documents, written under the OUTPUT directory. They used to be created
     # inside the INPUT directory, so every run dropped three folders of txt files into the corpus being
     # analysed -- which the next tool to glob that directory would then read as input.
-    root = os.path.join(outputDir, 'ExtractTitles')
-    path_articlesWithTitles = os.path.join(root, 'articlesWithTitles')
-    path_articlesWithoutTitles = os.path.join(root, 'articlesWithoutTitles')
-    path_titles = os.path.join(root, 'titles')
+    root = os.path.join(outputDir, "ExtractTitles")
+    path_articlesWithTitles = os.path.join(root, "articlesWithTitles")
+    path_articlesWithoutTitles = os.path.join(root, "articlesWithoutTitles")
+    path_titles = os.path.join(root, "titles")
     for d in (path_articlesWithTitles, path_articlesWithoutTitles, path_titles):
         if not os.path.exists(d):
             os.makedirs(d)
@@ -643,11 +1016,11 @@ def newspaper_titles(window,inputFilename,inputDir,outputDir, configFileName, op
     for filename in inputDocs:
         docID = docID + 1
         head, tail = os.path.split(filename)
-        print("Processing file " + str(docID) + "/" + str(nDocs) + ' ' + tail)
+        print("Processing file " + str(docID) + "/" + str(nDocs) + " " + tail)
 
         # ONE pass per document. The two output folders used to be produced by two separate loops, each
         # re-reading the file and re-running the Stanza tokenizer over every paragraph of it.
-        with open(filename,'r', encoding='utf-8', errors='ignore') as fn:
+        with open(filename, encoding="utf-8", errors="ignore") as fn:
             paragraphs = get_paragraphs(fn)
 
         doc_titles = []
@@ -656,35 +1029,35 @@ def newspaper_titles(window,inputFilename,inputDir,outputDir, configFileName, op
             if isTitle(paragraph, Title_length_limit, position):
                 doc_titles.append(paragraph)
             else:
-                body_paragraphs.append(' '.join(tokenize_stanza_text(stanzaPipeLine(paragraph))))
+                body_paragraphs.append(" ".join(tokenize_stanza_text(stanzaPipeLine(paragraph))))
 
-        with open(os.path.join(path_articlesWithTitles, tail), 'w', encoding='utf-8', errors='ignore') as out:
+        with open(os.path.join(path_articlesWithTitles, tail), "w", encoding="utf-8", errors="ignore") as out:
             for title in doc_titles:
-                out.write(punctuate_title(title) + '\n')
+                out.write(punctuate_title(title) + "\n")
             for paragraph in body_paragraphs:
-                out.write(paragraph + '\n')
+                out.write(paragraph + "\n")
 
-        with open(os.path.join(path_articlesWithoutTitles, tail), 'w', encoding='utf-8', errors='ignore') as out:
+        with open(os.path.join(path_articlesWithoutTitles, tail), "w", encoding="utf-8", errors="ignore") as out:
             for paragraph in body_paragraphs:
-                out.write(paragraph + '\n')
+                out.write(paragraph + "\n")
 
         if doc_titles:
             docs_with_titles += 1
-        titles.append((doc_titles, tail))     # the basename, not the full path
+        titles.append((doc_titles, tail))  # the basename, not the full path
 
-    titles_file = os.path.join(path_titles,'titles.txt')
-    with open(titles_file,'w',encoding='utf_8',errors='ignore') as output:
+    titles_file = os.path.join(path_titles, "titles.txt")
+    with open(titles_file, "w", encoding="utf_8", errors="ignore") as output:
         for i, (doc_titles, name) in enumerate(titles, 1):
             if not doc_titles:
                 continue
-            output.write('Document %d: %s\n' % (i, name))
+            output.write("Document %d: %s\n" % (i, name))
             for t in doc_titles:
-                output.write(punctuate_title(t) + '\n')
-            output.write('\n')
+                output.write(punctuate_title(t) + "\n")
+            output.write("\n")
 
     # a csv as well, so the titles can be read straight into the Suite's csv tools
-    titles_csv = os.path.join(path_titles, 'NLP_titles.csv')
-    csv_rows = [['Document ID', 'Document', 'Title ID', 'Title', 'Title punctuated']]
+    titles_csv = os.path.join(path_titles, "NLP_titles.csv")
+    csv_rows = [["Document ID", "Document", "Title ID", "Title", "Title punctuated"]]
     for i, (doc_titles, name) in enumerate(titles, 1):
         for j, t in enumerate(doc_titles, 1):
             csv_rows.append([i, name, j, t, punctuate_title(t)])
@@ -699,46 +1072,65 @@ def newspaper_titles(window,inputFilename,inputDir,outputDir, configFileName, op
         else:
             msgString = "No documents have generated separate titles."
     else:
-        msgString = ("%d document(s) out of %d generated titles." % (docs_with_titles, nDocs)
-                     + "\n\nThe percentage of documents with titles is %.2f%%" % (float(docs_with_titles) / nDocs * 100)
-                     + "\n\nThe files were saved in the subdirectories of\n\n" + str(root))
+        msgString = (
+            "%d document(s) out of %d generated titles." % (docs_with_titles, nDocs)
+            + "\n\nThe percentage of documents with titles is %.2f%%" % (float(docs_with_titles) / nDocs * 100)
+            + "\n\nThe files were saved in the subdirectories of\n\n"
+            + str(root)
+        )
 
-    mb.showwarning(title='Document titles', message=msgString)
+    mb.showwarning(title="Document titles", message=msgString)
     IO_files_util.openExplorer(window, root)
 
-    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running the newspaper titles function at', True, '', True, startTime, False)
+    IO_user_interface_util.timed_alert(
+        GUI_util.window,
+        2000,
+        "Analysis end",
+        "Finished running the newspaper titles function at",
+        True,
+        "",
+        True,
+        startTime,
+        False,
+    )
+
 
 # non-ASCII apostrophes and quotes (e.g., those coming from Windows Words) will show up in a csv file (not in Excel or Mac) as weird characters
-#	although they do not break any script coode
+# although they do not break any script coode
 # % will break the CoreNLP code
 # The reasons are explained here: https://docs.oracle.com/javase/8/docs/api/java/net/URLDecoder.html
 #   The character "%" is allowed but is interpreted as the start of a special escaped sequence.
 # Needs special handling https://stackoverflow.com/questions/6067673/urldecoder-illegal-hex-characters-in-escape-pattern-for-input-string
 # https://stackoverflow.com/questions/7395789/replacing-a-weird-single-quote-with-blank-string-in-python
-def convert_2_ASCII(window,inputFilename, inputDir, outputDir, configFileName):
+def convert_2_ASCII(window, inputFilename, inputDir, outputDir, configFileName):
     import file_filename_util
-    result=file_filename_util.backup_files(inputFilename, inputDir,"Convert non-ASCII quotes",".txt",configFileName)
-    if result==False:
+
+    result = file_filename_util.backup_files(
+        inputFilename, inputDir, "Convert non-ASCII quotes", ".txt", configFileName
+    )
+    if result == False:
         return False
 
-    inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt', silent=False, configFileName=configFileName)
-    Ndocs=len(inputDocs)
-    index=0
-    if Ndocs==0:
+    inputDocs = IO_files_util.getFileList(
+        inputFilename, inputDir, fileType=".txt", silent=False, configFileName=configFileName
+    )
+    Ndocs = len(inputDocs)
+    index = 0
+    if Ndocs == 0:
         return
-    result= IO_user_interface_util.input_output_save("Convert apostrophes/quotes/%")
-    if result ==False:
+    result = IO_user_interface_util.input_output_save("Convert apostrophes/quotes/%")
+    if result == False:
         return False
 
     docError = 0
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
-                                       'Started running characters conversion at',
-                                                 True, '', True, '', True)
+    startTime = IO_user_interface_util.timed_alert(
+        GUI_util.window, 2000, "Analysis start", "Started running characters conversion at", True, "", True, "", True
+    )
     for doc in inputDocs:
         index = index + 1
         head, tail = os.path.split(doc)
         print("Processing file " + str(index) + "/" + str(Ndocs) + " " + tail)
-        with open(doc, 'r+',encoding='utf_8',errors='ignore') as file:
+        with open(doc, "r+", encoding="utf_8", errors="ignore") as file:
             fullText = file.read()
             # https://www.cl.cam.ac.uk/~mgk25/ucs/quotes.html
             # if u"\u2018" in fullText:
@@ -749,28 +1141,51 @@ def convert_2_ASCII(window,inputFilename, inputDir, outputDir, configFileName):
             # 	print("u\u201C")
             # if u"\u201D" in fullText:
             # 	print("u\u201D")
-            if (u"%" in fullText) or (u"\u2018" in fullText) or (u"\u2019" in fullText) or (u"\u201C" in fullText) or (u"\u201D" in fullText):
+            if (
+                ("%" in fullText)
+                or ("\u2018" in fullText)
+                or ("\u2019" in fullText)
+                or ("\u201c" in fullText)
+                or ("\u201d" in fullText)
+            ):
                 # u0027 apostrophe
                 fullText = str(fullText).replace("%", " percent")  # left single quote
-                fullText = str(fullText).replace(u"\u2018", u"\u0027")  # left single quote
-                fullText = str(fullText).replace(u"\u2019", u"\u0027")  # right single quote
-                fullText = str(fullText).replace(u"\u201C", '"') #left double quote
-                fullText = str(fullText).replace(u"\u201D", '"') #right double quote
+                fullText = str(fullText).replace("\u2018", "\u0027")  # left single quote
+                fullText = str(fullText).replace("\u2019", "\u0027")  # right single quote
+                fullText = str(fullText).replace("\u201c", '"')  # left double quote
+                fullText = str(fullText).replace("\u201d", '"')  # right double quote
                 docError = docError + 1
                 file.seek(0)
                 file.write(fullText)
 
-    if docError>0:
-        if docError==1:
-            mb.showwarning(title='Non-ASCII punctuations converted',message=str(Ndocs) + ' document(s) processed.\n\n' + str(docError)+' document was edited to convert non-ASCII apostrophes and/or quotes and % to percent.\n\nCHANGES WERE MADE DIRECTLY IN THE INPUT FILE.')
+    if docError > 0:
+        if docError == 1:
+            mb.showwarning(
+                title="Non-ASCII punctuations converted",
+                message=str(Ndocs)
+                + " document(s) processed.\n\n"
+                + str(docError)
+                + " document was edited to convert non-ASCII apostrophes and/or quotes and % to percent.\n\nCHANGES WERE MADE DIRECTLY IN THE INPUT FILE.",
+            )
         else:
-            mb.showwarning(title='Non-ASCII punctuations converted',message=str(Ndocs) + ' document(s) processed.\n\n' + str(docError)+' documents were edited to convert non-ASCII apostrophes and/or quotes and % to percent.\n\nCHANGES WERE MADE DIRECTLY IN THE INPUT FILES.')
+            mb.showwarning(
+                title="Non-ASCII punctuations converted",
+                message=str(Ndocs)
+                + " document(s) processed.\n\n"
+                + str(docError)
+                + " documents were edited to convert non-ASCII apostrophes and/or quotes and % to percent.\n\nCHANGES WERE MADE DIRECTLY IN THE INPUT FILES.",
+            )
     else:
-        mb.showwarning(title='Non-ASCII punctuations converted', message=str(Ndocs) + ' document(s) processed.\n\nNo documents were found with non-ASCII apostrophes or quotes and % to percent.')
+        mb.showwarning(
+            title="Non-ASCII punctuations converted",
+            message=str(Ndocs)
+            + " document(s) processed.\n\nNo documents were found with non-ASCII apostrophes or quotes and % to percent.",
+        )
     return True
 
+
 # TODO to be completed w/o opening and closing the txt file for every string processed
-#Finished
+# Finished
 # def find_replace_string_csvINPUT(window, inputFilename_txt, inputFilename_csv, outputDir, openOutputFiles):
 # 	df = pd.read_csv(inputFilename_csv)
 # 	try:
@@ -802,90 +1217,146 @@ def convert_2_ASCII(window,inputFilename, inputDir, outputDir, configFileName):
 # 			file.write(fullText)
 # 			file.close()
 
-def find_replace_string(window,inputFilename, inputDir, outputDir, configFileName, openOutputFiles=True,string_IN=[],string_OUT=[],silent=False):
-    #edited by Claude Hu 02/2021
-    #string_IN=[],string_OUT=[], in the form as list so that running this function can finish replacement of multiple strings without open one file repetitively
+
+def find_replace_string(
+    window,
+    inputFilename,
+    inputDir,
+    outputDir,
+    configFileName,
+    openOutputFiles=True,
+    string_IN=[],
+    string_OUT=[],
+    silent=False,
+):
+    # edited by Claude Hu 02/2021
+    # string_IN=[],string_OUT=[], in the form as list so that running this function can finish replacement of multiple strings without open one file repetitively
     import file_filename_util
-    result=file_filename_util.backup_files(inputFilename, inputDir,"Find and replace string", '.txt', configFileName)
-    if result==False:
+
+    result = file_filename_util.backup_files(inputFilename, inputDir, "Find and replace string", ".txt", configFileName)
+    if result == False:
         return
 
-    inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt', silent=False, configFileName=configFileName)
-    filesToOpen=[]
-    Ndocs=len(inputDocs)
-    index=0
-    filesToOpen=[]
-    result= IO_user_interface_util.input_output_save("Find & Replace")
-    if result ==False:
+    inputDocs = IO_files_util.getFileList(
+        inputFilename, inputDir, fileType=".txt", silent=False, configFileName=configFileName
+    )
+    filesToOpen = []
+    Ndocs = len(inputDocs)
+    index = 0
+    filesToOpen = []
+    result = IO_user_interface_util.input_output_save("Find & Replace")
+    if result == False:
         return
 
-    if string_IN == []:#if string_IN empty, string_IN and string_OUT will be typed in
-        string_in, string_out = GUI_IO_util.enter_value_widget("Enter the FIND & REPLACE strings (CASE SENSITIVE)", 'Find',2,'','Replace','')
+    if string_IN == []:  # if string_IN empty, string_IN and string_OUT will be typed in
+        string_in, string_out = GUI_IO_util.enter_value_widget(
+            "Enter the FIND & REPLACE strings (CASE SENSITIVE)", "Find", 2, "", "Replace", ""
+        )
 
-        #put input strings into list so that they can be processed
+        # put input strings into list so that they can be processed
         string_IN = [string_in]
         string_OUT = [string_out]
-    elif len(string_IN) != len(string_OUT):#make sure the list of FIND strings and REPLACE strings have same length, so that each can be matched
-        mb.showwarning(title='Different number of FIND & REPLACE strings', message='The Find & Replace string function requires same number of FIND & REPLACE strings.')
+    elif len(string_IN) != len(
+        string_OUT
+    ):  # make sure the list of FIND strings and REPLACE strings have same length, so that each can be matched
+        mb.showwarning(
+            title="Different number of FIND & REPLACE strings",
+            message="The Find & Replace string function requires same number of FIND & REPLACE strings.",
+        )
         return
-    if string_IN == []:#if still empty
-        mb.showwarning(title='Missing string', message='The Find & Replace string function requires a non-empty FIND string.\n\nPlease, enter the FIND string and try again.')
+    if string_IN == []:  # if still empty
+        mb.showwarning(
+            title="Missing string",
+            message="The Find & Replace string function requires a non-empty FIND string.\n\nPlease, enter the FIND string and try again.",
+        )
         return
 
     l = len(string_IN)
     docError = 0
-    indexSV=0
-    csv_output=[]
-    changed_values=[]
+    indexSV = 0
+    csv_output = []
+    changed_values = []
     for doc in inputDocs:
         index = index + 1
         head, tail = os.path.split(doc)
         print("Processing file " + str(index) + "/" + str(Ndocs) + " " + tail)
 
-        with open(doc, 'r+',encoding='utf_8',errors='ignore') as file:
+        with open(doc, "r+", encoding="utf_8", errors="ignore") as file:
             fullText = file.read()
             # process the range of words when coming with the values in a csv file
             for i in range(l):
-                if (str(string_IN[i]) in str(fullText)):
+                if str(string_IN[i]) in str(fullText):
                     # # use regular expression replace to check for distinct words (e.g., he not in held)
                     # \b beginning and ending of word
                     # \w word character including numbers and characters
                     fullText = re.sub(rf"\b(?=\w){str(string_IN[i])}\b(?!\w)", str(string_OUT[i]), fullText)
                     # fullText = re.sub(rf”(?<=\w) {str(string_IN[i])} (?<=\W)”, str(string_OUT[i]), fullText)
-                    if index!=indexSV:
+                    if index != indexSV:
                         docError = docError + 1
                         indexSV = index
                     file.seek(0)
                     # clear the input file; for some bizarre reason it appends the search word otherwise
                     file.truncate(0)
                     file.write(fullText)
-                    changed_values.append([[string_IN[i],string_OUT[i],index, IO_csv_util.dressFilenameForCSVHyperlink(doc)]])
+                    changed_values.append(
+                        [[string_IN[i], string_OUT[i], index, IO_csv_util.dressFilenameForCSVHyperlink(doc)]]
+                    )
 
-    outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'find_replace')
-    header = ['Find string', 'Replace string', 'Document ID', 'Document']
+    outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, ".csv", "find_replace")
+    header = ["Find string", "Replace string", "Document ID", "Document"]
     changed_values.insert(0, header)
     IO_error = IO_csv_util.list_to_csv(window, changed_values, outputFilename)
 
-    if docError>0:
-        if len(string_IN) == 1 and docError == 1:#if only one FIND string, it can be typed in the message box
+    if docError > 0:
+        if len(string_IN) == 1 and docError == 1:  # if only one FIND string, it can be typed in the message box
             if silent == False:
-                mb.showwarning(title='String edit',message=str(Ndocs) + ' document(s) processed.\n\n' + str(docError)+' document was edited to replace the string '+ str(string_IN[0]) + ' with the string ' + str(string_OUT) + '\n\nCHANGES WERE MADE DIRECTLY IN THE INPUT FILE.')
+                mb.showwarning(
+                    title="String edit",
+                    message=str(Ndocs)
+                    + " document(s) processed.\n\n"
+                    + str(docError)
+                    + " document was edited to replace the string "
+                    + str(string_IN[0])
+                    + " with the string "
+                    + str(string_OUT)
+                    + "\n\nCHANGES WERE MADE DIRECTLY IN THE INPUT FILE.",
+                )
             else:
-                print(str(Ndocs) + ' document(s) processed.\n\n' + str(docError)+' document was edited to replace the string '+ str(string_IN[0]) + ' with the string ' + str(string_OUT[0]) + '\n\nCHANGES WERE MADE DIRECTLY IN THE INPUT FILE.')
-        else:#when the length of FIND / REPLACE strings > 1, no actual string will be typed in the message box or printout information
-            if silent == False:
-                mb.showwarning(title='String edit',message=str(Ndocs) + ' document(s) processed.\n\n' + str(docError)+' document(s) edited replacing strings.\n\nCHANGES WERE MADE DIRECTLY IN THE INPUT FILE(S).')
-            else:
-                print(str(Ndocs) + ' document(s) processed.\n\n' + str(docError)+' document(s) edited replacing strings.\n\nCHANGES WERE MADE DIRECTLY IN THE INPUT FILE(S).')
-    else:
-        if silent == False:
-            # mb.showwarning(title='String edit', message=str(Ndocs) + ' document(s) processed.\n\nNo documents were found with the input string ' +str( string_IN))
-            mb.showwarning(title='String edit', message=str(Ndocs) + ' document(s) processed.\n\nNo documents were found with the input string(s).')
+                print(
+                    str(Ndocs)
+                    + " document(s) processed.\n\n"
+                    + str(docError)
+                    + " document was edited to replace the string "
+                    + str(string_IN[0])
+                    + " with the string "
+                    + str(string_OUT[0])
+                    + "\n\nCHANGES WERE MADE DIRECTLY IN THE INPUT FILE."
+                )
+        elif silent == False:
+            mb.showwarning(
+                title="String edit",
+                message=str(Ndocs)
+                + " document(s) processed.\n\n"
+                + str(docError)
+                + " document(s) edited replacing strings.\n\nCHANGES WERE MADE DIRECTLY IN THE INPUT FILE(S).",
+            )
         else:
-            print(str(Ndocs) + ' document(s) processed but zero input string(s) found.')
+            print(
+                str(Ndocs)
+                + " document(s) processed.\n\n"
+                + str(docError)
+                + " document(s) edited replacing strings.\n\nCHANGES WERE MADE DIRECTLY IN THE INPUT FILE(S)."
+            )
+    elif silent == False:
+        # mb.showwarning(title='String edit', message=str(Ndocs) + ' document(s) processed.\n\nNo documents were found with the input string ' +str( string_IN))
+        mb.showwarning(
+            title="String edit",
+            message=str(Ndocs) + " document(s) processed.\n\nNo documents were found with the input string(s).",
+        )
+    else:
+        print(str(Ndocs) + " document(s) processed but zero input string(s) found.")
 
     if not IO_error:
         filesToOpen.append(outputFilename)
     if openOutputFiles:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
-

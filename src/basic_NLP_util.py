@@ -18,64 +18,74 @@ import tkinter.messagebox as mb
 
 # language name (as stored in the config) -> ISO 639-1 code used by both Stanza and spaCy models
 _LANG_CODE = {
-    'english': 'en', 'italian': 'it', 'spanish': 'es', 'french': 'fr', 'german': 'de',
-    'portuguese': 'pt', 'dutch': 'nl', 'russian': 'ru', 'chinese': 'zh', 'arabic': 'ar',
+    "english": "en",
+    "italian": "it",
+    "spanish": "es",
+    "french": "fr",
+    "german": "de",
+    "portuguese": "pt",
+    "dutch": "nl",
+    "russian": "ru",
+    "chinese": "zh",
+    "arabic": "ar",
 }
 
-_stanza_pipe = {}   # lang -> stanza.Pipeline (cached)
-_spacy_nlp = {}     # lang -> spaCy nlp (cached)
+_stanza_pipe = {}  # lang -> stanza.Pipeline (cached)
+_spacy_nlp = {}  # lang -> spaCy nlp (cached)
 
 
 def _lang_code(language):
     if not language:
-        return 'en'
+        return "en"
     key = str(language).strip().lower()
-    return _LANG_CODE.get(key, key[:2] if len(key) >= 2 else 'en')
+    return _LANG_CODE.get(key, key[:2] if len(key) >= 2 else "en")
 
 
 def _read_config_basics():
     """Return (basics_package, language) from the NLP setup config; defaults to ('Stanza', 'English')."""
     try:
         import config_util
+
         vals = config_util.read_NLP_package_language_config()
         # (error, package, parsers, basics_package, language, ...)
-        return (vals[3] or 'Stanza'), (vals[4] or 'English')
+        return (vals[3] or "Stanza"), (vals[4] or "English")
     except Exception:
-        return 'Stanza', 'English'
+        return "Stanza", "English"
 
 
 def _stanza_basic(text, lang):
     import stanza
+
     if lang not in _stanza_pipe:
         try:
-            _stanza_pipe[lang] = stanza.Pipeline(lang=lang, processors='tokenize, pos, lemma',
-                                                 verbose=False)
+            _stanza_pipe[lang] = stanza.Pipeline(lang=lang, processors="tokenize, pos, lemma", verbose=False)
         except Exception:
             # models not present yet - download once, then retry
-            stanza.download(lang, processors='tokenize, pos, lemma', verbose=False)
-            _stanza_pipe[lang] = stanza.Pipeline(lang=lang, processors='tokenize, pos, lemma',
-                                                 verbose=False)
+            stanza.download(lang, processors="tokenize, pos, lemma", verbose=False)
+            _stanza_pipe[lang] = stanza.Pipeline(lang=lang, processors="tokenize, pos, lemma", verbose=False)
     doc = _stanza_pipe[lang](text)
     out = []
     for sentence in doc.sentences:
         for w in sentence.words:
-            out.append(((w.text or ''), (w.lemma or w.text or ''), (w.xpos or w.upos or '')))
+            out.append(((w.text or ""), (w.lemma or w.text or ""), (w.xpos or w.upos or "")))
     return out
 
 
 def _spacy_basic(text, lang):
     import spacy
+
     if lang not in _spacy_nlp:
-        model = lang + '_core_web_sm'
+        model = lang + "_core_web_sm"
         try:
             _spacy_nlp[lang] = spacy.load(model)
         except OSError:
-            import sys
             import subprocess
-            subprocess.check_call([sys.executable, '-m', 'spacy', 'download', model])
+            import sys
+
+            subprocess.check_call([sys.executable, "-m", "spacy", "download", model])
             _spacy_nlp[lang] = spacy.load(model)
     doc = _spacy_nlp[lang](text)
-    return [((t.text or ''), (t.lemma_ or t.text or ''), (t.tag_ or t.pos_ or '')) for t in doc]
+    return [((t.text or ""), (t.lemma_ or t.text or ""), (t.tag_ or t.pos_ or "")) for t in doc]
 
 
 def basic_nlp(text, package=None, language=None):
@@ -88,14 +98,15 @@ def basic_nlp(text, package=None, language=None):
         language = cfg_lang if language is None else language
     lang = _lang_code(language)
     try:
-        if 'spacy' in str(package).lower():
+        if "spacy" in str(package).lower():
             return _spacy_basic(text, lang)
-        return _stanza_basic(text, lang)   # Stanza is the default basic package
+        return _stanza_basic(text, lang)  # Stanza is the default basic package
     except Exception as e:
-        mb.showwarning(title='Basic NLP',
-                       message="The basic NLP package '%s' (%s) could not tokenize/lemmatize/POS-tag the "
-                               "text:\n\n%s\n\nCheck the Setup NLP package and language options." %
-                               (package, lang, e))
+        mb.showwarning(
+            title="Basic NLP",
+            message="The basic NLP package '%s' (%s) could not tokenize/lemmatize/POS-tag the "
+            "text:\n\n%s\n\nCheck the Setup NLP package and language options." % (package, lang, e),
+        )
         return []
 
 
