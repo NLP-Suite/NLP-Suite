@@ -5,6 +5,7 @@ for nltk.Tree: a list of children with a label(). That is all clausal_info_extra
 """
 
 import re
+import types
 
 import Stanford_CoreNLP_clause_util as clause_util
 
@@ -125,8 +126,12 @@ def _json_folder(tmp_path, monkeypatch, *objects):
     def list_to_csv(window, rows, filename, colnum=0, encoding="utf-8"):
         written["rows"], written["filename"], written["encoding"] = rows, filename, encoding
 
-    monkeypatch.setattr(CoNLL_clause_analysis_util.IO_files_util, "getFileList", lambda *a, **k: [str(json_file)])
-    monkeypatch.setattr(CoNLL_clause_analysis_util.IO_csv_util, "list_to_csv", list_to_csv)
+    # replace the stub modules outright: patching an attribute of a MagicMock stub breaks on pytest 9.2, whose undo
+    # deletes the attribute from the stub, so the next test finds no getFileList at all
+    monkeypatch.setattr(
+        CoNLL_clause_analysis_util, "IO_files_util", types.SimpleNamespace(getFileList=lambda *a, **k: [str(json_file)])
+    )
+    monkeypatch.setattr(CoNLL_clause_analysis_util, "IO_csv_util", types.SimpleNamespace(list_to_csv=list_to_csv))
     monkeypatch.setattr(clause_util, "clausal_info_extract_from_string", lambda s: (["full " + s], ("S", s, (0, 1))))
     return CoNLL_clause_analysis_util, table, written
 
