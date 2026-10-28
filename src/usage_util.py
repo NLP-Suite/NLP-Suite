@@ -40,7 +40,9 @@ CONSENT_MESSAGE = (
     "May the NLP Suite send anonymous usage counts to its developers?\n\n"
     "Sent: which tools you open, how often you click RUN, the Suite version, and your operating system, "
     "tagged with a random ID for this computer.\n\n"
-    "Never sent: your name, your files or folder paths, or any of your texts.\n\n"
+    "Never sent: your name, your files or folder paths, or any of your texts. PostHog, the service that "
+    "receives the counts, sees your computer's internet (IP) address, as any website does; the NLP Suite "
+    "does not ask for it.\n\n"
     "You can change your mind at any time by deleting the file\n" + STATE_PATH
 )
 
@@ -142,7 +144,7 @@ def ask_consent_tk():
     """The one-time yes/no question, shown with tkinter (imported here so tests never need a display)."""
     import tkinter.messagebox as mb
 
-    return bool(mb.askyesno(title=CONSENT_TITLE, message=CONSENT_MESSAGE))
+    return bool(mb.askyesno(title=CONSENT_TITLE, message=CONSENT_MESSAGE, default="no"))  # opt-in: Enter means No
 
 
 def track(

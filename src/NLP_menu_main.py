@@ -10,6 +10,18 @@ import sys
 
 multiprocessing.freeze_support()
 
+# The menu is drawn with customtkinter (new in v1.6.40). The exit-time updater only runs git pull, so a
+# source (Anaconda) install that updated itself has the new menu but not the package: install it once.
+# The installers bundle it, so a frozen build never gets here.
+if not getattr(sys, "frozen", False):
+    try:
+        import customtkinter  # noqa: F401
+    except ImportError:
+        import subprocess
+
+        print("The NLP Suite menu needs customtkinter. Installing it now (one time only)...")  # noqa: T201 (no window yet)
+        subprocess.call([sys.executable, "-m", "pip", "install", "customtkinter==6.0.0"])
+
 import GUI_util
 import IO_libraries_util
 

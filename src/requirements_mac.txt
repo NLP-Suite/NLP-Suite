@@ -34,6 +34,7 @@ argparse~=1.4.0
 #wordcloud~=1.8.1 is incompatible with the latest Pillow and would need Pillow==9.5.0
 wordcloud==1.9.3
 Pillow==10.2.0
+customtkinter==6.0.0   # the NLP menu (v1.6.40); also in the ROOT requirements.txt
 #
 striprtf
 #

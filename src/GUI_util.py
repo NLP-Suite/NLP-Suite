@@ -282,7 +282,8 @@ _usage_script_name = ""
 def _track_run_click(event):
     # Count only a completed click on an enabled RUN: released inside the button, not on a disabled one.
     inside = 0 <= event.x < event.widget.winfo_width() and 0 <= event.y < event.widget.winfo_height()
-    if inside and str(run_button.cget("state")) == "normal":
+    # a pressed button is "active" when released, so test for "disabled" rather than "normal"
+    if inside and str(run_button.cget("state")) != "disabled":
         usage_util.track_run_clicked(_usage_script_name)
 
 
