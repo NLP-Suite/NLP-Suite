@@ -430,7 +430,7 @@ grid_layout_enabled = True
 # (no second set to keep in sync). Scope:
 #   'all'    -> every platform. Layout too coupled to pixel positions for grid to reproduce: the dense
 #               PC-ACE hub overlaps widgets on purpose and its content lives in .place'd notebook tabs;
-#               NLP_menu .place's a tabbed notebook at a computed y; DB_SQL uses a 12-line Text box with a
+#               NLP_menu .place's its CustomTkinter tool browser at a computed y; DB_SQL uses a 12-line Text box with a
 #               hand-tuned row bump and right-edge-aligned buttons; parsers has a full-width package label
 #               that overruns its slot. All worked as-is on .place, so opting out is a no-op, not a regression.
 #   'darwin' -> macOS only. Grid fits Windows, but its width-expansion (Mac's wider default font) overflows
