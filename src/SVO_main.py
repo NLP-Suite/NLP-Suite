@@ -869,7 +869,12 @@ def run():
                     if nRecords > 1:  # including headers; file is empty
                         myfile = IO_files_util.openCSVFile(inputFilename, "r")
                         outputFiles = wordclouds_util.SVOWordCloud(
-                            myfile, inputFilename, tempOutputDir, wordcloud_title, prefer_horizontal=0.9
+                            myfile,
+                            inputFilename,
+                            tempOutputDir,
+                            transformed_image_mask="",
+                            wordcloud_title=wordcloud_title,
+                            prefer_horizontal=0.9,
                         )
                         myfile.close()
                         filesToOpen.append(outputFiles)
