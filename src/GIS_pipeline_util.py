@@ -208,6 +208,51 @@ def normalize_NER_csv_for_GIS(
     return out_csv
 
 
+CONTINENTS = ("Africa", "Antarctica", "Asia", "Australia", "Europe", "Oceania", "America")
+DIRECTIONS = (
+    "north",
+    "south",
+    "east",
+    "west",
+    "northern",
+    "southern",
+    "eastern",
+    "western",
+    "central",
+    "northeast",
+    "northwest",
+    "southeast",
+    "southwest",
+    "latin",
+    "sub-saharan",
+)
+
+
+def merge_direction_continent(nom_df):
+    """Join a direction word and the continent after it ('South' + 'America') into one location.
+
+    Some NER tables list the two words as separate locations. They are joined only when the direction word is
+    the row just before the continent, in the same sentence of the same document; 'Madrid' followed by
+    'America' is two places. The input file is not changed.
+    """
+    locations = list(nom_df["Location"])
+    sentences = list(nom_df["Sentence"])
+    documents = list(nom_df["Document"])
+    keep = [True] * len(locations)
+    for i in range(1, len(locations)):
+        if (
+            locations[i] in CONTINENTS
+            and str(locations[i - 1]).strip().lower() in DIRECTIONS
+            and sentences[i] == sentences[i - 1]
+            and documents[i] == documents[i - 1]
+        ):
+            locations[i] = str(locations[i - 1]).strip() + " " + locations[i]
+            keep[i - 1] = False
+    nom_df = nom_df.copy()
+    nom_df["Location"] = locations
+    return nom_df[keep]
+
+
 # the list of arguments reflect the order of widgets in the Google_Earth_main GUI
 # processes one file at a time
 def GIS_pipeline(
@@ -315,7 +360,6 @@ def GIS_pipeline(
         # rebuild the real locations from the file for ANY geocoder (this was previously gated
         # to Nominatim only, leaving Google with the placeholder [[locationColumnName]] -> 0 geocoded)
         if not inputIsGeocoded:
-            changed = False
             nom_df = pd.read_csv(inputFilename)
             # the NER csv holds the location strings in the engine's token column
             # ('Form' for spaCy/Stanza, 'Word' for CoreNLP) = locationColumnName, not a
@@ -348,32 +392,7 @@ def GIS_pipeline(
             #                                          columns=['Location', 'Index', '0', 'NER', 'Sentence', 'Document'])
             if nom_df is None:
                 return
-            drop_idx = []
-            changed_idx = {}
-            for i, row in nom_df.iterrows():
-                # if i!=0 and row[0] in constants_util.continents and nom_df.at[i-1, 'Location'] in constants_util.directions:
-                if i != 0 and (
-                    row[0] == "Africa"
-                    or row[0] == "Antarctica"
-                    or row[0] == "Asia"
-                    or row[0] == "Australia"
-                    or row[0] == "Europe"
-                    or row[0] == "Oceania"
-                    or row[0] == "America"
-                ):
-                    nom_df.at[i, "Location"] = nom_df.at[i - 1, "Location"] + " " + row[0]
-                    drop_idx.append(i - 1)
-                    changed_idx[i] = nom_df.at[i, "Location"]
-                    changed = True
-            if changed:
-                tmp_df = pd.read_csv(inputFilename, encoding="utf-8", on_bad_lines="skip")
-                for k, v in changed_idx.items():
-                    tmp_df.at[k, "Location"] = v
-                tmp_df = tmp_df.drop(drop_idx)
-                tmp_df.to_csv(
-                    inputFilename, index=False
-                )  # TODO: drop a index column, which will produce error with producing KML (if selected).
-            nom_df = nom_df.drop(drop_idx)
+            nom_df = merge_direction_continent(nom_df)
             locations = [row.values.tolist() for _, row in nom_df.iterrows()]
 
     if locations == None or len(locations) == 0:
