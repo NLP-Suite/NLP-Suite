@@ -23,7 +23,7 @@ import tkinter.messagebox as mb
 
 import dateutil
 from geopy import Nominatim
-from geopy.exc import GeocoderTimedOut
+from geopy.exc import GeocoderInsufficientPrivileges, GeocoderRateLimited, GeocoderTimedOut
 from geopy.geocoders import GoogleV3
 import simplekml  # TODO MINO GIS create kml record
 
@@ -66,50 +66,96 @@ def extract_date_from_filename(filename):
 
 
 # ── Persistent geocoding cache ────────────────────────────────────────────────
-# Saves (lat, lng, address) per location string to a JSON file so that
-# Nominatim is only queried once per location across all runs.
-_GEOCODE_CACHE = {}  # location_string → [lat, lng, address]
-_GEOCODE_CACHE_PATH = ""  # set in geocode() from outputDir
+# Saves (lat, lng, address) per location to a JSON file so that Nominatim is queried only once
+# per location across runs. The file lives in the config folder, not the output folder:
+# make_output_subdirectory deletes the output folder at the start of every GIS run.
+# Keys include the geocoder settings that change the answer (country bias, area, restrict,
+# featuretype), so "Paris" biased to the US and "Paris" unbiased are cached separately.
+# Failures caused by the service (timeouts, HTTP 403/429) are never cached, only real misses.
+_GEOCODE_CACHE_FILENAME = "GIS_geocode_cache.json"
+_GEOCODE_CACHE_VERSION = 2  # entries are {"key": [lat, lng, address]}; older files are discarded
+_GEOCODE_CACHE = {}  # cache key → [lat, lng, address]
+_GEOCODE_CACHE_PATH = ""  # set in geocode()
 _GEOCODE_CACHE_DIRTY = False
 
 
-def _load_geocode_cache(outputDir):
-    global _GEOCODE_CACHE, _GEOCODE_CACHE_PATH
-    _GEOCODE_CACHE_PATH = os.path.join(outputDir, "GIS_geocode_cache.json")
+def _geocode_cache_path(cache_dir=None):
+    if cache_dir is None:
+        cache_dir = GUI_IO_util.configPath
+    return os.path.join(cache_dir, _GEOCODE_CACHE_FILENAME)
+
+
+def _geocode_cache_key(location_str, geocoder, country_bias="", area="", restrict=False, featuretype=""):
+    return "|".join(
+        [
+            str(geocoder),
+            str(country_bias or ""),
+            str(area or "").replace(" ", ""),
+            "1" if restrict else "0",
+            str(featuretype or ""),
+            str(location_str),
+        ]
+    )
+
+
+def _load_geocode_cache(cache_dir=None):
+    global _GEOCODE_CACHE, _GEOCODE_CACHE_PATH, _GEOCODE_CACHE_DIRTY
+    _GEOCODE_CACHE_PATH = _geocode_cache_path(cache_dir)
+    _GEOCODE_CACHE = {}
+    _GEOCODE_CACHE_DIRTY = False
     if os.path.isfile(_GEOCODE_CACHE_PATH):
         try:
             with open(_GEOCODE_CACHE_PATH, encoding="utf-8") as f:
-                _GEOCODE_CACHE = json.load(f)
+                data = json.load(f)
+            if isinstance(data, dict) and data.get("version") == _GEOCODE_CACHE_VERSION:
+                _GEOCODE_CACHE = data.get("entries", {})
             print(f"  Geocode cache loaded: {len(_GEOCODE_CACHE)} cached locations from {_GEOCODE_CACHE_PATH}")
-        except Exception:
-            _GEOCODE_CACHE = {}
-    else:
-        _GEOCODE_CACHE = {}
+        except Exception as e:
+            print(f"  WARNING: Could not read geocode cache {_GEOCODE_CACHE_PATH}: {e}")
 
 
 def _save_geocode_cache():
     global _GEOCODE_CACHE_DIRTY
     if _GEOCODE_CACHE_DIRTY and _GEOCODE_CACHE_PATH:
         try:
-            with open(_GEOCODE_CACHE_PATH, "w", encoding="utf-8") as f:
-                json.dump(_GEOCODE_CACHE, f, ensure_ascii=False, indent=1)
+            os.makedirs(os.path.dirname(_GEOCODE_CACHE_PATH), exist_ok=True)
+            # write to a temporary file first so an interrupted run cannot leave a half-written cache
+            tmp_path = _GEOCODE_CACHE_PATH + ".tmp"
+            with open(tmp_path, "w", encoding="utf-8") as f:
+                json.dump(
+                    {"version": _GEOCODE_CACHE_VERSION, "entries": _GEOCODE_CACHE}, f, ensure_ascii=False, indent=1
+                )
+            os.replace(tmp_path, _GEOCODE_CACHE_PATH)
         except Exception as e:
             print(f"  WARNING: Could not save geocode cache: {e}")
         _GEOCODE_CACHE_DIRTY = False
 
 
-def _cache_get(location_str):
+def _cache_get(key):
     """Return (lat, lng, address) from cache, or None."""
-    entry = _GEOCODE_CACHE.get(location_str)
+    entry = _GEOCODE_CACHE.get(key)
     if entry:
         return entry[0], entry[1], entry[2]
     return None
 
 
-def _cache_put(location_str, lat, lng, address):
+def _cache_put(key, lat, lng, address):
     global _GEOCODE_CACHE_DIRTY
-    _GEOCODE_CACHE[location_str] = [lat, lng, address]
+    _GEOCODE_CACHE[key] = [lat, lng, address]
     _GEOCODE_CACHE_DIRTY = True
+
+
+_CONTINENTS = ("Africa", "Antarctica", "Asia", "Australia", "Europe", "Oceania", "North America", "South America")
+
+
+def _nominatim_featuretype(location_str, NER_Tag):
+    """Map the NER tag to a Nominatim featuretype ('' = no filter)."""
+    # CoreNLP NER tag for continents is often wrong and as a result Nominatim geocodes them wrongly
+    #   Nominatim has no 'continent' featuretype (only country, state, city, settlement):
+    #   with it, South America was found in Florida. Unfiltered, continents are found.
+    if location_str in _CONTINENTS:
+        return ""
+    return {"COUNTRY": "country", "STATE_OR_PROVINCE": "state", "CITY": "city"}.get(NER_Tag, "")
 
 
 # multi_name_locations is provided in the NLP Suite lib/wordLists to make sure that multiple name locations are processed correctly
@@ -220,9 +266,10 @@ def nominatim_geocode(geolocator, loc, country_bias="", box_tuple="", restrict=F
 	"""
     # return [tuple(map(float, t.strip('()').split(','))) for t in string.split('),(')]
 
-    if box_tuple == "":
+    # a retry passes back the already-parsed area (None or a list), so only parse a string
+    if not box_tuple:
         box_tuple = None
-    else:
+    elif isinstance(box_tuple, str):
         box_tuple = box_tuple.replace(" ", "")
         box_tuple = [tuple(map(float, t.strip("()").split(","))) for t in box_tuple.split("),(")]
         # box_tuple = tuple([(34.98527546066368, -85.59790207354965), (30.770444751951388, -81.5219744485591)])
@@ -239,23 +286,23 @@ def nominatim_geocode(geolocator, loc, country_bias="", box_tuple="", restrict=F
             timeout=timeout,
             featuretype=featuretype,
         )
+    except (GeocoderInsufficientPrivileges, GeocoderRateLimited):
+        # HTTP 403 (blocked) or 429 (rate-limited): retrying at once only makes it worse
+        raise
     except Exception:
         print("******************************************** Nominatim TIMEOUT", timeout)
         if timeout < 20:
             # wait before retrying — Nominatim enforces 1 req/sec
             time.sleep(2)
-            try:
-                return nominatim_geocode(
-                    geolocator,
-                    loc=loc,
-                    country_bias=country_bias,
-                    box_tuple=box_tuple,
-                    restrict=restrict,
-                    timeout=timeout + 4,
-                    featuretype=featuretype,
-                )
-            except Exception:
-                return None
+            return nominatim_geocode(
+                geolocator,
+                loc=loc,
+                country_bias=country_bias,
+                box_tuple=box_tuple,
+                restrict=restrict,
+                timeout=timeout + 4,
+                featuretype=featuretype,
+            )
         else:
             print("Maximum number of retries to access Nominatim server exceeded in geocoding " + loc)
             raise
@@ -448,7 +495,8 @@ def geocode(
         return "", "", "", ""  # empty output files
 
     # Load persistent disk cache (survives across runs)
-    _load_geocode_cache(outputDir)
+    _load_geocode_cache()
+    serviceErrors = []  # (location, error) for lookups the geocoder service failed on; not cached
 
     distinctGeocodedLocations = {}
     distinctGeocodedList = []
@@ -736,7 +784,9 @@ def geocode(
                 distinctGeocodedList.append(itemToGeocode)
 
                 # ── Check persistent disk cache first ──────────────────
-                cached = _cache_get(itemToGeocode)
+                NER_Tag_Nominatim = _nominatim_featuretype(itemToGeocode, NER_Tag) if geocoder == "Nominatim" else ""
+                cache_key = _geocode_cache_key(itemToGeocode, geocoder, country_bias, area, restrict, NER_Tag_Nominatim)
+                cached = _cache_get(cache_key)
                 if cached is not None:
                     lat, lng, address = cached
                     if lat != 0 and lng != 0:
@@ -752,48 +802,38 @@ def geocode(
                         print(" NOT FOUND (cached)")
                 # ── Not in cache → call geocoder ───────────────────────
                 elif geocoder == "Nominatim":
-                    # Map the NER tag to Nominatim featuretype to improve geocoding accuracy
-                    NER_Tag_Nominatim = ""
-                    if NER_Tag == "COUNTRY":
-                        NER_Tag_Nominatim = "country"
-                    elif NER_Tag == "STATE_OR_PROVINCE":
-                        NER_Tag_Nominatim = "state"
-                    elif NER_Tag == "CITY":
-                        NER_Tag_Nominatim = "city"
-                    # CoreNLP NER tag for continents is often wrong and as a result Nominatim geocodes them wrongly
-                    #   Nominatim has no 'continent' featuretype (only country, state, city, settlement):
-                    #   with it, South America was found in Florida. Unfiltered, continents are found.
-                    if itemToGeocode in (
-                        "Africa",
-                        "Antarctica",
-                        "Asia",
-                        "Australia",
-                        "Europe",
-                        "Oceania",
-                        "North America",
-                        "South America",
-                    ):
-                        NER_Tag_Nominatim = ""
-                    location = nominatim_geocode_any_type(
-                        geolocator,
-                        itemToGeocode,
-                        country_bias=country_bias,
-                        box_tuple=area,
-                        restrict=restrict,
-                        featuretype=NER_Tag_Nominatim,
-                    )
+                    service_error = None
                     try:
+                        location = nominatim_geocode_any_type(
+                            geolocator,
+                            itemToGeocode,
+                            country_bias=country_bias,
+                            box_tuple=area,
+                            restrict=restrict,
+                            featuretype=NER_Tag_Nominatim,
+                        )
+                    except Exception as e:
+                        location = None
+                        service_error = e
+                        serviceErrors.append((itemToGeocode, e))
+                    if location is not None:
                         lat, lng, address = location.latitude, location.longitude, location.address
-                        _cache_put(itemToGeocode, lat, lng, address)
+                        _cache_put(cache_key, lat, lng, address)
                         print(f" → ({lat}, {lng})")
-                    except Exception:
+                    else:
                         lat, lng, address = 0, 0, " LOCATION NOT FOUND BY " + geocoder
-                        _cache_put(itemToGeocode, 0, 0, address)
                         locationsNotFound = locationsNotFound + 1
                         geowriterNotFound.writerow([itemToGeocode, NER_Tag])
                         notGeocodedList.append(itemToGeocode)
                         notGeocodedFull.append((itemToGeocode, NER_Tag))
-                        print(" NOT FOUND")
+                        if service_error is None:
+                            # a real miss: Nominatim answered and found nothing
+                            _cache_put(cache_key, 0, 0, address)
+                            print(" NOT FOUND")
+                        else:
+                            print(
+                                f" NOT GEOCODED, geocoder error ({type(service_error).__name__}); will retry next run"
+                            )
                     # Save cache periodically (every 50 locations)
                     if len(distinctGeocodedList) % 50 == 0:
                         _save_geocode_cache()
@@ -1021,6 +1061,24 @@ def geocode(
         )
     # Save geocode cache to disk for future runs
     _save_geocode_cache()
+    if serviceErrors:
+        first_location, first_error = serviceErrors[0]
+        mb.showwarning(
+            title="Geocoder service errors",
+            message=str(len(serviceErrors))
+            + " location(s) were NOT geocoded because the '"
+            + str(geocoder)
+            + "' service failed, not because the place names are wrong (first: "
+            + str(first_location)
+            + ", "
+            + type(first_error).__name__
+            + ": "
+            + str(first_error)
+            + ").\n\n"
+            "An HTTP 403 means the service blocked these requests; 429 means too many requests.\n\n"
+            "These locations were not saved to the geocode cache, so running the GIS pipeline again later "
+            "will retry only them.",
+        )
 
     IO_user_interface_util.timed_alert(
         window,
