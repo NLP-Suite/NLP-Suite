@@ -1872,11 +1872,8 @@ def Sankey(data, outputFilename, var1, lengthvar1, var2, lengthvar2, three_way_S
         for i in sorted(list(set(finalframe[var1]))):
             tempvec = []
             tempframe = finalframe[finalframe[var1] == i]
-            wantedframe = (
-                pd.DataFrame(tempframe[var2].value_counts())
-                .reset_index()
-                .rename(columns={"index": var2, var2: "Frequency"})
-            )
+            # pandas 2 names the reset columns [var2, 'count'], not ['index', var2]; name them here
+            wantedframe = tempframe[var2].value_counts().rename_axis(var2).reset_index(name="Frequency")
             for j in sorted(list(set(finalframe[var2]))):
                 if j not in list(wantedframe[var2]):
                     tempvec.append(0)
@@ -1887,11 +1884,8 @@ def Sankey(data, outputFilename, var1, lengthvar1, var2, lengthvar2, three_way_S
         for i in sorted(list(set(finalframe[var2]))):
             tempvec = []
             tempframe = finalframe[finalframe[var2] == i]
-            wantedframe = (
-                pd.DataFrame(tempframe[var3].value_counts())
-                .reset_index()
-                .rename(columns={"index": var3, var3: "Frequency"})
-            )
+            # pandas 2 names the reset columns [var3, 'count'], not ['index', var3]; name them here
+            wantedframe = tempframe[var3].value_counts().rename_axis(var3).reset_index(name="Frequency")
             tempvec = list(np.repeat(0, len(set(finalframe[var2]))))
             for j in sorted(list(set(finalframe[var3]))):
                 if j not in list(wantedframe[var3]):
