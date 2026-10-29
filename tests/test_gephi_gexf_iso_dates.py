@@ -7,7 +7,26 @@ Gephi 0.10+ refuses the file: DateTimeParseException: Text '11-15-2026' could no
 import os
 import re
 import sys
+import types
 from unittest.mock import MagicMock, patch
+import xml.etree.ElementTree as ET
+
+
+def _lxml_or_stand_in():
+    """lxml if it is installed; CI installs only pytest, so otherwise the stdlib ElementTree with the two lxml-only
+    keywords create_gexf passes (nsmap, pretty_print) dropped. Writing a gexf needs nothing else from lxml."""
+    try:
+        import lxml  # noqa: F401
+        from lxml import etree  # noqa: F401
+
+        return {}
+    except ImportError:
+        stand_in = types.SimpleNamespace(
+            Element=lambda tag, attrib=None, nsmap=None, **extra: ET.Element(tag, attrib or {}, **extra),
+            SubElement=ET.SubElement,
+            tostring=lambda element, pretty_print=False, **kwargs: ET.tostring(element, **kwargs),
+        )
+        return {"lxml": types.SimpleNamespace(etree=stand_in), "lxml.etree": stand_in}
 
 
 def test_svo_gexf_spells_are_iso_dates(tmp_path):
@@ -17,7 +36,8 @@ def test_svo_gexf_spells_are_iso_dates(tmp_path):
     )
     io_libraries = MagicMock()
     io_libraries.external_software_install.return_value = ("/Applications/Gephi.app", None, False)
-    with patch.dict(sys.modules, {"IO_libraries_util": io_libraries, "IO_user_interface_util": MagicMock()}):
+    stubs = {"IO_libraries_util": io_libraries, "IO_user_interface_util": MagicMock(), **_lxml_or_stand_in()}
+    with patch.dict(sys.modules, stubs):
         sys.modules.pop("Gephi_util", None)
         import Gephi_util
 
