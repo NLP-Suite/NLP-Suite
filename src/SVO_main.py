@@ -40,11 +40,28 @@ import statistics_csv_util
 import SVO_compare_util
 import SVO_util
 
+
+def main_SVO_csv(svo_dir):
+    """The SVO csv a parser wrote under svo_dir, or ''.
+
+    The csv is in a subfolder (e.g., SVO_CoNLL), not in svo_dir itself; the lemma, filter, WordNet and GIS
+    subfolders hold csv files derived from it, which also have SVO in their names.
+    """
+    derived = ("SVO_lemma", "SVO_filter", "WordNet", "GIS")
+    for root, dirs, files in os.walk(svo_dir):
+        dirs[:] = sorted(d for d in dirs if d not in derived)
+        for f in sorted(files):
+            if f.endswith(".csv") and "SVO" in f and "comparison" not in f:
+                return os.path.join(root, f)
+    return ""
+
+
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
 
-def run():
+def run(package=None):
     # widget values read here at RUN time (was: run_script_command lambda + run() params)
+    # package: set only by the '*' option below, which runs each parser in turn
     inputFilename = GUI_util.inputFilename.get()
     inputDir = GUI_util.input_main_dir_path.get()
     outputDir = GUI_util.output_dir_path.get()
@@ -53,13 +70,9 @@ def run():
     dataTransformation = GUI_util.data_transformation_options_widget.get()
     coref_var = globals()["coref_var"].get()
     manual_coref_var = globals()["manual_coref_var"].get()
-    normalized_NER_date_extractor_var = globals()["normalized_NER_date_extractor_var"].get()
-    package_var = globals()["package_var"].get()
+    package_var = package or globals()["package_var"].get()
     gender_var = globals()["gender_var"].get()
     quote_var = globals()["quote_var"].get()
-    subjects_dict_path_var = globals()["subjects_dict_path_var"].get()
-    verbs_dict_path_var = globals()["verbs_dict_path_var"].get()
-    objects_dict_path_var = globals()["objects_dict_path_var"].get()
     filter_subjects = filter_subjects_var.get()
     filter_verbs = filter_verbs_var.get()
     filter_objects = filter_objects_var.get()
@@ -70,7 +83,8 @@ def run():
     # conflated: the single 'Visualize SVO relations' checkbox drives BOTH the network graphs and the wordcloud
     wordcloud_var = gephi_var
     google_earth_var = globals()["google_earth_var"].get()
-    compare_svo_var = globals()["compare_svo_var"].get()
+    # the '*' option compares all its parsers itself, so each single-parser pass skips the compare
+    compare_svo_var = False if package else globals()["compare_svo_var"].get()
     map_characters_var = globals()["map_characters_var"].get()
 
     config_filename = GUI_util.config_filename_selected_config.get()
@@ -149,44 +163,15 @@ def run():
     if package_var == "*":
         svo_files = {}
         for pkg in ["spaCy", "Stanford CoreNLP", "Stanza"]:
-            run(
-                inputFilename,
-                inputDir,
-                outputDir,
-                openOutputFiles,
-                chartPackage,
-                dataTransformation,
-                coref_var,
-                manual_coref_var,
-                normalized_NER_date_extractor_var,
-                pkg,
-                gender_var,
-                quote_var,
-                subjects_dict_path_var,
-                verbs_dict_path_var,
-                objects_dict_path_var,
-                filter_subjects,
-                filter_verbs,
-                filter_objects,
-                lemmatize_subjects,
-                lemmatize_verbs,
-                lemmatize_objects,
-                gephi_var,
-                wordcloud_var,
-                google_earth_var,
-                False,
-                map_characters_var,
-            )
+            run(package=pkg)
             pkg_label = "CoreNLP" if pkg == "Stanford CoreNLP" else pkg
             if inputFilename != "":
                 base = os.path.basename(inputFilename)[0:-4]
             else:
                 base = os.path.basename(inputDir)
-            svo_dir = os.path.join(outputDir, "SVO_" + pkg_label + "_" + base)
-            for f in os.listdir(svo_dir) if os.path.isdir(svo_dir) else []:
-                if f.endswith(".csv") and "SVO" in f and "comparison" not in f:
-                    svo_files[pkg_label] = os.path.join(svo_dir, f)
-                    break
+            svo_file = main_SVO_csv(os.path.join(outputDir, "SVO_" + pkg_label + "_" + base))
+            if svo_file:
+                svo_files[pkg_label] = svo_file
         labels = list(svo_files.keys())
         for i in range(len(labels)):
             for j in range(i + 1, len(labels)):
