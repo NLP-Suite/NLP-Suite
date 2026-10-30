@@ -1187,6 +1187,11 @@ class GexfImport:
 # returns a gexf file
 
 
+# GEXF's timeformat="date" means ISO yyyy-mm-dd: Gephi 0.10+ refuses to import any other order
+# ('11-15-2026' raises DateTimeParseException). date_format in create_gexf is only for reading input dates.
+GEXF_DATE_FORMAT = "%Y-%m-%d"
+
+
 def create_gexf(window, fileBase, OutputDir, inputFilename, col1, col2, col3, spellCol="", logic="default"):
     """
     Create gexf format file that can be used in Gephi to visualize result dynamically.
@@ -1273,7 +1278,7 @@ def create_gexf(window, fileBase, OutputDir, inputFilename, col1, col2, col3, sp
                             )
                             return
                 # days = int(float(date_obj))
-                # date(row[spellCol]).strftime(date_format)
+                # date(row[spellCol]).strftime(GEXF_DATE_FORMAT)
                 if spellCol != "":  # this could be a Date field
                     try:
                         if spellCol == "Date":
@@ -1289,8 +1294,8 @@ def create_gexf(window, fileBase, OutputDir, inputFilename, col1, col2, col3, sp
                                 size="50",
                                 spells=[
                                     {
-                                        "start": dateutil.parser.parse(row[spellCol]).strftime(date_format),
-                                        "end": dateutil.parser.parse(row[spellCol]).strftime(date_format),
+                                        "start": dateutil.parser.parse(row[spellCol]).strftime(GEXF_DATE_FORMAT),
+                                        "end": dateutil.parser.parse(row[spellCol]).strftime(GEXF_DATE_FORMAT),
                                     }
                                 ],
                             )
@@ -1307,16 +1312,16 @@ def create_gexf(window, fileBase, OutputDir, inputFilename, col1, col2, col3, sp
                                 spells=[
                                     {
                                         "start": (EPOCH + datetime.timedelta(days=int(row[spellCol]))).strftime(
-                                            date_format
+                                            GEXF_DATE_FORMAT
                                         ),
                                         "end": (EPOCH + datetime.timedelta(days=int(row[spellCol]))).strftime(
-                                            date_format
+                                            GEXF_DATE_FORMAT
                                         ),
                                     }
                                     # {"start":(EPOCH+datetime.timedelta(days = int(float(row[spellCol]))))
-                                    #     .strftime(date_format),
+                                    #     .strftime(GEXF_DATE_FORMAT),
                                     #  "end":(EPOCH+datetime.timedelta(days = int(float(row[spellCol]))+1))
-                                    #     .strftime(date_format)}
+                                    #     .strftime(GEXF_DATE_FORMAT)}
                                 ],
                             )
                     except:
@@ -1353,8 +1358,8 @@ def create_gexf(window, fileBase, OutputDir, inputFilename, col1, col2, col3, sp
 
                         graph.nodes[row[col1]].spells.append(
                             {
-                                "start": dateutil.parser.parse(row[spellCol]).strftime(date_format),
-                                "end": dateutil.parser.parse(row[spellCol]).strftime(date_format),
+                                "start": dateutil.parser.parse(row[spellCol]).strftime(GEXF_DATE_FORMAT),
+                                "end": dateutil.parser.parse(row[spellCol]).strftime(GEXF_DATE_FORMAT),
                             }
                         )
 
@@ -1362,10 +1367,10 @@ def create_gexf(window, fileBase, OutputDir, inputFilename, col1, col2, col3, sp
                         graph.nodes[row[col1]].spells.append(
                             {
                                 "start": (EPOCH + datetime.timedelta(days=int(float(row[spellCol])))).strftime(
-                                    date_format
+                                    GEXF_DATE_FORMAT
                                 ),
                                 "end": (EPOCH + datetime.timedelta(days=int(float(row[spellCol])) + 1)).strftime(
-                                    date_format
+                                    GEXF_DATE_FORMAT
                                 ),
                             }
                         )
@@ -1385,8 +1390,8 @@ def create_gexf(window, fileBase, OutputDir, inputFilename, col1, col2, col3, sp
                             size="50",
                             spells=[
                                 {
-                                    "start": dateutil.parser.parse(row[spellCol]).strftime(date_format),
-                                    "end": dateutil.parser.parse(row[spellCol]).strftime(date_format),
+                                    "start": dateutil.parser.parse(row[spellCol]).strftime(GEXF_DATE_FORMAT),
+                                    "end": dateutil.parser.parse(row[spellCol]).strftime(GEXF_DATE_FORMAT),
                                 }
                             ],
                         )
@@ -1402,10 +1407,10 @@ def create_gexf(window, fileBase, OutputDir, inputFilename, col1, col2, col3, sp
                             spells=[
                                 {
                                     "start": (EPOCH + datetime.timedelta(days=int(float(row[spellCol])))).strftime(
-                                        date_format
+                                        GEXF_DATE_FORMAT
                                     ),
                                     "end": (EPOCH + datetime.timedelta(days=int(float(row[spellCol])) + 1)).strftime(
-                                        date_format
+                                        GEXF_DATE_FORMAT
                                     ),
                                 }
                             ],
@@ -1430,8 +1435,8 @@ def create_gexf(window, fileBase, OutputDir, inputFilename, col1, col2, col3, sp
 
                         graph.nodes[row[col3]].spells.append(
                             {
-                                "start": dateutil.parser.parse(row[spellCol]).strftime(date_format),
-                                "end": dateutil.parser.parse(row[spellCol]).strftime(date_format),
+                                "start": dateutil.parser.parse(row[spellCol]).strftime(GEXF_DATE_FORMAT),
+                                "end": dateutil.parser.parse(row[spellCol]).strftime(GEXF_DATE_FORMAT),
                             }
                         )
 
@@ -1439,10 +1444,10 @@ def create_gexf(window, fileBase, OutputDir, inputFilename, col1, col2, col3, sp
                         graph.nodes[row[col3]].spells.append(
                             {
                                 "start": (EPOCH + datetime.timedelta(days=int(float(row[spellCol])))).strftime(
-                                    date_format
+                                    GEXF_DATE_FORMAT
                                 ),
                                 "end": (EPOCH + datetime.timedelta(days=int(float(row[spellCol])) + 1)).strftime(
-                                    date_format
+                                    GEXF_DATE_FORMAT
                                 ),
                             }
                         )
@@ -1459,8 +1464,8 @@ def create_gexf(window, fileBase, OutputDir, inputFilename, col1, col2, col3, sp
                             row[col3],
                             spells=[
                                 {
-                                    "start": dateutil.parser.parse(row[spellCol]).strftime(date_format),
-                                    "end": dateutil.parser.parse(row[spellCol]).strftime(date_format),
+                                    "start": dateutil.parser.parse(row[spellCol]).strftime(GEXF_DATE_FORMAT),
+                                    "end": dateutil.parser.parse(row[spellCol]).strftime(GEXF_DATE_FORMAT),
                                 }
                             ],
                             label=row[col2],
@@ -1474,10 +1479,10 @@ def create_gexf(window, fileBase, OutputDir, inputFilename, col1, col2, col3, sp
                             spells=[
                                 {
                                     "start": (EPOCH + datetime.timedelta(days=int(float(row[spellCol])))).strftime(
-                                        date_format
+                                        GEXF_DATE_FORMAT
                                     ),
                                     "end": (EPOCH + datetime.timedelta(days=int(float(row[spellCol])) + 1)).strftime(
-                                        date_format
+                                        GEXF_DATE_FORMAT
                                     ),
                                 }
                             ],
@@ -1492,17 +1497,19 @@ def create_gexf(window, fileBase, OutputDir, inputFilename, col1, col2, col3, sp
 
                     graph.edges[edge_id].spells.append(
                         {
-                            "start": dateutil.parser.parse(row[spellCol]).strftime(date_format),
-                            "end": dateutil.parser.parse(row[spellCol]).strftime(date_format),
+                            "start": dateutil.parser.parse(row[spellCol]).strftime(GEXF_DATE_FORMAT),
+                            "end": dateutil.parser.parse(row[spellCol]).strftime(GEXF_DATE_FORMAT),
                         }
                     )
 
                 else:
                     graph.edges[edge_id].spells.append(
                         {
-                            "start": (EPOCH + datetime.timedelta(days=int(float(row[spellCol])))).strftime(date_format),
+                            "start": (EPOCH + datetime.timedelta(days=int(float(row[spellCol])))).strftime(
+                                GEXF_DATE_FORMAT
+                            ),
                             "end": (EPOCH + datetime.timedelta(days=int(float(row[spellCol])) + 1)).strftime(
-                                date_format
+                                GEXF_DATE_FORMAT
                             ),
                         }
                     )
