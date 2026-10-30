@@ -261,15 +261,35 @@ def nominatim_geocode(geolocator, loc, country_bias="", box_tuple="", restrict=F
             raise
 
 
+# featuretype (from the NER tag) narrows the search, but drops places Nominatim files under another type:
+#   Leicestershire, tagged STATE_OR_PROVINCE, is a county to Nominatim, so featuretype='state' finds nothing.
+#   When the filtered search finds nothing, search once more without the filter.
+def nominatim_geocode_any_type(geolocator, loc, *, country_bias, box_tuple, restrict, featuretype):
+    location = nominatim_geocode(
+        geolocator, loc=loc, country_bias=country_bias, box_tuple=box_tuple, restrict=restrict, featuretype=featuretype
+    )
+    # Nominatim usage policy: max 1 request/second
+    time.sleep(1.0)
+    if location is None and featuretype:
+        location = nominatim_geocode(
+            geolocator, loc=loc, country_bias=country_bias, box_tuple=box_tuple, restrict=restrict
+        )
+        time.sleep(1.0)
+    return location
+
+
 # https://developers.google.com/maps/documentation/embed/get-api-key
 # console.developers.google.com/apis
 def google_geocode(geolocator, loc, region=None, timeout=10):
     # print("Processing Google location for geocoding:",loc)
-    region = ".US"
+    # region: the country bias set in the GUI (a two-letter country code), or none
     try:
-        return geolocator.geocode(loc, region=region, timeout=timeout)
+        return geolocator.geocode(loc, region=region or None, timeout=timeout)
     except GeocoderTimedOut:
-        return google_geocode(geolocator, loc, region=region, timeout=timeout)
+        if timeout < 30:
+            return google_geocode(geolocator, loc, region=region, timeout=timeout + 10)
+        print("Maximum number of retries to access the Google geocoder exceeded in geocoding " + loc)
+        return None
 
 
 # the function processes an INPUT list of NON DISTINCT locations
@@ -741,6 +761,8 @@ def geocode(
                     elif NER_Tag == "CITY":
                         NER_Tag_Nominatim = "city"
                     # CoreNLP NER tag for continents is often wrong and as a result Nominatim geocodes them wrongly
+                    #   Nominatim has no 'continent' featuretype (only country, state, city, settlement):
+                    #   with it, South America was found in Florida. Unfiltered, continents are found.
                     if itemToGeocode in (
                         "Africa",
                         "Antarctica",
@@ -751,17 +773,15 @@ def geocode(
                         "North America",
                         "South America",
                     ):
-                        NER_Tag_Nominatim = "continent"
-                    location = nominatim_geocode(
+                        NER_Tag_Nominatim = ""
+                    location = nominatim_geocode_any_type(
                         geolocator,
-                        loc=itemToGeocode,
+                        itemToGeocode,
                         country_bias=country_bias,
                         box_tuple=area,
                         restrict=restrict,
                         featuretype=NER_Tag_Nominatim,
                     )
-                    # Nominatim usage policy: max 1 request/second
-                    time.sleep(1.0)
                     try:
                         lat, lng, address = location.latitude, location.longitude, location.address
                         _cache_put(itemToGeocode, lat, lng, address)
@@ -914,7 +934,7 @@ def geocode(
                         ]
                     )
             elif datePresent:
-                geowriter.writerow([itemToGeocode, NER_Tag, "", "", "Geocoding failed", "", date])
+                geowriter.writerow([itemToGeocode, NER_Tag, "", "", "Geocoding failed", "", date, sentence, document])
             else:
                 geowriter.writerow([itemToGeocode, NER_Tag, "", "", "Geocoding failed", ""])
 

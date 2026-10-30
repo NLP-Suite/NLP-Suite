@@ -159,10 +159,10 @@ def run():
                 "No results",
                 "No person-location pairs were found in the input text.\n\nThe animated character movement map requires text that mentions both people and places.",
             )
-        if NER_extractor == False and geocode_locations_var == False and map_locations == False:
+        if NER_extractor == False and geocode_locations == False and map_locations == False:
             return
 
-    if NER_extractor == False and geocode_locations_var == False and GIS_package_var == "":
+    if NER_extractor == False and geocode_locations == False and GIS_package_var == "":
         mb.showwarning("Warning", "No options have been selected.\n\nPlease, select an option to run and try again.")
         return
 
@@ -190,7 +190,7 @@ def run():
     kmloutputFilename = ""
     # locationColumnName = 'Location'
     # locationColumnName = location_menu_var #.get()
-    if geocode_locations_var == True:
+    if geocode_locations == True:
         geocodedLocationsoutputFilename = IO_files_util.generate_output_file_name(
             inputFilename, inputDir, outputDir, ".csv", "GIS", geoName, locationColumnName, "", "", False, True
         )
