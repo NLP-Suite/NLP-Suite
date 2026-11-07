@@ -16,7 +16,7 @@ jobs:
           - os: windows-latest
             artifact: NLP-Suite-windows-x64
             python-version: '3.10'
-          - os: macos-14          # Apple Silicon (M1+)
+          - os: macos-15          # Apple Silicon (M1+); macos-14 was retired by GitHub on 2 Nov 2026
             artifact: NLP-Suite-mac-arm64
             python-version: '3.10'
 
