@@ -34,8 +34,20 @@ A patch release whose top priority is auto-update (issue #1700). **State (9 Nov 
 | pygit2 leftovers | Removed from the missing-module message |
 | #1699 GIS geocode cache | Merged as is |
 | #1679 CoNLL DEPREL filter, #1656 nominalization batching | Re-applied on the ruff-formatted `roberto` (their conflicts were only the reformat); author kept |
+| Homework 4 tool fixes | See §1.1a |
 
 Tests on Windows: the updater's PowerShell swap runs for real in `pytest` (normal update, unmarked `_previous`, marked one, an edited release file, a folder named with ’ and brackets); the Mac `sh` swap was run the same way under Git's `sh` (CI runs it on Linux).
+
+### 1.1a Homework 4 tools, checked end to end (9 Nov 2026)
+
+Run unattended on Windows (NLP env, CoreNLP 4.5.6, Java 20) on `The Three Little Pigs.txt` and a 2-document newspaper corpus: SVO with CoreNLP (with and without coreference), spaCy, Stanza and '*'; lemmatized/filtered SVO, WordNet, Sankey/sunburst/treemap, wordclouds, Gephi .gexf (ISO dates), GIS from SVO and from GIS_main (Nominatim, Folium pin/heat/time maps, .kml), the new geocode cache. All work. Fixed in 1.6.41 and rerun: the GIS long-path crash, '*' comparisons overwriting each other, SVO-csv-input outputs landing beside the input, console prints crashing on cp1252. `pytest`: only the 2 known local failures. Not covered: Google geocoder and Google Earth Pro (no API key), OpenIE, Mac.
+
+Open, not blocking (for after 1.6.41):
+- `GIS_geocode_util.py` ~704: the "(NER tag: ...)" log line prints the date when there is one; the tag used is `item[2]`.
+- CoreNLP's main SVO csv is already lemmatized, so `SVO_lemma` is identical to it, and no unlemmatized csv is written (only the form charts).
+- Stanza downloads `resources.json` on every run, so it needs internet.
+- Geocoding quality, not code: Nominatim puts "Flushing" in the Netherlands; spaCy tags names like "Campari" as places.
+- `tests/gui_smoke.py` hangs in a checkout with no `config/` folder: a setup GUI opens as a real window and waits. Make the smoke run create or stub the config.
 
 ### 1.2 Not in 1.6.41
 
