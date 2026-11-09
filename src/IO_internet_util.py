@@ -117,6 +117,79 @@ def download_with_warning(script, download_function, resource="a language model"
         return False
 
 
+def stanza_resources_dir(environ=None):
+    """Where Stanza keeps its models: STANZA_RESOURCES_DIR if set, else ~/stanza_resources (Stanza's own rule)."""
+    import os
+
+    environ = os.environ if environ is None else environ
+    return environ.get("STANZA_RESOURCES_DIR") or os.path.join(os.path.expanduser("~"), "stanza_resources")
+
+
+def stanza_model_present(lang="en", resources_dir=None):
+    """True when the Stanza model for `lang` is already unpacked on disk.
+
+    The test is an unpacked tokenizer model (<resources>/<lang>/tokenize/*.pt). The folder alone is not
+    enough: a first download that was interrupted leaves <lang>/default.zip and nothing usable."""
+    import os
+
+    tokenize_dir = os.path.join(resources_dir or stanza_resources_dir(), lang, "tokenize")
+    try:
+        return any(name.endswith(".pt") for name in os.listdir(tokenize_dir))
+    except OSError:
+        return False
+
+
+def ensure_stanza_model(script, download_function, resource="a language model", lang="en", resources_dir=None):
+    """Download the Stanza model only when it is not on disk yet. Returns True when it is available.
+
+    stanza.download() fetches the resources list from GitHub and re-hashes every model file even when
+    nothing is missing: 9-11 seconds per call, and it used to run at import in four modules, so opening a
+    GUI repeated it up to three times. A model that is present is trusted here; if one of its files is
+    missing, stanza.Pipeline() fetches that file itself when the pipeline is built."""
+    if stanza_model_present(lang, resources_dir):
+        return True
+    return download_with_warning(script, download_function, resource)
+
+
+class LazyModel:
+    """A model (e.g. a Stanza pipeline) that is built the first time it is used, not at import.
+
+    It stands in for the real object: calling it, or reading an attribute of it, builds the model once
+    and passes the call through, so code written as `stanzaPipeLine(text)` needs no change. Building it
+    at import made every GUI that might use it wait for it (8.7 s for the shared Stanza pipeline) before
+    drawing its window.
+
+    A failed build is shown in the GUI and then raised: the caller cannot go on without the model, and
+    the next use tries again (the connection may be back)."""
+
+    def __init__(self, build, script, resource="a language model"):
+        self._build = build
+        self._script = script
+        self._resource = resource
+        self._model = None
+
+    def _get(self):
+        if self._model is None:
+            try:
+                model = self._build()
+                if model is None:
+                    raise RuntimeError(self._resource + " is not available")
+            except Exception as e:
+                report_download_failure(self._script, e, self._resource)
+                raise
+            self._model = model
+        return self._model
+
+    def __call__(self, *args, **kwargs):
+        return self._get()(*args, **kwargs)
+
+    def __getattr__(self, name):
+        # only reached for names not set in __init__, i.e. the real model's attributes
+        if name.startswith("_"):
+            raise AttributeError(name)
+        return getattr(self._get(), name)
+
+
 """
 'strict' to raise a ValueError exception if there is an encoding error. The default value of None has the same effect.
 'ignore' ignores errors. Note that ignoring encoding errors can lead to data loss. IT WILL SIMPLY TAKE OUT THE OFFENDING CHARACTER

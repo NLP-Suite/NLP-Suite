@@ -253,7 +253,7 @@ Evaluated 9 Nov 2026 on `current-stable` @ `43cbca1c` (v1.6.40), Windows 11, NLP
 
 | # | Finding | Measured cost | Who pays | Fix size |
 |---|---|---|---|---|
-| 1 | Stanza model re-checked (and a pipeline built) every time a GUI opens | 9–11 s per check, 8.7 s for the pipeline | 18 of 55 GUIs | Small |
+| 1 | Stanza model re-checked (and a pipeline built) every time a GUI opens. **Fixed on branch `claude/codebase-performance-eval-09cb55`, not yet merged (§9.1)** | 9–11 s per check, 8.7 s for the pipeline | 18 of 55 GUIs | Small |
 | 2 | Heavy libraries imported when the GUI opens, not at RUN | 10–40 s | 32 of 55 GUIs | Medium, file by file |
 | 3 | Every GUI starts with 4.6 s of `GUI_util` imports (pandas, requests) | 4.6 s vs 0.9 s for a bare Tk window | Every GUI, every open | Small |
 | 4 | "Started/Finished running" alerts and reminders block until their countdown ends | 1–12 s each | Every RUN | Small (a decision first) |
@@ -278,11 +278,13 @@ With the model already on disk, each call still takes **9.1–10.7 s**: Stanza f
 
 18 of the 55 GUIs import at least one of these modules when they open. Style analysis, Semantic analysis and Syntactic analysis (ALL) import three of them, so they run the check three times.
 
-**Fix.**
-1. One helper, e.g. `Stanza_functions_util.ensure_stanza_model(lang)`: return at once if the model folder exists; otherwise download with the existing `IO_internet_util.download_with_warning`. Call it from the four places.
-2. Build the pipeline on first use, not at import: replace the module-level `stanzaPipeLine` with a cached `get_stanza_pipeline()`. `stanzaPipeLine` is referenced 156 times in 28 files, so this is a mechanical change that needs a test for the helper and a `tests/gui_smoke.py` run.
+**Fixed 9 Nov 2026 on branch `claude/codebase-performance-eval-09cb55` (not merged, not pushed).**
+1. `IO_internet_util.ensure_stanza_model(...)` downloads only when no unpacked tokenizer model is on disk (`stanza_model_present`: `<resources>/<lang>/tokenize/*.pt`, honouring `STANZA_RESOURCES_DIR`); the four call sites use it. `Stanza_util`'s bare `except: pass` around the download is gone, so a failed first download is reported.
+2. `stanzaPipeLine` is now an `IO_internet_util.LazyModel`: it builds the pipeline the first time it is called and passes the call through, so none of its 156 uses in 28 files changed. A failed build shows the existing download-failure dialog and raises.
 
-Expected saving: 10–30 s per open for those 18 GUIs. Offline, it also removes the download-failure dialogs at open.
+Measured after the fix, same machine: `import Stanza_functions_util` 33.0 → **18.5 s**, `import statistics_txt_util` 38.5 → **21.3 s**, `import wordclouds_util` 14.2 s. What remains is library import time (§9.2). The first `stanzaPipeLine(...)` call took 7.0 s, later calls 0.01 s. Checks: 15 new tests in `tests/test_IO_internet_util.py`; `pytest tests/` 613 passed, the same 2 failures as on `roberto`; `tests/gui_smoke.py` 49 ok, 0 crashed, 6 skipped (the usual stub-limited ones).
+
+**Not checked:** a GUI opened and RUN by hand; a machine with no Stanza model (first download); macOS; the zip build. A model folder with a tokenizer but another file missing is trusted at open; `stanza.Pipeline` fetches the missing file when the pipeline is built.
 
 ### 9.2 Heavy libraries are imported when the GUI opens
 

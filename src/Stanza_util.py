@@ -24,25 +24,26 @@ if (
 ):
     sys.exit(0)
 
-import os as _os
-
 import stanza
 
-try:
-    _stanza_model_dir = _os.path.join(_os.path.expanduser("~"), "stanza_resources", "en")
-    if not _os.path.isdir(_stanza_model_dir):
-        import IO_user_interface_util
+import IO_internet_util
 
-        IO_user_interface_util.timed_alert(
-            GUI_util.window,
-            6000,
-            "Stanza model download",
-            "Downloading the Stanza language model for the first time (~525 MB).\n\nThis is a one-time download. Please be patient, it may take several minutes depending on your internet connection.",
-            False,
-        )
-    stanza.download("en")
-except:
-    pass
+# Download the English model only when it is not on disk yet. stanza.download() used to run on every
+# import, i.e. every time a GUI that uses Stanza opened, and it re-checks a present model for 9-11 s.
+# A failed download is now reported in a dialog; the bare except used to swallow it.
+if not IO_internet_util.stanza_model_present("en"):
+    import IO_user_interface_util
+
+    IO_user_interface_util.timed_alert(
+        GUI_util.window,
+        6000,
+        "Stanza model download",
+        "Downloading the Stanza language model for the first time (~525 MB).\n\nThis is a one-time download. Please be patient, it may take several minutes depending on your internet connection.",
+        False,
+    )
+    IO_internet_util.ensure_stanza_model(
+        "Stanza_util.py (stanza.download(en))", lambda: stanza.download("en"), "the Stanza English language model"
+    )
 
 import os
 import re

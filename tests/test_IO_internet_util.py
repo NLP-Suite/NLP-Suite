@@ -88,6 +88,129 @@ class TestDownloadWithWarning:
         assert len(rec.errors) == 1
 
 
+def _model_folder(tmp_path, lang="en", files=("tokenize/combined.pt",)):
+    """A Stanza-like resources folder under tmp_path; returns the resources root."""
+    for rel in files:
+        target = tmp_path / lang / rel
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(b"x")
+    return str(tmp_path)
+
+
+class TestStanzaModelPresent:
+    """Opening a GUI must not re-check a model that is already on disk (9-11 s per check)."""
+
+    def test_present_when_the_tokenizer_model_is_there(self, tmp_path):
+        assert net.stanza_model_present("en", resources_dir=_model_folder(tmp_path)) is True
+
+    def test_absent_when_the_folder_is_missing(self, tmp_path):
+        assert net.stanza_model_present("en", resources_dir=str(tmp_path)) is False
+
+    def test_absent_for_another_language(self, tmp_path):
+        assert net.stanza_model_present("it", resources_dir=_model_folder(tmp_path, "en")) is False
+
+    def test_an_interrupted_download_is_not_a_model(self, tmp_path):
+        # the first download writes default.zip and unpacks it afterwards
+        root = _model_folder(tmp_path, files=("default.zip",))
+        assert net.stanza_model_present("en", resources_dir=root) is False
+
+    def test_an_empty_tokenize_folder_is_not_a_model(self, tmp_path):
+        (tmp_path / "en" / "tokenize").mkdir(parents=True)
+        assert net.stanza_model_present("en", resources_dir=str(tmp_path)) is False
+
+    def test_honours_the_stanza_environment_variable(self, tmp_path):
+        root = _model_folder(tmp_path)
+        assert net.stanza_resources_dir({"STANZA_RESOURCES_DIR": root}) == root
+        assert net.stanza_resources_dir({}).endswith("stanza_resources")
+
+
+class TestEnsureStanzaModel:
+    def test_no_download_when_the_model_is_on_disk(self, tmp_path):
+        calls = []
+        ok = net.ensure_stanza_model("x", lambda: calls.append(1), resources_dir=_model_folder(tmp_path))
+        assert ok is True
+        assert calls == []
+
+    def test_downloads_when_the_model_is_missing(self, tmp_path, monkeypatch):
+        monkeypatch.setattr(net, "mb", _Recorder())
+        calls = []
+        ok = net.ensure_stanza_model("x", lambda: calls.append(1), resources_dir=str(tmp_path))
+        assert ok is True
+        assert calls == [1]
+
+    def test_a_failed_download_is_reported_not_swallowed(self, tmp_path, monkeypatch):
+        rec = _offline(monkeypatch, answer=False)
+        assert net.ensure_stanza_model("x", _boom, resources_dir=str(tmp_path)) is False
+        assert len(rec.errors) == 1
+
+
+class TestLazyModel:
+    """The shared Stanza pipeline is built the first time it is used, not when a GUI opens."""
+
+    def test_nothing_is_built_until_first_use(self):
+        built = []
+        net.LazyModel(lambda: built.append(1), "x")
+        assert built == []
+
+    def test_built_once_and_called_through(self):
+        built = []
+
+        def build():
+            built.append(1)
+            return lambda text: text.upper()
+
+        pipe = net.LazyModel(build, "x")
+        assert pipe("a") == "A"
+        assert pipe("b") == "B"
+        assert built == [1]
+
+    def test_attributes_come_from_the_real_model(self):
+        class _Pipe:
+            lang = "en"
+
+        assert net.LazyModel(_Pipe, "x").lang == "en"
+
+    def test_a_build_failure_is_shown_and_raised(self, monkeypatch):
+        rec = _Recorder()
+        monkeypatch.setattr(net, "mb", rec)
+        pipe = net.LazyModel(_boom, "Stanza_functions_util.py", "the Stanza English language model")
+        try:
+            pipe("text")
+        except ConnectionError:
+            pass
+        else:
+            raise AssertionError("the failure must not be swallowed")
+        assert len(rec.errors) == 1
+        assert "Stanza_functions_util.py" in rec.errors[0][1]
+
+    def test_a_failed_build_is_retried_on_the_next_use(self, monkeypatch):
+        monkeypatch.setattr(net, "mb", _Recorder())
+        state = {"n": 0}
+
+        def build():
+            state["n"] += 1
+            if state["n"] == 1:
+                raise ConnectionError("transient")
+            return lambda text: text
+
+        pipe = net.LazyModel(build, "x")
+        try:
+            pipe("a")
+        except ConnectionError:
+            pass
+        assert pipe("a") == "a"
+
+    def test_a_builder_that_returns_nothing_is_an_error(self, monkeypatch):
+        monkeypatch.setattr(net, "mb", _Recorder())
+        pipe = net.LazyModel(lambda: None, "x")
+        try:
+            pipe("a")
+        except RuntimeError:
+            pass
+        else:
+            raise AssertionError("a missing model must raise, not return None")
+
+
 class TestReportDownloadFailure:
     def test_message_carries_the_real_exception(self, monkeypatch):
         rec = _Recorder()

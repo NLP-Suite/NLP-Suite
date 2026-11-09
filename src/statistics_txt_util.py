@@ -28,9 +28,9 @@ import stanza
 
 import IO_internet_util
 
-# report a failed model download in a dialog: the bare except used to swallow the real error and
-# only ask the internet-check question, never retrying, so the reason reached the terminal alone
-IO_internet_util.download_with_warning(
+# Download the model only when it is not on disk yet (stanza.download re-checks a present model for
+# 9-11 s, and this runs when a GUI opens). A failed download is reported in a dialog.
+IO_internet_util.ensure_stanza_model(
     "statistics_txt_util.py (stanza.download(en))", lambda: stanza.download("en"), "the Stanza English language model"
 )
 
