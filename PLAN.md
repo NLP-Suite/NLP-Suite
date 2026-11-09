@@ -2,9 +2,9 @@
 
 What's open, what to close, what to fix next. How to fix an issue is in [CLAUDE.md](CLAUDE.md#fixing-an-issue). What has shipped is in [CHANGELOG.md](CHANGELOG.md), not here.
 
-**Last updated:** 9 Nov 2026, against `roberto` @ `78b383d3` (v1.6.40 released 7 Nov).
+**Last updated:** 9 Nov 2026, for release 1.6.41 (v1.6.40 released 7 Nov).
 
-**State on GitHub (9 Nov 2026):** 12 open PRs; 255 open issues on 7 Nov, plus #1700. Nothing below has been merged, closed or commented on GitHub: the lists are proposals for Roberto.
+**State on GitHub (9 Nov 2026):** 12 open PRs before the 1.6.41 merges; 255 open issues on 7 Nov, plus #1700. Nothing below has been merged, closed or commented on GitHub: the lists are proposals for Roberto.
 
 ## Contents
 
@@ -21,71 +21,46 @@ What's open, what to close, what to fix next. How to fix an issue is in [CLAUDE.
 
 ## 1. Release 1.6.41
 
-A patch release. **Top priority: auto-update works for students** (issue #1700). Everything else in it is a small, low-risk fix that is ready now.
+A patch release whose top priority is auto-update (issue #1700). **State (9 Nov 2026):** everything below is merged on `roberto`; `lib/release_version.txt` and CHANGELOG say 1.6.41. **Not yet promoted to `current-stable` or tagged** (Roberto's step, §1.4). What each change does is in CHANGELOG v1.6.41.
 
-### 1.1 Why auto-update is broken (v1.6.40 and earlier)
+### 1.1 In 1.6.41
 
-Checked in `src/GUI_util.py` and `src/NLP_setup_update_util.py` on `roberto`:
+| What | How it got in |
+|---|---|
+| #1701 auto-update without pygit2 | Merged; plus a fix: `.git` is rebuilt only when git says it is damaged, never on "dubious ownership", a lock or a timeout |
+| #1702 the zip build updates itself | Merged; plus the review fixes (next row) |
+| #1702 review fixes | An unmarked `<folder>_previous` is never deleted (checked before the download). The build writes `lib/release_manifest.tsv` (path, size, hash) as its last step before zipping, and the updater uses it to carry over the user's files at any depth and to keep the backup when a release file was edited. A failed rollback says where the app is. A partial backup deletion is finished next start. A swap script that never starts (group policy) is reported. Silent failures became messages. Typographic quotes in paths. OneDrive warning |
+| Launch popup and offline check | No popups offline. The "Outdated" message fits the install (zip vs Git) and waits until the zip download exists |
+| pygit2 leftovers | Removed from the missing-module message |
+| #1699 GIS geocode cache | Merged as is |
+| #1679 CoNLL DEPREL filter, #1656 nominalization batching | Re-applied on the ruff-formatted `roberto` (their conflicts were only the reformat); author kept |
 
-- **Zip (installer) build:** on every close with a newer release out, `update_self` asks for pygit2, which the spec excludes and students cannot install. The folder has no `.git`, so a git pull could not work anyway.
-- **Source checkout:** the "is Git installed?" test runs `git pull` on whatever branch is checked out, *before* the check that only `current-stable` is updated. A developer on `roberto` gets pulled.
-- **The exit test is a string `!=`**, not a version comparison: offline (`0.0.0`) or a developer copy ahead of GitHub also starts an update.
-- **The rebuild path for a broken `.git` ran `git init ..`** relative to the launch folder, not the NLP Suite folder.
-- **The launch-time "NLP Suite Outdated" popup** (`check_GitHub_release`, not touched by either PR) tells every user to install Git and to close and reopen to update, and links the old wiki release history. It also fires as soon as `current-stable`'s `release_version.txt` changes, before the tag's zips exist.
-- **Offline, the version check stacks modals:** `get_GitHub_release_version` calls `check_internet_availability_warning` (an askyesno) and runs up to three times per window (open, CLOSE, `exit_window`), plus the "0.0.0" `showwarning` on open. The `silent` parameter it takes is never used.
+Tests on Windows: the updater's PowerShell swap runs for real in `pytest` (normal update, unmarked `_previous`, marked one, an edited release file, a folder named with ’ and brackets); the Mac `sh` swap was run the same way under Git's `sh` (CI runs it on Linux).
 
-### 1.2 In 1.6.41
+### 1.2 Not in 1.6.41
 
-| # | What | Status | Before merging |
-|---|---|---|---|
-| A | **PR #1701**: auto-update without pygit2; zip builds sent to the release page; git runs in `NLPPath`; `git pull` no longer used as the Git test; real version comparison | Merges cleanly | Fix review items in §1.4; drop its §8 "Done" line from PLAN.md on rebase (§8 is gone) |
-| B | **PR #1702** (stacked on #1701): the zip build downloads and installs new releases itself | Merges cleanly | Fix review items in §1.4; **one real Windows update** (PR's own steps); drop its §8 "Done" lines from PLAN.md on rebase |
-| C | **Launch-time popup** (`GUI_util.check_GitHub_release`): say "close the NLP Suite to install it" for zip builds, mention Git only for source checkouts, link `releases/latest` (or CHANGELOG) instead of the wiki, and stay quiet until the release for that version exists (same test #1702 uses) | Not started | New small PR; test the message choice |
-| D | **Quiet offline check**: `get_GitHub_release_version(silent=True)` from `display_release`, `_close_window` and `exit_window`, no askyesno and no "0.0.0" popup; call it once per close, not twice | Not started | Same PR as C |
-| E | Remove the dead pygit2 warning in `IO_libraries_util.py` (~line 163) and the `pygit2` line in `NLP_Suite.spec` excludes | Not started | Same PR as C, after #1701 |
-| F | **#1699** (GIS cache), **#1679** (CoNLL DEPREL filter), **#1656** (nominalization batching) | Reviewed, tests pass (§3) | #1679 and #1656: rebase on `roberto` (ruff-only conflicts) |
-
-### 1.3 Not in 1.6.41
-
-- **PR #1688** (Python 3.11 + Pillow 13): changes the build Python for every user. Its own release, after auto-update is proven, so a bad build can be fixed by the new updater.
-- **PR #1682** (spaCy CoNLL ID/HEAD): correct, but it changes a shared CoNLL structure. First thing after 1.6.41 (§3).
+- **PR #1688** (Python 3.11 + Pillow 13): changes the build Python for every user. Its own release, after auto-update is proven.
+- **PR #1682** (spaCy CoNLL ID/HEAD): correct, but changes a shared CoNLL structure. First thing after 1.6.41 (§3).
 - **PR #1683** (gender dictionary): needs changes (§3).
-- Backlog triage (§5) and tech debt (§6): no code risk in a release that must not break the updater.
-- Windows long-path issue #1653: affects where the self-updater unpacks, so note it, but fix it separately.
+- Backlog triage (§5) and tech debt (§6).
 
-### 1.4 Review of the auto-update PRs
+### 1.3 Known limits of the updater (open, not blocking)
 
-Reviewed 9 Nov 2026 by reading the code (line numbers are in each PR's `src/NLP_setup_self_update_util.py` / `src/NLP_setup_update_util.py`) and by running `pytest tests/` on Windows on #1702's head: 647 passed, 14 skipped; the same 2 failures as on `roberto` (`test_cmap_guard`, `test_xml_entities`, local pdfminer/lxml). **The Windows PowerShell swap test ran and passed** on a temporary folder. That check was missing from the PR. Not yet run: a real update with the app open and the 1.5 GB download.
+- **Long paths:** staging is 17 characters deeper than the install; without Windows LongPathsEnabled the deep `node_modules` paths (#1653) fail to unpack. Fails safely with a message. Fix with #1653.
+- **The first real self-update is 1.6.41 → 1.6.42.** 1.6.40 and older don't have the code.
+- No checksum (GitHub's asset `digest` is unused) and no resume of a broken download. Ctrl-C during the download leaves `_update` behind, which blocks updates for 24 h (the message now says which folder to delete).
+- GitHub allows 60 unauthenticated API calls an hour per IP; on a shared campus network the exit-time release lookup can get 403. The fallback is the download page with the reason.
+- The Git update on `current-stable` still runs `git add -A` + `git stash`, so local edits go into a stash silently (unchanged behaviour).
+- A release file the NLP Suite itself rewrites at run time would keep the backup every time; none is known. Watch the first 1.6.42 update logs (`%TEMP%\NLP_Suite_update.log`).
 
-**#1701: ship, with one fix.**
-- *Should fix:* when `git rev-parse` fails for any reason, `update_self` deletes `.git` and rebuilds it. Git also fails with "detected dubious ownership" (folder owned by another account, common on lab machines and OneDrive), and that is not damage. Rebuild only when git says the folder is not a repository or is corrupt; otherwise show the error and stop.
-- Minor: the `current-stable` update still runs `git add -A` + `git stash` silently, so a user's local edits go into a stash they don't know about. Same as before; say so in the message.
+### 1.4 Before promoting and tagging (Roberto)
 
-**#1702: don't ship until 1 and 2 are fixed.**
-1. **Blocker:** the swap script deletes any existing `<folder>_previous` (`rm -rf "$OLD"` ~line 252; `Remove-Item $Old` ~line 341) without checking for the backup marker. A backup kept *because* files were not carried over is wiped by the next update, and so is a user folder that happens to have that name. Delete it only when the marker is there; otherwise stop.
-2. **Blocker:** only top-level items count as "user-added" (~lines 268 and 364). An edit or added file inside a shipped folder (`lib/sampleData`, `lib/wordLists`, custom dictionaries) is not carried over, the backup is still marked complete, and it is deleted on the next start. At least: list such files and keep the backup unmarked; better, compare against the old release's file list. The reverse also happens: files the old release shipped and the new one dropped are carried over as "user files" and pile up.
-3. *Should fix:* if both the move-in and the rollback fail, `Fail` deletes the staged copy, leaving the app only as `_previous`, while the message says the current version still works (~347, ~255).
-4. *Should fix:* `_delete_backup` (~385) removes the marker even when `rmtree(ignore_errors=True)` left locked or long-path files, so the leftover gigabytes are never cleaned up.
-5. *Should fix:* nothing checks that the detached PowerShell actually started (group policy / AppLocker can block `-ExecutionPolicy Bypass`). The user waits for a message that never comes, ~3.5 GB stays in `_update`, and updates are blocked for 24 h.
-6. *Should fix:* silent failures in the windowed app: missing asset or release/version mismatch only print to the console (~537); a `PermissionError` from `claim_stage` (~134, only `FileExistsError` caught) falls into `exit_handler`'s bare `except: print`.
-7. *Should fix:* `_ps_quote` (~286) doubles only `'`; PowerShell also closes single-quoted strings on the curly quotes ‘ ’, so a folder like `Maria’s` breaks the script.
-8. *Should fix:* OneDrive-synced folders (Documents is often redirected) are not detected; unpacking ~100k files there starts a multi-GB upload, and OneDrive's open handles can make the renames fail. Warn or refuse.
-9. *Should fix:* staging is 17 characters deeper than the install, so without LongPathsEnabled the deep `node_modules` paths (#1653) fail to unpack. Fails safely, but the user can't update.
-10. Minor: Ruff PLR0917 (too many positional arguments) at ~210 and ~290 will fail pre-commit. No checksum (GitHub's asset `digest` is unused), no resume. Ctrl-C leaves staging and blocks updates for 24 h. GitHub's 60 requests/hour unauthenticated limit will hit shared campus IPs (the fallback message is fine).
-
-**Hand checks on Windows before tagging** (against a fake newer release): a real swap from Downloads, from an OneDrive Documents folder, and from a path with a space and an apostrophe; a tool and a CoreNLP `java` still running; reopening the app mid-swap; an existing `_previous` folder; an edited `lib/sampleData` file; a managed (group-policy) machine.
-
-**If #1702 isn't ready in time**, ship 1.6.41 with #1701 alone (plus C–E). Zip users then get a working "download the new release" page instead of the pygit2 message, and #1702 goes in 1.6.42. Either way the first real self-update is from 1.6.41 to the next release.
-
-### 1.5 Release steps
-
-1. Merge A, B, C/D/E and the §3 "1.6.41" PRs into `roberto`, in that order. Rerun `pytest tests/` and `python tests/gui_smoke.py`.
-2. **Hand checks** (not covered by CI):
-   - Windows: one real self-update, using #1702's steps (unzip v1.6.40, swap in this `src/`, set `lib/release_version.txt` to 1.6.39, start with `python-env\python.exe src\NLP_menu_main.py`, close, accept). Check config and user files survive and `_previous` is removed on the next start.
-   - Windows: a source checkout on `current-stable` updates with git; one on `roberto` is left alone.
+1. **Hand checks on Windows** (CI can't do these):
+   - One real self-update with the app open, using the PR's steps: build or unzip a release, replace its `src/` with `roberto`'s, write a manifest (`python -c "import sys; sys.path.insert(0,'src'); import NLP_setup_self_update_util as u; u.write_manifest('.')"` in that folder), set `lib/release_version.txt` to 1.6.40, start with `python-env\python.exe src\NLP_menu_main.py`, close, accept. Until 1.6.41's zips exist the updater has no newer release to fetch, so do this right after tagging, against 1.6.41 itself.
+   - A source checkout on `current-stable` updates with git; one on `roberto` is left alone.
    - Offline: open and close a GUI with the network off; no popups.
-3. Bump `lib/release_version.txt` to 1.6.41, turn CHANGELOG's "Unreleased" into "v1.6.41", promote `roberto` → `current-stable`, tag `v1.6.41` on that commit. Then the usual artifact check (§7).
-4. **Tell users once, by hand.** v1.6.40 and older zips don't have the new code: when 1.6.41 is out they will still show the pygit2 message (or the Git download page) on close. Students must download 1.6.41 from the release page once; from 1.6.41 on, closing the app updates it. Put this at the top of the 1.6.41 release notes and in a course announcement.
+2. Promote `roberto` → `current-stable`; tag `v1.6.41` on that commit. CI checks `lib/release_version.txt` = tag and that the file list has over 1,000 files. Then the usual artifact check (§7), plus: `lib/release_manifest.tsv` is in both zips.
+3. **Tell students once:** they must download 1.6.41 by hand (CHANGELOG's first bullet says how). Course announcement too.
 
 ## 2. Next steps after 1.6.41
 
@@ -101,20 +76,17 @@ In order:
 
 ## 3. Open pull requests
 
-Checked 9 Nov 2026 against `roberto` @ `78b383d3` with `git merge-tree` (nothing merged). The four older collaborator PRs conflict mostly because v1.6.40 reformatted all of `src/` (PR #1687).
+Reviewed 9 Nov 2026. #1701, #1702 and #1699 are merged into `roberto` (GitHub marks them merged once `roberto` is pushed). The older PRs conflicted only because v1.6.40 reformatted all of `src/` (PR #1687).
 
 "Tests" = the PR's own new tests, run on Windows in the NLP env on 9 Nov.
 
 | PR | Opened | What | Merge | Tests | 1.6.41? | Review |
 |---|---|---|---|---|---|---|
-| #1701 | 11-09 | Auto-update without pygit2 | Clean | Pass | **Yes** (A) | §1.4. Fix the `.git` rebuild on "dubious ownership" |
-| #1702 | 11-09 | Zip build updates itself (stacked on #1701) | Clean | Pass, incl. Windows PowerShell swap | **Yes, if fixed** (B) | §1.4. Two blockers; hand checks on Windows |
-| #1699 | 10-29 | GIS geocode cache in `config/`, keyed on geocoder settings, errors (403/429/timeouts) never cached | Clean | 9 pass | **Yes** | Correct. Follow-up, not blocking: after the first 403/429 it keeps calling Nominatim for every remaining place with no 1 s pause (~line 289); stop after the first |
-| #1679 | 10-14 | CoNLL search applies the DEPREL filter (`filter_list_by_deprel` was never called); outputs go beside the analyses, none lost | Conflict: ruff only, mechanical | 4 pass | **Yes, after rebase** | Correct. Fixes the first symptom of #1561; keep #1561 open until its crash is reproduced |
-| #1656 | 09-15 | Nominalization: one batched tagging call per document | Conflict: ruff only, mechanical | 11 pass | **Yes, after rebase** | Same matches as before; one warning instead of one per sentence. Check `bulk_process` exists in the pinned stanza 1.5.1 |
+| #1679 | 10-14 | CoNLL search DEPREL filter | — | 4 pass | **In 1.6.41** (re-applied) | Close on GitHub by hand, pointing to the re-applied commit: its own commits were not merged. Keep #1561 open until its crash is reproduced |
+| #1656 | 09-15 | Nominalization: one batched tagging call per document | — | 11 pass | **In 1.6.41** (re-applied) | Close on GitHub by hand, as #1679 |
 | #1682 | 10-16 | spaCy CoNLL ID/HEAD sentence-level and 1-based | Conflict: ruff only, mechanical | 2 pass | No: after 1.6.41 | Correct: Stanza and CoreNLP already write 1-based, sentence-level, root 0, and no reader compensates for spaCy's old values. Shared structure, so not in a release about the updater. spaCy tables already on disk stay 0-based: say "re-parse" in the CHANGELOG |
 | #1683 | 10-16 | Gender dictionary looks up only PERSON tokens | Conflict: ruff only | 5 pass | No | **Needs changes:** hardcodes `Stanford_CoreNLP_util.CoreNLP_annotate` whatever parser is configured (so the option now needs Java); returns `''` with no message when no NER csv comes back; once "Will" is a PERSON anywhere, every "will" is tagged |
-| #1688 | 10-26 | Python 3.11 build so Pillow can go to 13.0.0 | Conflict: 2 adjacent lines | CI only | No (§1.3) | Decide. Whole pinned stack must rebuild on 3.11. STEP2 scripts still create `python=3.8` envs (`setup_Windows/STEP2-install_NLP-Suite.ps1:12`, `setup_Mac/STEP2-install_NLP-Suite.command:35`) and `pyproject.toml`/`pyrightconfig.json` say py310; the PR touches none of them |
+| #1688 | 10-26 | Python 3.11 build so Pillow can go to 13.0.0 | Conflict: 2 adjacent lines | CI only | No (§1.2) | Decide. Whole pinned stack must rebuild on 3.11. STEP2 scripts still create `python=3.8` envs (`setup_Windows/STEP2-install_NLP-Suite.ps1:12`, `setup_Mac/STEP2-install_NLP-Suite.command:35`) and `pyproject.toml`/`pyrightconfig.json` say py310; the PR touches none of them |
 | #1528 | 2024-09 | "dictionary functionality" (CallaGong) | — | — | No | **Close**: targets `current-stable`, 2 years old |
 | #1525 | 2024-09 | Generalized Excel file reads (esunn0412) | — | — | No | **Close**: targets `current-stable`, 2 years old |
 | #1436 | 2024-03 | Document Statistics sentence-length fix (razzak-ammar) | — | — | No | **Close**: check first that v1.6.39's sentence-statistics rewrite fixed it |
@@ -130,7 +102,7 @@ All 2026 PRs are by coralynnkc and target `roberto`.
 
 | # | Title | Kind | Note |
 |---|---|---|---|
-| 1700 | Auto-update fails on most student machines: asks for pygit2 | Bug | **1.6.41** (§1). Fixed by PRs #1701 + #1702 |
+| 1700 | Auto-update fails on most student machines: asks for pygit2 | Bug | Fixed in 1.6.41 (§1). Close when 1.6.41 is tagged |
 | 1671 | BERT word embeddings are context-free | Design | Each word is encoded alone, so vectors don't depend on the corpus. Affects a homework question. Decide: keep, document, or encode in context |
 | 1653 | Windows zip: JavaScript paths too long under `AppData\Local\Programs` | Bug | MAX_PATH in bundled node_modules. Shorten in the build or document the install location. Also matters for the self-updater's `_update` folder |
 | 1623 | Boxplot: asks for an option but none appear | Bug | |
@@ -236,12 +208,13 @@ Coverage is 508 test functions in 52 files [3]. Gaps:
 ## 7. Requirements, release checks and settled decisions
 
 - **coreferee** is gone from `requirements.txt` (it pins `spacy<3.6` and broke the PyInstaller build). `fastcoref` replaces it. Don't re-add it. spaCy is unpinned.
-- **pygit2** is no longer a requirement once #1701 merges: the source-checkout updater uses the `git` program. Don't re-add it.
+- **pygit2** is no longer a requirement (1.6.41): the source-checkout updater uses the `git` program. Don't re-add it.
+- **`lib/release_manifest.tsv`** is written by the build's last step before zipping (1.6.41). The self-updater relies on it to tell the user's files from the release's: any step that adds files to `dist/` must come before it.
 - **Pillow** is pinned to 10.4.0 (12.x breaks the bundled Tcl/Tk 8.6). PR #1688 tests Python 3.11 + Pillow 13 for the security advisory; after 1.6.41 (§1.3).
 - **CI Python:** 3.10 for tests and installers. SRL stays on its own 3.8 env.
 - **Mac runners:** `macos-15` since 2 Nov 2026 (`macos-14` retired). No Intel Mac build.
 - **`src/` is Ruff-formatted** (v1.6.40). PRs opened before that need a rebase, not a hand merge.
-- **Update order matters.** The in-app check reads `current-stable`'s `lib/release_version.txt`, which changes before the tag's zips finish building. #1702's self-updater waits until the release for that version exists; the launch popup should too (§1.2 C).
+- **Update order matters.** The in-app check reads `current-stable`'s `lib/release_version.txt`, which changes before the tag's zips finish building. The self-updater and the launch popup both wait until that version's zip is on the release page.
 - **Before every tag:** build, unzip both artifacts, confirm `Launch NLP Suite (Mac).command` and the Windows entry point exist, confirm the app imports, then draft the CHANGELOG section. `lib/release_version.txt` must equal the tag (CI enforces it).
 
 ## 8. Branches
