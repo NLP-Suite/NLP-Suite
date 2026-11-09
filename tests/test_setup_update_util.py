@@ -55,3 +55,18 @@ def test_current_git_branch_reads_branch_without_pygit2(tmp_path):
 def test_current_git_branch_returns_none_outside_a_repo(tmp_path):
     with mock.patch.dict(os.environ, {"GIT_CEILING_DIRECTORIES": str(tmp_path.parent)}):
         assert upd.current_git_branch(str(tmp_path)) is None
+
+
+@pytest.mark.parametrize(
+    ("local", "remote", "expected"),
+    [
+        ("1.6.40\n", "1.6.41\n", True),
+        ("1.6.40", "1.6.40\n", False),
+        ("1.6.40", "0.0.0", False),  # offline
+        ("1.6.41", "1.6.40", False),  # developer copy ahead of GitHub
+        ("1.6.9", "1.6.10", True),
+        ("1.6.40", "404: Not Found", False),
+    ],
+)
+def test_newer_release_available(local, remote, expected):
+    assert upd.newer_release_available(local, remote) is expected

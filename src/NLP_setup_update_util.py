@@ -49,7 +49,7 @@ def exit_window():
         try:
             # set equal to test
             # local_release_version = GitHub_release_version
-            if GitHub_release_version != local_release_version:
+            if newer_release_available(local_release_version, GitHub_release_version):
                 # GitHub_release_version, local_release_version contain \n that must be removed for display
                 # the question is annoying for most users that are not developers
                 # answer = tk.messagebox.askyesno("Warning", "Your local NLP Suite version " + str(local_release_version[:-1]) + " is not up-to-date with the release currently available on GitHub " + str(GitHub_release_version[:-1]) + ".\n\nDo you want to update your local version, pulling from GitHub?\n\nIF YOU ARE AN NLP SUITE DEVELOPER, PULLING FROM GitHub WILL OVERWRITE ANY CODE YOU WILL HAVE WRITTEN.")
@@ -82,6 +82,23 @@ def exit_window():
 
 
 RELEASES_URL = "https://github.com/NLP-Suite/NLP-Suite/releases/latest"
+
+
+def _release_tuple(version):
+    parts = str(version).strip().lstrip("vV").split(".")
+    if not parts or not all(p.isdigit() for p in parts):
+        return None
+    return tuple(int(p) for p in (parts + ["0", "0", "0"])[:3])
+
+
+def newer_release_available(local_version, GitHub_version):
+    """True only when GitHub's release is a real version newer than the local one.
+
+    GitHub_version is "0.0.0" when the computer is offline; that, an unreadable version, or a local
+    version ahead of GitHub (a developer copy) must not start an update.
+    """
+    local, remote = _release_tuple(local_version), _release_tuple(GitHub_version)
+    return local is not None and remote is not None and remote > local
 
 
 def update_method(NLPPath, frozen=None):
