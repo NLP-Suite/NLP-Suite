@@ -16,6 +16,7 @@ What's open, what to close, what to fix next. How to fix an issue is in [CLAUDE.
 6. [Tech debt](#6-tech-debt)
 7. [Requirements, release checks and settled decisions](#7-requirements-release-checks-and-settled-decisions)
 8. [Branches](#8-branches)
+9. [Performance: slow GUI opening and "downloading"](#9-performance-slow-gui-opening-and-downloading)
 
 ---
 
@@ -239,3 +240,133 @@ Remote branches besides `roberto`, `current-stable`:
 - `remove_shortcut_prompt` (2021), `tony` (2023): no open PR. Delete candidates.
 
 Deleting a remote branch is Roberto's call.
+
+## 9. Performance: slow GUI opening and "downloading"
+
+Evaluated 9 Nov 2026 on `current-stable` @ `43cbca1c` (v1.6.40), Windows 11, NLP env (Python 3.10), warm disk, good connection. Nothing in the code was changed; this section is findings and proposed fixes, ranked.
+
+**Not measured:** the installer (zip) build and its bundled `python-env`; macOS; a cold start after a reboot; a first-time model download; the speed of the analyses themselves after RUN (§9.9 is read from the code only).
+
+**How it was measured.** `python -X importtime -c "import GUI_util"`; each third-party library imported alone in a fresh process; for every `*_main.py`, the libraries it reaches through module-level imports (followed through the local `src` modules, including the `install_all_Python_packages` lists) imported together in one fresh process; `stanza.download("en")` and the Stanza pipeline timed with the model already on disk; `import Stanza_functions_util` and `import statistics_txt_util` run for real. The per-GUI figures in §9.2 are import cost only, from that static trace: no GUI window was opened and clicked.
+
+### 9.0 Summary
+
+| # | Finding | Measured cost | Who pays | Fix size |
+|---|---|---|---|---|
+| 1 | Stanza model re-checked (and a pipeline built) every time a GUI opens | 9–11 s per check, 8.7 s for the pipeline | 18 of 55 GUIs | Small |
+| 2 | Heavy libraries imported when the GUI opens, not at RUN | 10–40 s | 32 of 55 GUIs | Medium, file by file |
+| 3 | Every GUI starts with 4.6 s of `GUI_util` imports (pandas, requests) | 4.6 s vs 0.9 s for a bare Tk window | Every GUI, every open | Small |
+| 4 | "Started/Finished running" alerts and reminders block until their countdown ends | 1–12 s each | Every RUN | Small (a decision first) |
+| 5 | Fixed `time.sleep` calls freeze the GUI | 5–10 s each | Config-file edits, CoreNLP, spell checker | Small |
+| 6 | Version check on the main thread on every GUI open; other web calls without a timeout | 0.1 s here; up to ~16–18 s on a blocked or dead network | Every GUI | Small; overlaps §1 |
+| 7 | First three launches start three Python processes before the menu shows | about 3 × 4.6 s | New users | Small |
+| 8 | Menu runs `java -version` (and `pip freeze` on Apple Silicon source installs) at every start | Not measured | Menu | Small |
+| 9 | Row-by-row pandas loops in the analyses | Not measured | RUN on large corpora | Profile first |
+
+Findings 1–3 are where the opening time goes. Adding up the measured parts, a GUI such as Style analysis takes an estimated minute or more to open (4.6 s base + 29 s of libraries + three model checks + the pipeline; not timed end to end) and should drop to a few seconds; the menu and the light GUIs should drop from about 5 s to about 1.5 s.
+
+### 9.1 The Stanza model is re-checked every time a GUI opens (the "downloading")
+
+Four modules call `stanza.download("en")` at import time, i.e. when a GUI that uses them opens, not when RUN is clicked:
+
+- `src/Stanza_util.py:43` (it tests whether `~/stanza_resources/en` exists at line 33, then downloads regardless)
+- `src/Stanza_functions_util.py:39`, and line 42 then builds `stanza.Pipeline(lang="en", processors="tokenize, lemma")`
+- `src/statistics_txt_util.py:34`
+- `src/wordclouds_util.py:34`
+
+With the model already on disk, each call still takes **9.1–10.7 s**: Stanza fetches its resources list from GitHub and re-hashes the model files. Building the pipeline takes another **8.7 s**. Measured end to end: `import Stanza_functions_util` **33 s**, `import statistics_txt_util` **38.5 s**.
+
+18 of the 55 GUIs import at least one of these modules when they open. Style analysis, Semantic analysis and Syntactic analysis (ALL) import three of them, so they run the check three times.
+
+**Fix.**
+1. One helper, e.g. `Stanza_functions_util.ensure_stanza_model(lang)`: return at once if the model folder exists; otherwise download with the existing `IO_internet_util.download_with_warning`. Call it from the four places.
+2. Build the pipeline on first use, not at import: replace the module-level `stanzaPipeLine` with a cached `get_stanza_pipeline()`. `stanzaPipeLine` is referenced 156 times in 28 files, so this is a mechanical change that needs a test for the helper and a `tests/gui_smoke.py` run.
+
+Expected saving: 10–30 s per open for those 18 GUIs. Offline, it also removes the download-failure dialogs at open.
+
+### 9.2 Heavy libraries are imported when the GUI opens
+
+Each `*_util.py` starts with `install_all_Python_packages(...)`, which **imports** every listed package to test that it is installed, and then with module-level imports of the same libraries. A GUI therefore loads everything any of its options might use before it draws.
+
+Libraries alone, fresh process (seconds): `sentence_transformers` 39.5 · `summarizer` 25.2 · `spacy_langdetect` 23.6 · `tensorflow` 21.0 · `stanza` 16.8 · `contextualSpellCheck` 15.0 · `spacy` 14.6 · `seaborn` 11.4 · `transformers` 9.4 · `textblob` 8.2 · `pyLDAvis` 8.1 · `textstat` 7.5 · `nltk` 7.4 · `sklearn` 5.6 · `gensim` 5.2 · `folium` 3.6 · `openpyxl` 3.4 · `pandas` 3.1–3.5.
+
+Library import cost per GUI (all its libraries together, one process; excludes §9.1 and the Suite's own code):
+
+| Cost | GUIs |
+|---|---|
+| 3–4 s (23) | menu, welcome, NLP_setup_IO, NLP_setup_external_software, DB_SQL, SRL, corpus_profiler, data_manipulation, file_checker_converter_cleaner, file_handler_ALL, file_manager, file_matcher, file_merger, file_search_ALL, file_splitter, html_annotator, knowledge_graphs, narrative_analysis_ALL, nominalization, sample_corpus, semantic_analysis_ALL, sentiments_emotions_ALL, statistics_txt |
+| 10–18 s (11) | GIS_symbolic 9.9, GIS_distance 10.6, charts_Excel 10.9, data_visualization 10.9, statistics_csv 10.9, GIS_Google_Earth 11.2, wordclouds 12.8, word2vec 13.2, CoNLL_table_analyzer 13.7, semantic_aggregation 13.7, NGrams_CoOccurrences 17.5 |
+| 22–40 s (21) | file_classifier 22.5, sentiment_analysis 22.9, file_checker_pre_processing_pipeline 25.3, topic_modeling 25.4, file_search_byWord 25.5, corpus_checker_PCACE_data 25.9, shape_of_stories 25.9, NER 28.8, SVO 28.9, semantic_analysis 29.1, style_analysis 29.1, syntactic_analysis_ALL 29.1, html_annotator_gender 29.2, sentence_analysis 30.2, coreference 32.0, parsers_annotators 32.0, DB_PCACE_data_validation 33.2, NLP_setup_package_language 33.2, file_spell_checker 38.2, DB_PCACE_data_analysis 38.8, GIS 39.8 |
+
+The GUIs in the first row already import their logic inside `run()`; they pay the cost at RUN instead, which is the right place.
+
+**Fix, in this order.**
+1. **`install_all_Python_packages` (`src/IO_libraries_util.py:102`): test with `importlib.util.find_spec(module)` instead of `__import__`.** It answers "is it installed?" without loading the package. One function, every GUI benefits; the existing name mapping (pdfminer, docx, PIL …) stays. Needs a unit test.
+2. **Move the heavy imports into the functions that use them**, starting with the modules shared by most GUIs: `Stanza_util`, `statistics_txt_util`, `Stanza_functions_util`, `charts_util` (plotly, numpy), `IO_csv_util` (§9.3). Then the slow GUIs from the bottom of the table up. One PR per module, each with a `tests/gui_smoke.py` run.
+3. In each `X_main.py`, import `X_util` inside `run()` where it is not needed to build the window (the pattern the fast GUIs already follow).
+
+### 9.3 Every GUI pays 4.6 s before its own code runs
+
+`import GUI_util` takes **4.6 s** (4.6–5.6 s across three runs); a bare `tkinter.Tk()` process takes 0.9 s. Each GUI is a new Python process (`run_script_util.run_script`), so this is paid on every open, not once per session.
+
+| Part | Time | Why it is there |
+|---|---|---|
+| pandas | 2.2 s (3.1–3.5 s alone) | `IO_csv_util`, `reminders_util` and `config_util` import it at the top to read a few small config CSVs |
+| requests (with urllib3) | 1.3 s | `GUI_util.py:13` and `IO_libraries_util.py:13`, for the release check and three other small GETs |
+| Tk window, the rest | about 1.1 s | |
+
+**Fix.**
+- `reminders_util`, `config_util`: read `reminders.csv` and the config files with the `csv` module. `getReminders_list` and `checkReminder` each re-read `reminders.csv` with pandas, two or three times per GUI open.
+- `IO_csv_util`: `import pandas` inside the functions that need a DataFrame.
+- `GUI_util`, `IO_libraries_util`: `import requests` inside the functions that call it (or use `urllib.request`, which `usage_util` already does).
+
+Expected saving: about 3.5 s on every window, the menu included. The menu also imports `customtkinter` (1.4 s), which is needed.
+
+### 9.4 Timed alerts block the run
+
+`IO_user_interface_util.timed_alert` (372 calls in 94 files) calls `GUI_IO_util.message_box_widget`, which ends with `top_message.wait_window()` (`src/GUI_IO_util.py:1384`). The analysis does not start, or the outputs do not open, until the popup closes.
+
+The countdown is also longer than the `timeout` passed: it counts `timeout / 500` seconds, or `timeout / 1500` for "Started running"/"Finished running" messages (`GUI_IO_util.py:1255-1294`). A "2000 ms" alert waits 4 s, a 6000 ms one 12 s, unless the user clicks OK. Reminders wait 30 s.
+
+**Fix (Roberto decides the behaviour):** for OK-type alerts, show the popup and return at once, letting it close itself with `after(timeout, ...)`; make the countdown equal `timeout`. Yes/No reminders must keep waiting for an answer.
+
+### 9.5 Fixed sleeps
+
+- `time.sleep(10)` after opening a config file, on the GUI thread, so the window freezes for 10 s: `src/GUI_util.py:1075`, `src/NLP_setup_external_software_main.py:101`, `src/NLP_setup_package_language_main.py:235`. The stated reason is "give enough time to save any changes"; re-read the file when it is next needed instead.
+- `src/Stanford_CoreNLP_util.py:900` `time.sleep(5)` and `src/file_spell_checker_util.py:684` `time.sleep(5)`: waiting for the CoreNLP server. Poll the port until it answers (it is often ready sooner, and sometimes not ready after 5 s).
+
+The 1 s pauses in `GIS_geocode_util` and `charts_util` are Nominatim's rate limit and must stay.
+
+### 9.6 Network calls on the main thread
+
+**Overlaps §1 (auto-update): coordinate with that work, don't duplicate it.** `release-1.6.41` already makes the offline check quiet and stops CLOSE from checking twice.
+
+- `GUI_util.display_release()` runs at the end of `GUI_bottom` for every GUI: `internet_on()` then a GET to GitHub, before the window is usable. Here it took 0.03 s + 0.07 s, so on a good connection it is not the problem. On a dead or filtered network `internet_on()` can take up to 16 s (3 + 3 + 5 + 5 s of timeouts), and the GET up to 18 s (3 tries × 6 s).
+- **Fix:** run the check in a background thread and fill the release label with `window.after`; check once per session, not once per window (the menu can pass the result to the GUIs it starts, like `NLP_SUITE_OPEN_WINDOWS`).
+- No timeout at all, so a stalled connection hangs the GUI: `IO_libraries_util.check_CoreNLPVersion` (line 442, called at the start of every CoreNLP run from `Stanford_CoreNLP_util.py:360`), `IO_libraries_util.open_url` (line 720) and `GUI_util.watch_video` (line 2166). The last two fetch the whole page only to test that it exists before opening the browser; open the browser directly. Give the CoreNLP check `timeout=5` and run it at most once a day.
+
+### 9.7 The first three launches start three processes
+
+`NLP_menu_main.py` imports `GUI_util` (4.6 s) and only then, at lines 87–108, reads `config/launch_count.json` and starts `NLP_welcome_main.py` as a new process (another 4.6 s plus PIL), which in turn starts the menu again with `--from-welcome`. A new user waits roughly 14 s for the menu on the launches where first impressions are made.
+
+**Fix:** move the launch-count block above `import GUI_util` (it needs only `json`, `os`, `sys` and `run_script_util`).
+
+### 9.8 Menu start-up extras (not timed)
+
+- `setup_external_programs_checkbox()` (`NLP_menu_main.py:1283`) → `get_external_software_dir` → `check_java_installation` runs `java -version` in a subprocess on every menu start. Cache the answer in the config file it already updates.
+- Apple Silicon, source install: `pip freeze` in a subprocess on every menu start (`NLP_menu_main.py:1323`) to look for TensorFlow. Use `importlib.util.find_spec("tensorflow")`.
+
+### 9.9 The analyses themselves (not profiled)
+
+Read from the code only: 96 `iterrows()` / row-append patterns in 29 files, most in `DB_PCACE_data_analysis_util` (35), `charts_util` (13) and `corpus_profiler_util` (6). These grow quadratically on large tables. Do not rewrite them blind: time one real corpus run per tool (`python -X importtime` is no help here; use `cProfile`) and fix what the profile shows.
+
+### 9.10 Order of work
+
+1. §9.1 Stanza check and lazy pipeline: the largest single saving, one small PR.
+2. §9.3 pandas and requests out of the `GUI_util` import chain; §9.2 step 1 (`find_spec`). Every GUI gets faster.
+3. §9.7 launch-count block; §9.5 sleeps; §9.6 timeouts (after §1 lands).
+4. §9.4 alerts, once Roberto has decided the behaviour.
+5. §9.2 steps 2–3, module by module.
+6. Re-measure with the same commands, on Windows and on a Mac, and on the zip build. Add a CI check that `import GUI_util` under the test stubs does not import pandas or requests, so the gain is not lost.
+
+Every change follows CLAUDE.md: unit tests for new helpers, `pytest tests/`, and `python tests/gui_smoke.py` after any GUI edit.
