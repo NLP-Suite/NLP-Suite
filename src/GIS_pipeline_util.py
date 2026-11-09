@@ -5,6 +5,7 @@
 
 import csv
 import os
+import sys
 import tkinter as tk
 import tkinter.messagebox as mb
 
@@ -255,6 +256,30 @@ def merge_direction_continent(nom_df):
 
 # the list of arguments reflect the order of widgets in the Google_Earth_main GUI
 # processes one file at a time
+# Windows refuses a path of 260 characters or more unless long paths are enabled
+WINDOWS_MAX_PATH = 259
+
+
+def rename_found_locations_chart(chart_path, max_path=WINDOWS_MAX_PATH):
+    """Rename the 'Frequency of Locations' chart from ...LOCATIONS... to ...LOCATIONS_found...; return its path.
+
+    The name is only a label, so the chart keeps its name when the new one would be too long for Windows
+    (a long OneDrive output folder: the run used to die here with WinError 3 and no map was made) or when the
+    rename fails for any other reason.
+    """
+    # must split the file in case both path and filename contain the word LOCATIONS
+    head, tail = os.path.split(chart_path)
+    new_path = os.path.join(head, tail.replace("LOCATIONS", "LOCATIONS_found"))
+    if new_path == chart_path or (sys.platform == "win32" and len(os.path.abspath(new_path)) > max_path):
+        return chart_path
+    try:
+        os.rename(chart_path, new_path)
+    except OSError as e:
+        print("Could not rename " + chart_path + " (" + str(e) + "); it keeps its name.")
+        return chart_path
+    return new_path
+
+
 def GIS_pipeline(
     window,
     config_filename,
@@ -505,13 +530,7 @@ def GIS_pipeline(
 
             if outputFiles != None:
                 if len(outputFiles) > 0:
-                    # must split the file in case both path and filename contain the word LOCATION
-                    head, tail = os.path.split(outputFiles[0])
-                    tail = tail.replace("LOCATIONS", "LOCATIONS_found")
-
-                    # change the filename on the computer drive
-                    os.rename(outputFiles[0], head + os.sep + tail)
-                    outputFiles[0] = head + os.sep + tail
+                    outputFiles[0] = rename_found_locations_chart(outputFiles[0])
                     filesToOpen.extend(outputFiles)
 
             outputFiles = charts_util.plot(

@@ -2799,7 +2799,7 @@ def Sunburst_Treemap(
     if filter_options_var == "Propagating parameter":
         df_grouped = rate_prop(df_grouped, int(rate_param_var), int(base_param_var))
         print("Propagating parameter applied")
-    print("df_grouped:", df_grouped)
+    # (a debug print of the whole frame was here: it crashed with UnicodeEncodeError on a cp1252 console)
     if df_grouped.empty:
         mb.showwarning(
             title="No search values found",

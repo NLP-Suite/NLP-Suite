@@ -819,7 +819,7 @@ def geocode(
                     if location is not None:
                         lat, lng, address = location.latitude, location.longitude, location.address
                         _cache_put(cache_key, lat, lng, address)
-                        print(f" → ({lat}, {lng})")
+                        print(f" -> ({lat}, {lng})")
                     else:
                         lat, lng, address = 0, 0, " LOCATION NOT FOUND BY " + geocoder
                         locationsNotFound = locationsNotFound + 1

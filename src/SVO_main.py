@@ -175,7 +175,9 @@ def run(package=None):
         labels = list(svo_files.keys())
         for i in range(len(labels)):
             for j in range(i + 1, len(labels)):
-                SVO_compare_util.compare(svo_files[labels[i]], svo_files[labels[j]], outputDir)
+                SVO_compare_util.compare(
+                    svo_files[labels[i]], svo_files[labels[j]], outputDir, pair=labels[i] + "_vs_" + labels[j]
+                )
         mb.showinfo(
             title="SVO comparison complete",
             message="All three parsers have been run and their SVO results compared.\n\nComparison files are in the output directory.",
@@ -707,6 +709,12 @@ def run(package=None):
         for f in svo_result_list:
             head, tail = os.path.split(svo_result_list[i])
             tempOutputDir = head
+            # an SVO csv given as input: its network, Sankey and wordclouds go in this run's output folder,
+            # not beside the input (which left the new output folder empty)
+            if inputFilename and os.path.normcase(os.path.abspath(svo_result_list[i])) == os.path.normcase(
+                os.path.abspath(inputFilename)
+            ):
+                tempOutputDir = outputSVODir
             # Gephi network graphs _________________________________________________
             if gephi_var:
                 import charts_util

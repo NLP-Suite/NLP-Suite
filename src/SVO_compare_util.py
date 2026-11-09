@@ -36,7 +36,16 @@ def _load_svo(filepath):
     return df
 
 
-def compare(file_a, file_b, outputDir):
+def comparison_label(kind, pair=""):
+    """'SVO_comparison_summary', or 'SVO_comparison_summary_CoreNLP_vs_Stanza' when a pair is given.
+
+    '*' (all parsers) compares three pairs into one output folder; with one fixed name per kind each pair
+    overwrote the last, so only CoreNLP vs Stanza survived and spaCy's comparisons were never seen.
+    """
+    return "SVO_comparison_" + kind + ("_" + pair if pair else "")
+
+
+def compare(file_a, file_b, outputDir, pair=""):
     filesToOpen = []
 
     df_a = _load_svo(file_a)
@@ -72,7 +81,7 @@ def compare(file_a, file_b, outputDir):
 
     summary_df = pd.DataFrame(rows)
     summary_file = IO_files_util.generate_output_file_name(
-        "", "", outputDir, ".csv", "SVO_comparison_summary", "", "", "", "", False, True
+        "", "", outputDir, ".csv", comparison_label("summary", pair), "", "", "", "", False, True
     )
     summary_df.to_csv(summary_file, index=False, encoding="utf-8")
     filesToOpen.append(summary_file)
@@ -88,7 +97,7 @@ def compare(file_a, file_b, outputDir):
     if diff_rows:
         diff_df = pd.DataFrame(diff_rows)
         diff_file = IO_files_util.generate_output_file_name(
-            "", "", outputDir, ".csv", "SVO_comparison_differences", "", "", "", "", False, True
+            "", "", outputDir, ".csv", comparison_label("differences", pair), "", "", "", "", False, True
         )
         diff_df.to_csv(diff_file, index=False, encoding="utf-8")
         filesToOpen.append(diff_file)
@@ -100,7 +109,7 @@ def compare(file_a, file_b, outputDir):
             shared_rows.append({"Subject (S)": s, "Verb (V)": v, "Object (O)": o})
         shared_df = pd.DataFrame(shared_rows)
         shared_file = IO_files_util.generate_output_file_name(
-            "", "", outputDir, ".csv", "SVO_comparison_shared", "", "", "", "", False, True
+            "", "", outputDir, ".csv", comparison_label("shared", pair), "", "", "", "", False, True
         )
         shared_df.to_csv(shared_file, index=False, encoding="utf-8")
         filesToOpen.append(shared_file)
