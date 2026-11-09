@@ -58,7 +58,8 @@ UPDATES
 When a new release is out, closing the NLP Suite asks whether
 to download and install it. Your settings are kept, and the
 previous version is kept next to the new one as
-NLP_Suite_previous until the next update.
+NLP_Suite_previous until the new one starts, and is then
+deleted.
 
 NEED HELP?
 ----------

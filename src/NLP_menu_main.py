@@ -42,6 +42,7 @@ import GUI_IO_util
 import IO_files_util
 import language_tools_advisor_util
 import NLP_menu_tools_util
+import NLP_setup_self_update_util
 import reminders_util
 import run_script_util
 
@@ -1274,6 +1275,8 @@ def ensure_default_configs():
 
 
 configs_created = ensure_default_configs()
+# the new version started, so the copy of the old one kept by the updater can go
+NLP_setup_self_update_util.remove_previous_version(GUI_IO_util.NLPPath)
 
 # check for missing I/O configuration options
 setup_IO_checkbox()

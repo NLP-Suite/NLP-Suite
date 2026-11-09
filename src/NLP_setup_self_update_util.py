@@ -7,7 +7,8 @@ window is closed. Windows cannot rename a folder while a program inside it is ru
 why the swap happens in a separate script and not in this process.
 
 The user's settings (config/ and reminders/) and anything they added to the NLP Suite folder are
-carried over. The old folder is kept next to the new one as <folder>_previous until the next update.
+carried over. The old folder is kept next to the new one as <folder>_previous and deleted the first
+time the new version starts (remove_previous_version, called by NLP_menu_main).
 """
 
 # This module reports progress to the terminal, during exit, after the GUI window is gone.
@@ -21,6 +22,7 @@ import stat
 import subprocess
 import sys
 import tempfile
+import threading
 import time
 import zipfile
 
@@ -33,6 +35,9 @@ ASSET_NAMES = {
 }
 APP_FOLDER_IN_ZIP = "NLP_Suite"
 KEEP_FROM_OLD = ("config", "reminders")
+# Written into the backup by the swap script, only after everything the user added was carried over.
+# The backup is deleted only when this file is there, so a folder we did not finish with is never deleted.
+BACKUP_MARKER = "NLP_Suite_previous_version.txt"
 STALE_STAGE_SECONDS = 24 * 3600
 WAIT_FOR_CLOSE_SECONDS = 3600
 
@@ -228,24 +233,28 @@ if ! mv "$NEW" "$APP"; then
 fi
 
 # keep the user's settings
+carried=1
 for d in {keep}; do
     if [ -d "$OLD/$d" ]; then
-        mkdir -p "$APP/$d" && cp -Rp "$OLD/$d/." "$APP/$d/"
+        {{ mkdir -p "$APP/$d" && cp -Rp "$OLD/$d/." "$APP/$d/"; }} || carried=0
     fi
 done
 # keep anything the user added to the NLP Suite folder that the release does not ship
 for item in "$OLD"/* "$OLD"/.[!.]*; do
     [ -e "$item" ] || continue
     name=$(basename "$item")
-    [ -e "$APP/$name" ] || mv "$item" "$APP/$name"
+    [ -e "$APP/$name" ] || mv "$item" "$APP/$name" || carried=0
 done
+if [ "$carried" = 1 ]; then
+    echo "NLP Suite before the update to $VERSION. Deleted the first time the new version starts." > "$OLD/{BACKUP_MARKER}"
+else
+    echo "Some files were not carried over; $OLD is kept."
+fi
 
 xattr -dr com.apple.quarantine "$APP" 2>/dev/null || true
 rm -rf "$STAGE"
 echo "$(date): done"
-tell "The NLP Suite was updated to $VERSION. Open it again as usual.
-
-Your previous version is in $OLD. You can delete that folder."
+tell "The NLP Suite was updated to $VERSION. Open it again as usual."
 """
 
 
@@ -316,25 +325,74 @@ if (-not (Move-WithRetry $New $App)) {{
 }}
 
 # keep the user's settings
+$carried = $true
 foreach ($d in @({keep})) {{
     $from = Join-Path $Old $d
     if (Test-Path -LiteralPath $from) {{
         $to = Join-Path $App $d
-        New-Item -ItemType Directory -Force -Path $to | Out-Null
-        Get-ChildItem -LiteralPath $from -Force | Copy-Item -Destination $to -Recurse -Force
+        try {{
+            New-Item -ItemType Directory -Force -Path $to -ErrorAction Stop | Out-Null
+            Get-ChildItem -LiteralPath $from -Force | Copy-Item -Destination $to -Recurse -Force -ErrorAction Stop
+        }} catch {{ Write-Output "Could not copy ${{d}}: $_"; $carried = $false }}
     }}
 }}
 # keep anything the user added to the NLP Suite folder that the release does not ship
 Get-ChildItem -LiteralPath $Old -Force | ForEach-Object {{
     $dest = Join-Path $App $_.Name
-    if (-not (Test-Path -LiteralPath $dest)) {{ Move-Item -LiteralPath $_.FullName -Destination $dest }}
+    if (-not (Test-Path -LiteralPath $dest)) {{
+        try {{ Move-Item -LiteralPath $_.FullName -Destination $dest -ErrorAction Stop }}
+        catch {{ Write-Output "Could not move $($_.Exception.Message)"; $carried = $false }}
+    }}
+}}
+if ($carried) {{
+    Set-Content -LiteralPath (Join-Path $Old '{BACKUP_MARKER}') -Value "NLP Suite before the update to $Version. Deleted the first time the new version starts."
+}} else {{
+    Write-Output "Some files were not carried over; $Old is kept."
 }}
 
 Remove-Item -LiteralPath $Stage -Recurse -Force -ErrorAction SilentlyContinue
 Write-Output "$(Get-Date): done"
-Tell "The NLP Suite was updated to $Version. Open it again as usual.`n`nYour previous version is in $Old. You can delete that folder."
+Tell "The NLP Suite was updated to $Version. Open it again as usual."
 Stop-Transcript | Out-Null
 """
+
+
+def _delete_backup(backup):
+    # the marker goes last, so a deletion cut short (the NLP Suite closed meanwhile) is finished next time
+    for name in os.listdir(backup):
+        if name == BACKUP_MARKER:
+            continue
+        path = os.path.join(backup, name)
+        if os.path.isdir(path) and not os.path.islink(path):
+            shutil.rmtree(path, ignore_errors=True)
+        else:
+            try:
+                os.remove(path)
+            except OSError as e:
+                print("Could not delete " + path + ": " + str(e))
+    try:
+        os.remove(os.path.join(backup, BACKUP_MARKER))
+        os.rmdir(backup)
+    except OSError as e:
+        print("Could not finish deleting the previous NLP Suite version in " + backup + ": " + str(e))
+
+
+def remove_previous_version(NLPPath, background=True):
+    """Delete the version the updater replaced, now that the new one has started.
+
+    Only a backup the swap script marked as complete is deleted. It is a few GB, so by default
+    this runs in a background thread and does not delay the menu. Returns the thread, or None.
+    """
+    backup = update_paths(NLPPath)["backup"]
+    if not os.path.isfile(os.path.join(backup, BACKUP_MARKER)):
+        return None
+    print("Deleting the previous NLP Suite version in " + backup)
+    if not background:
+        _delete_backup(backup)
+        return None
+    thread = threading.Thread(target=_delete_backup, args=(backup,), daemon=True)
+    thread.start()
+    return thread
 
 
 def write_swap_script(paths, version, sys_platform=None):
@@ -466,7 +524,7 @@ def update_zip_install(NLPPath, GitHub_release_version):
         + _gb(size)
         + " and can take several minutes.\n\nYour settings are kept. Your current version is kept in\n\n"
         + paths["backup"]
-        + "\n\nuntil the next update.\n\nIf you say No, you will be asked again the next time you close the NLP Suite.",
+        + "\n\nuntil the new version starts, and then deleted.\n\nIf you say No, you will be asked again the next time you close the NLP Suite.",
     ):
         return True
     if not claim_stage(paths["stage"]):

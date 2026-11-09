@@ -224,6 +224,7 @@ def test_posix_swap_installs_the_new_release_and_keeps_user_files(tmp_path):
     assert (app / "my corpus" / "doc.txt").read_text() == "mine"
     backup = pathlib.Path(paths["backup"])
     assert (backup / "lib" / "release_version.txt").read_text().strip() == "1.6.40"
+    assert (backup / su.BACKUP_MARKER).is_file()
     assert not os.path.exists(paths["stage"])
 
 
@@ -269,6 +270,7 @@ def test_windows_swap_installs_the_new_release_and_keeps_user_files(tmp_path):
     assert (app / "config" / "new_setting.csv").read_text() == "new"
     assert (app / "reminders" / "reminders.csv").read_text() == "my reminders"
     assert (app / "my corpus" / "doc.txt").read_text() == "mine"
+    assert (pathlib.Path(paths["backup"]) / su.BACKUP_MARKER).is_file()
     assert not os.path.exists(paths["stage"])
 
 
@@ -288,3 +290,43 @@ def test_write_swap_script_goes_to_the_temp_folder(tmp_path):
     assert script.endswith(".ps1") and os.path.dirname(script) == str(tmp_path / "tmp")
     assert pathlib.Path(script).read_bytes().startswith(b"\xef\xbb\xbf")  # BOM for Windows PowerShell 5.1
     assert log == str(tmp_path / "tmp" / "NLP_Suite_update.log")
+
+
+# --- deleting the backup once the new version starts ----------------------------------------
+
+
+def _backup(tmp_path, marked):
+    app = tmp_path / "NLP_Suite"
+    app.mkdir()
+    backup = _fake_app(pathlib.Path(su.update_paths(str(app))["backup"]), "1.6.40")
+    (backup / "python-env" / "bin").mkdir(parents=True)
+    (backup / "python-env" / "bin" / "python3").write_text("x")
+    if marked:
+        (backup / su.BACKUP_MARKER).write_text("done")
+    return app, backup
+
+
+def test_marked_backup_is_deleted(tmp_path):
+    app, backup = _backup(tmp_path, marked=True)
+    su.remove_previous_version(str(app), background=False)
+    assert not backup.exists()
+    assert app.exists()
+
+
+def test_marked_backup_is_deleted_in_the_background(tmp_path):
+    app, backup = _backup(tmp_path, marked=True)
+    thread = su.remove_previous_version(str(app))
+    assert thread is not None
+    thread.join(timeout=30)
+    assert not backup.exists()
+
+
+def test_unmarked_backup_is_kept(tmp_path):
+    # the swap script did not finish carrying the user's files over, or the folder is not ours
+    app, backup = _backup(tmp_path, marked=False)
+    assert su.remove_previous_version(str(app)) is None
+    assert (backup / "lib" / "release_version.txt").exists()
+
+
+def test_no_backup_is_fine(tmp_path):
+    assert su.remove_previous_version(str(tmp_path / "NLP_Suite")) is None
