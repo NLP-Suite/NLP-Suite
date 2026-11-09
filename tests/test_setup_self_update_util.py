@@ -184,9 +184,16 @@ def test_staged_app_ok(tmp_path):
 # --- the folder swap ----------------------------------------------------------------------
 
 
-def _install(tmp_path):
-    """An installed 1.6.40 with user settings and a user folder, and a staged 1.6.41."""
-    app = _fake_app(tmp_path / "NLP Suite's copy", "1.6.40")
+def _install(tmp_path, exe="NLP_Suite", edit_shipped=False):
+    """An installed 1.6.40 (with its release file list) plus the user's settings, a folder of their own and a
+    file of their own inside a shipped folder; a staged 1.6.41; and the carry list user_files() makes."""
+    app = _fake_app(tmp_path / "NLP Suite's copy", "1.6.40", exe)
+    (app / "lib" / "sampleData").mkdir()
+    (app / "lib" / "sampleData" / "story.txt").write_text("shipped story")
+    su.write_manifest(str(app))  # the build writes it last, before zipping
+    (app / "lib" / "sampleData" / "mine.txt").write_text("my own sample")
+    if edit_shipped:
+        (app / "lib" / "sampleData" / "story.txt").write_text("my edited story")
     (app / "config").mkdir()
     (app / "config" / "NLP_default_IO_config.csv").write_text("my folders")
     (app / "reminders").mkdir()
@@ -195,18 +202,24 @@ def _install(tmp_path):
     (app / "my corpus" / "doc.txt").write_text("mine")
     paths = su.update_paths(str(app))
     os.mkdir(paths["stage"])
-    new = _fake_app(pathlib.Path(paths["stage"]) / su.APP_FOLDER_IN_ZIP, "1.6.41")
+    new = _fake_app(pathlib.Path(paths["stage"]) / su.APP_FOLDER_IN_ZIP, "1.6.41", exe)
+    (new / "lib" / "sampleData").mkdir()
+    (new / "lib" / "sampleData" / "story.txt").write_text("shipped story, 1.6.41")
     (new / "config").mkdir()
     (new / "config" / "NLP_default_IO_config.csv").write_text("defaults")
     (new / "config" / "new_setting.csv").write_text("new")
-    return app, paths
+    carry, changed, complete = su.user_files(str(app), str(new))
+    su.write_carry_list(paths["stage"], carry)
+    return app, paths, complete
 
 
-def _run_posix_swap(tmp_path, paths, new=None):
+def _run_posix_swap(tmp_path, paths, new=None, keep_backup=False):
     log = tmp_path / "update.log"
     script = tmp_path / "update.sh"
     new = new or os.path.join(paths["stage"], su.APP_FOLDER_IN_ZIP)
-    script.write_text(su.posix_swap_script(paths["app"], new, paths["backup"], paths["stage"], "1.6.41", str(log)))
+    script.write_text(
+        su.posix_swap_script(paths["app"], new, paths["backup"], paths["stage"], "1.6.41", str(log), keep_backup)
+    )
     env = dict(os.environ, NLP_SUITE_UPDATE_QUIET="1")
     result = subprocess.run(["/bin/sh", str(script)], env=env, timeout=60)
     return result.returncode, log.read_text()
@@ -214,7 +227,7 @@ def _run_posix_swap(tmp_path, paths, new=None):
 
 @posix_only
 def test_posix_swap_installs_the_new_release_and_keeps_user_files(tmp_path):
-    app, paths = _install(tmp_path)
+    app, paths, _ = _install(tmp_path)
     code, log = _run_posix_swap(tmp_path, paths)
     assert code == 0, log
     assert (app / "lib" / "release_version.txt").read_text().strip() == "1.6.41"
@@ -222,6 +235,8 @@ def test_posix_swap_installs_the_new_release_and_keeps_user_files(tmp_path):
     assert (app / "config" / "new_setting.csv").read_text() == "new"
     assert (app / "reminders" / "reminders.csv").read_text() == "my reminders"
     assert (app / "my corpus" / "doc.txt").read_text() == "mine"
+    assert (app / "lib" / "sampleData" / "mine.txt").read_text() == "my own sample"
+    assert (app / "lib" / "sampleData" / "story.txt").read_text() == "shipped story, 1.6.41"
     backup = pathlib.Path(paths["backup"])
     assert (backup / "lib" / "release_version.txt").read_text().strip() == "1.6.40"
     assert (backup / su.BACKUP_MARKER).is_file()
@@ -230,16 +245,42 @@ def test_posix_swap_installs_the_new_release_and_keeps_user_files(tmp_path):
 
 @posix_only
 def test_posix_swap_replaces_an_older_backup(tmp_path):
-    app, paths = _install(tmp_path)
+    app, paths, _ = _install(tmp_path)
     _fake_app(pathlib.Path(paths["backup"]), "1.6.39")
+    (pathlib.Path(paths["backup"]) / su.BACKUP_MARKER).write_text("done")
     code, log = _run_posix_swap(tmp_path, paths)
     assert code == 0, log
     assert (pathlib.Path(paths["backup"]) / "lib" / "release_version.txt").read_text().strip() == "1.6.40"
 
 
 @posix_only
+def test_posix_swap_never_deletes_an_unmarked_previous_folder(tmp_path):
+    app, paths, _ = _install(tmp_path)
+    theirs = pathlib.Path(paths["backup"])
+    theirs.mkdir()
+    (theirs / "thesis.docx").write_text("not ours to delete")
+    code, log = _run_posix_swap(tmp_path, paths)
+    assert code == 1
+    assert "in the way" in log
+    assert (theirs / "thesis.docx").read_text() == "not ours to delete"
+    assert (app / "lib" / "release_version.txt").read_text().strip() == "1.6.40"
+
+
+@posix_only
+def test_posix_swap_keeps_the_backup_when_the_user_edited_a_release_file(tmp_path):
+    app, paths, complete = _install(tmp_path, edit_shipped=True)
+    assert not complete
+    code, log = _run_posix_swap(tmp_path, paths, keep_backup=True)
+    assert code == 0, log
+    backup = pathlib.Path(paths["backup"])
+    assert (backup / "lib" / "sampleData" / "story.txt").read_text() == "my edited story"
+    assert not (backup / su.BACKUP_MARKER).exists()
+    assert (app / "lib" / "sampleData" / "mine.txt").read_text() == "my own sample"
+
+
+@posix_only
 def test_posix_swap_puts_the_old_version_back_when_it_fails(tmp_path):
-    app, paths = _install(tmp_path)
+    app, paths, _ = _install(tmp_path)
     code, log = _run_posix_swap(tmp_path, paths, new=os.path.join(paths["stage"], "missing"))
     assert code == 1
     assert "FAILED" in log
@@ -251,27 +292,84 @@ def test_posix_swap_puts_the_old_version_back_when_it_fails(tmp_path):
 POWERSHELL = shutil.which("powershell") or shutil.which("pwsh")
 
 
-@pytest.mark.skipif(os.name != "nt" or POWERSHELL is None, reason="runs the PowerShell swap script on Windows")
-def test_windows_swap_installs_the_new_release_and_keeps_user_files(tmp_path):
-    app, paths = _install(tmp_path)
-    for folder in (app, pathlib.Path(paths["stage"]) / su.APP_FOLDER_IN_ZIP):
-        (folder / "NLP_Suite").rename(folder / "NLP_Suite.exe")
+windows_only = pytest.mark.skipif(
+    os.name != "nt" or POWERSHELL is None, reason="runs the PowerShell swap script on Windows"
+)
+
+
+def _run_windows_swap(tmp_path, paths, keep_backup=False):
     log = tmp_path / "update.log"
     script = tmp_path / "update.ps1"
     new = os.path.join(paths["stage"], su.APP_FOLDER_IN_ZIP)
-    text = su.windows_swap_script(paths["app"], new, paths["backup"], paths["stage"], "1.6.41", str(log))
+    text = su.windows_swap_script(paths["app"], new, paths["backup"], paths["stage"], "1.6.41", str(log), keep_backup)
     script.write_text(text, encoding="utf-8-sig")
     env = dict(os.environ, NLP_SUITE_UPDATE_QUIET="1")
     command = [POWERSHELL, "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", str(script)]
-    result = subprocess.run(command, env=env, timeout=120)
-    assert result.returncode == 0, log.read_text(errors="ignore")
+    result = subprocess.run(command, env=env, timeout=180)
+    return result.returncode, log.read_text(encoding="utf-8", errors="ignore")
+
+
+@windows_only
+def test_windows_swap_installs_the_new_release_and_keeps_user_files(tmp_path):
+    app, paths, complete = _install(tmp_path, exe="NLP_Suite.exe")
+    assert complete
+    code, log = _run_windows_swap(tmp_path, paths)
+    assert code == 0, log
     assert (app / "lib" / "release_version.txt").read_text().strip() == "1.6.41"
     assert (app / "config" / "NLP_default_IO_config.csv").read_text() == "my folders"
     assert (app / "config" / "new_setting.csv").read_text() == "new"
     assert (app / "reminders" / "reminders.csv").read_text() == "my reminders"
     assert (app / "my corpus" / "doc.txt").read_text() == "mine"
+    assert (app / "lib" / "sampleData" / "mine.txt").read_text() == "my own sample"
+    assert (app / "lib" / "sampleData" / "story.txt").read_text() == "shipped story, 1.6.41"
     assert (pathlib.Path(paths["backup"]) / su.BACKUP_MARKER).is_file()
     assert not os.path.exists(paths["stage"])
+
+
+@windows_only
+def test_windows_swap_never_deletes_an_unmarked_previous_folder(tmp_path):
+    app, paths, _ = _install(tmp_path, exe="NLP_Suite.exe")
+    theirs = pathlib.Path(paths["backup"])
+    theirs.mkdir()
+    (theirs / "thesis.docx").write_text("not ours to delete")
+    code, log = _run_windows_swap(tmp_path, paths)
+    assert code == 1
+    assert "in the way" in log
+    assert (theirs / "thesis.docx").read_text() == "not ours to delete"
+    assert (app / "lib" / "release_version.txt").read_text().strip() == "1.6.40"
+
+
+@windows_only
+def test_windows_swap_replaces_a_marked_backup(tmp_path):
+    app, paths, _ = _install(tmp_path, exe="NLP_Suite.exe")
+    _fake_app(pathlib.Path(paths["backup"]), "1.6.39")
+    (pathlib.Path(paths["backup"]) / su.BACKUP_MARKER).write_text("done")
+    code, log = _run_windows_swap(tmp_path, paths)
+    assert code == 0, log
+    assert (pathlib.Path(paths["backup"]) / "lib" / "release_version.txt").read_text().strip() == "1.6.40"
+
+
+@windows_only
+def test_windows_swap_keeps_the_backup_when_the_user_edited_a_release_file(tmp_path):
+    app, paths, complete = _install(tmp_path, exe="NLP_Suite.exe", edit_shipped=True)
+    assert not complete
+    code, log = _run_windows_swap(tmp_path, paths, keep_backup=True)
+    assert code == 0, log
+    backup = pathlib.Path(paths["backup"])
+    assert (backup / "lib" / "sampleData" / "story.txt").read_text() == "my edited story"
+    assert not (backup / su.BACKUP_MARKER).exists()
+    assert (app / "lib" / "sampleData" / "mine.txt").read_text() == "my own sample"
+
+
+@windows_only
+def test_windows_swap_runs_in_a_folder_with_a_curly_apostrophe(tmp_path):
+    root = tmp_path / "Maria’s files [2026]"  # typographic apostrophe, and brackets (PowerShell wildcards)
+    root.mkdir()
+    app, paths, _ = _install(root, exe="NLP_Suite.exe")
+    code, log = _run_windows_swap(tmp_path, paths)
+    assert code == 0, log
+    assert (app / "lib" / "release_version.txt").read_text().strip() == "1.6.41"
+    assert (app / "lib" / "sampleData" / "mine.txt").read_text() == "my own sample"
 
 
 def test_windows_swap_script_quotes_paths():
@@ -354,3 +452,89 @@ def test_no_download_reason_names_the_computer():
 )
 def test_time_left(done, total, elapsed, expected):
     assert su.time_left(done, total, elapsed) == expected
+
+
+# --- the user's own files (release file list) ----------------------------------------------------
+
+
+def test_write_manifest_skips_caches_symlinks_and_itself(tmp_path):
+    app = _fake_app(tmp_path / "NLP_Suite", "1.6.41")
+    (app / "src" / "__pycache__").mkdir(parents=True)
+    (app / "src" / "__pycache__" / "x.cpython-310.pyc").write_bytes(b"x")
+    (app / "src" / "tool.py").write_text("print(1)")
+    assert su.write_manifest(str(app)) == 3  # release_version.txt, NLP_Suite, src/tool.py
+    rows = su.read_manifest(str(app))
+    assert set(rows) == {"lib/release_version.txt", "NLP_Suite", "src/tool.py"}
+    assert rows["src/tool.py"][0] == len("print(1)")
+    assert rows["src/tool.py"][1]  # small files are hashed
+
+
+def test_user_files_finds_additions_at_any_depth_and_edits(tmp_path):
+    old = _fake_app(tmp_path / "old", "1.6.41")
+    (old / "lib" / "wordLists").mkdir()
+    (old / "lib" / "wordLists" / "stop.txt").write_text("a\nthe\n")
+    (old / "lib" / "wordLists" / "same_size.txt").write_text("abc")
+    su.write_manifest(str(old))
+    (old / "lib" / "wordLists" / "my_list.txt").write_text("mine")  # added inside a shipped folder
+    (old / "output").mkdir()
+    (old / "output" / "run.csv").write_text("mine")  # added at the top
+    (old / "lib" / "wordLists" / "same_size.txt").write_text("xyz")  # edited, same size: caught by the hash
+    (old / "config").mkdir()
+    (old / "config" / "IO.csv").write_text("settings are carried separately")
+    (old / "src" / "__pycache__").mkdir(parents=True)
+    (old / "src" / "__pycache__" / "a.pyc").write_bytes(b"x")
+    new = _fake_app(tmp_path / "new", "1.6.42")
+    carry, changed, complete = su.user_files(str(old), str(new))
+    assert carry == ["lib/wordLists/my_list.txt", "output/run.csv"]
+    assert changed == ["lib/wordLists/same_size.txt"]
+    assert not complete
+
+
+def test_user_files_without_a_file_list_keeps_the_backup(tmp_path):
+    old = _fake_app(tmp_path / "old", "1.6.40")
+    (old / "my corpus").mkdir()
+    (old / "config").mkdir()
+    new = _fake_app(tmp_path / "new", "1.6.41")
+    carry, changed, complete = su.user_files(str(old), str(new))
+    assert carry == ["my corpus"]
+    assert changed == []
+    assert not complete  # cannot tell edits apart: the backup must not be deleted
+
+
+def test_backup_blocker_only_for_an_unmarked_folder(tmp_path):
+    backup = tmp_path / "NLP_Suite_previous"
+    assert su.backup_blocker(str(backup)) == ""
+    backup.mkdir()
+    assert "in the way" in su.backup_blocker(str(backup))
+    (backup / su.BACKUP_MARKER).write_text("done")
+    assert su.backup_blocker(str(backup)) == ""
+
+
+def test_onedrive_folder(tmp_path):
+    root = tmp_path / "OneDrive - Emory"
+    env = {"OneDriveCommercial": str(root)}
+    assert su.onedrive_folder(str(root / "Documents" / "NLP_Suite"), env) == str(root)
+    assert su.onedrive_folder(str(tmp_path / "OneDrive - Emory2" / "NLP_Suite"), env) == ""
+    assert su.onedrive_folder(str(tmp_path / "NLP_Suite"), {}) == ""
+
+
+def test_ps_quote_doubles_every_kind_of_single_quote():
+    assert su._ps_quote("Maria\u2019s") == "'Maria\u2019\u2019s'"
+    assert su._ps_quote("O'Neil") == "'O''Neil'"
+
+
+def test_partial_backup_deletion_keeps_the_marker(tmp_path):
+    backup = tmp_path / "NLP_Suite_previous"
+    (backup / "lib").mkdir(parents=True)
+    (backup / su.BACKUP_MARKER).write_text("done")
+    with mock.patch.object(su.shutil, "rmtree"):  # e.g. a locked file: the folder survives
+        su._delete_backup(str(backup))
+    assert (backup / su.BACKUP_MARKER).is_file()  # so the next start tries again
+    su._delete_backup(str(backup))
+    assert not backup.exists()
+
+
+def test_swap_script_started(tmp_path):
+    assert not su.swap_script_started(str(tmp_path), timeout=0.2, poll=0.05)
+    (tmp_path / su.STARTED_FLAG).write_text("")
+    assert su.swap_script_started(str(tmp_path), timeout=0.2, poll=0.05)

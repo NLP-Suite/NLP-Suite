@@ -265,6 +265,15 @@ jobs:
           chmod +x "$L"
           echo "Added Mac one-click launcher: $L"
 
+      # Last step before zipping: the release's own file list (path, size, hash) in lib/. The in-app
+      # self-updater compares the installed folder against it to find the user's own files (added
+      # anywhere, or release files they edited) and keeps them. Anything added to dist/ after this
+      # step would look like a user file, so keep this step right before the Archive steps.
+      - name: Write the release file list for the self-updater
+        shell: bash
+        run: |
+          python -c "import sys; sys.path.insert(0, 'src'); import NLP_setup_self_update_util as u; n = u.write_manifest('dist/NLP_Suite'); print(n, 'files listed'); sys.exit(0 if n > 1000 else 1)"
+
       # GitHub's upload-artifact strips unix permission bits when uploading a folder, which left the
       # Mac NLP_Suite launcher, python-env/bin/python3, and the Setup app as non-executable "documents".
       # Zipping on the native runner preserves exec bits and symlinks; the zip is uploaded as an opaque

@@ -14,6 +14,7 @@ time the new version starts (remove_previous_version, called by NLP_menu_main).
 # This module reports progress to the terminal, during exit, after the GUI window is gone.
 # ruff: noqa: T201
 
+import hashlib
 import math
 import os
 import platform
@@ -41,6 +42,13 @@ KEEP_FROM_OLD = ("config", "reminders")
 BACKUP_MARKER = "NLP_Suite_previous_version.txt"
 STALE_STAGE_SECONDS = 24 * 3600
 WAIT_FOR_CLOSE_SECONDS = 3600
+# The release's own file list (path, size, hash), written by the build (build-installers.yml) just before
+# zipping. Comparing the installed folder against it tells the user's own files -- added anywhere, or
+# shipped files they edited, e.g. in lib/sampleData -- from the release's, so nothing of theirs is lost.
+MANIFEST = "lib/release_manifest.tsv"
+HASH_LIMIT = 16 << 20  # files above this are compared by size only (models, DLLs: nobody edits them)
+CARRY_LIST = "carry.txt"  # in the staging folder: the user's files the swap script moves into the new version
+STARTED_FLAG = "started"  # written by the swap script as its first act, so the app knows it is running
 
 
 def is_zip_install(NLPPath, frozen=None):
@@ -125,6 +133,7 @@ def claim_stage(stage, now=None):
     """Create the staging folder; False if another update is already using it.
 
     A staging folder older than a day is left over from a failed update: it is removed and claimed.
+    Raises OSError (e.g. PermissionError) when the folder cannot be created at all.
     """
     now = time.time() if now is None else now
     if os.path.isdir(stage) and now - os.path.getmtime(stage) > STALE_STAGE_SECONDS:
@@ -134,6 +143,118 @@ def claim_stage(stage, now=None):
     except FileExistsError:
         return False
     return True
+
+
+def backup_blocker(backup):
+    """Why an existing <folder>_previous stops the update, or '' when there is none or it is ours to replace.
+
+    Only a backup the swap script marked complete may be deleted. An unmarked one is either a backup kept
+    on purpose (files of the user's were not carried over) or a folder of the user's that has that name.
+    """
+    if not os.path.exists(backup):
+        return ""
+    if os.path.isfile(os.path.join(backup, BACKUP_MARKER)):
+        return ""
+    return (
+        "a folder named\n\n"
+        + backup
+        + "\n\nis in the way. It may be the previous NLP Suite version, kept because some of your files were not "
+        "carried over to the new one, or a folder of yours. Copy anything you need out of it, then delete or rename "
+        "it, and close the NLP Suite again."
+    )
+
+
+def _release_files(root):
+    """(relative path with '/', full path) of every regular file under root; no symlinks, no Python caches."""
+    for folder, dirs, files in os.walk(root):
+        dirs[:] = [d for d in dirs if d != "__pycache__" and not os.path.islink(os.path.join(folder, d))]
+        for name in files:
+            path = os.path.join(folder, name)
+            if name.endswith(".pyc") or os.path.islink(path):
+                continue
+            rel = os.path.relpath(path, root).replace(os.sep, "/")
+            if rel != MANIFEST:
+                yield rel, path
+
+
+def _file_hash(path, size):
+    if size > HASH_LIMIT:
+        return ""
+    h = hashlib.blake2b(digest_size=16)
+    with open(path, "rb") as f:
+        for block in iter(lambda: f.read(1 << 20), b""):
+            h.update(block)
+    return h.hexdigest()
+
+
+def write_manifest(app_dir):
+    """Write the release's file list into app_dir (called by the build). Returns the number of files."""
+    lines = []
+    for rel, path in _release_files(app_dir):
+        size = os.path.getsize(path)
+        lines.append(rel + "\t" + str(size) + "\t" + _file_hash(path, size))
+    lines.sort()
+    with open(os.path.join(app_dir, MANIFEST), "w", encoding="utf-8", newline="\n") as f:
+        f.write("\n".join(lines) + "\n")
+    return len(lines)
+
+
+def read_manifest(app_dir):
+    """{relative path: (size, hash)} from the installed release's file list, or None if it has none."""
+    try:
+        with open(os.path.join(app_dir, MANIFEST), encoding="utf-8") as f:
+            rows = [line.rstrip("\n").split("\t") for line in f if line.strip()]
+    except OSError:
+        return None
+    return {r[0]: (int(r[1]), r[2] if len(r) > 2 else "") for r in rows if len(r) >= 2 and r[1].isdigit()}
+
+
+def user_files(old_app, new_app):
+    """The user's own files in the installed NLP Suite, compared with the release it came from.
+
+    Returns (carry, changed, complete):
+      carry    relative paths ('/') the user added anywhere, which the new release does not ship: moved over;
+      changed  release files the user edited (or added ones the new release also ships): they cannot be
+               moved without overwriting the new release, so they stay in the backup;
+      complete True when the backup holds nothing of the user's, so it may be deleted.
+    config/ and reminders/ are carried separately (KEEP_FROM_OLD) and left out. Without a file list
+    (a release built before 1.6.41) only top-level additions can be told apart, and the backup is kept.
+    """
+    manifest = read_manifest(old_app)
+    keep = tuple(k + "/" for k in KEEP_FROM_OLD)
+    carry, changed = [], []
+    if manifest is None:
+        for name in sorted(os.listdir(old_app)):
+            if name not in KEEP_FROM_OLD and not os.path.lexists(os.path.join(new_app, name)):
+                carry.append(name)
+        return carry, changed, False
+    for rel, path in _release_files(old_app):
+        if rel.startswith(keep):
+            continue
+        shipped = manifest.get(rel)
+        if shipped is None:
+            (changed if os.path.lexists(os.path.join(new_app, rel)) else carry).append(rel)
+            continue
+        size = os.path.getsize(path)
+        if size != shipped[0] or (shipped[1] and _file_hash(path, size) != shipped[1]):
+            changed.append(rel)
+    return sorted(carry), sorted(changed), not changed
+
+
+def write_carry_list(stage, carry):
+    with open(os.path.join(stage, CARRY_LIST), "w", encoding="utf-8", newline="\n") as f:
+        f.write("".join(rel + "\n" for rel in carry))
+
+
+def onedrive_folder(path, environ=None):
+    """The OneDrive folder that holds path, or '' (Windows sets these variables for each OneDrive account)."""
+    environ = os.environ if environ is None else environ
+    full = os.path.normcase(os.path.abspath(path))
+    for var in ("OneDrive", "OneDriveCommercial", "OneDriveConsumer"):
+        root = environ.get(var, "")
+        if root and (full + os.sep).startswith(os.path.normcase(os.path.abspath(root)) + os.sep):
+            return root
+    return ""
 
 
 def download(url, dest, expected_size, on_progress=None, cancelled=lambda: False):
@@ -207,7 +328,7 @@ def staged_app_ok(staged_app, expected_version, sys_platform=None):
         return version_number(f.read()) == version_number(expected_version)
 
 
-def posix_swap_script(app, new, backup, stage, version, log):
+def posix_swap_script(app, new, backup, stage, version, log, keep_backup=False):  # noqa: PLR0917
     """sh script (Mac) that swaps in the new release once no NLP Suite program is running."""
     q = shlex.quote
     keep = " ".join(KEEP_FROM_OLD)
@@ -219,7 +340,9 @@ OLD={q(backup)}
 STAGE={q(stage)}
 VERSION={q(version)}
 LOG={q(log)}
+KEEP_BACKUP={1 if keep_backup else 0}
 exec >>"$LOG" 2>&1
+: > "$STAGE/{STARTED_FLAG}"
 echo "$(date): updating the NLP Suite in $APP to $VERSION"
 
 tell() {{
@@ -249,12 +372,22 @@ while :; do
     waited=$((waited + 2))
 done
 
-rm -rf "$OLD"
-[ -e "$OLD" ] && fail "could not remove the old backup $OLD."
+# only a backup this updater marked complete may be deleted; anything else there is the user's
+if [ -e "$OLD" ] || [ -L "$OLD" ]; then
+    [ -f "$OLD/{BACKUP_MARKER}" ] || fail "a folder named $OLD is in the way and was not deleted. Copy what you need out of it, delete or rename it, and close the NLP Suite again."
+    rm -rf "$OLD"
+    [ -e "$OLD" ] && fail "could not remove the old backup $OLD."
+fi
 mv "$APP" "$OLD" || fail "could not move $APP aside."
 if ! mv "$NEW" "$APP"; then
-    mv "$OLD" "$APP"
-    fail "could not move the new version into place."
+    if mv "$OLD" "$APP"; then
+        fail "could not move the new version into place."
+    fi
+    echo "FAILED: could not move the new version into place, nor the old one back."
+    tell "The NLP Suite could not be updated to $VERSION, and its folder could not be put back.
+
+Your NLP Suite is now in $OLD. Rename that folder back to $APP to use it. Details are in $LOG"
+    exit 1
 fi
 
 # keep the user's settings
@@ -264,30 +397,46 @@ for d in {keep}; do
         {{ mkdir -p "$APP/$d" && cp -Rp "$OLD/$d/." "$APP/$d/"; }} || carried=0
     fi
 done
-# keep anything the user added to the NLP Suite folder that the release does not ship
-for item in "$OLD"/* "$OLD"/.[!.]*; do
-    [ -e "$item" ] || continue
-    name=$(basename "$item")
-    [ -e "$APP/$name" ] || mv "$item" "$APP/$name" || carried=0
-done
-if [ "$carried" = 1 ]; then
+# move over the user's own files (listed by user_files: added anywhere, not shipped by the new release)
+if [ -f "$STAGE/{CARRY_LIST}" ]; then
+    while IFS= read -r rel || [ -n "$rel" ]; do
+        [ -n "$rel" ] || continue
+        [ -e "$OLD/$rel" ] || [ -L "$OLD/$rel" ] || continue
+        if [ -e "$APP/$rel" ]; then
+            echo "Not moved, the new version has it too: $rel"
+            carried=0
+            continue
+        fi
+        {{ mkdir -p "$(dirname "$APP/$rel")" && mv "$OLD/$rel" "$APP/$rel"; }} || {{ echo "Could not move $rel"; carried=0; }}
+    done < "$STAGE/{CARRY_LIST}"
+fi
+done_msg="The NLP Suite was updated to $VERSION. Open it again as usual."
+if [ "$carried" = 1 ] && [ "$KEEP_BACKUP" = 0 ]; then
     echo "NLP Suite before the update to $VERSION. Deleted the first time the new version starts." > "$OLD/{BACKUP_MARKER}"
 else
-    echo "Some files were not carried over; $OLD is kept."
+    echo "Some files of yours are still only in $OLD; it is kept."
+    done_msg="$done_msg
+
+Some files of yours are still in the previous version, $OLD (listed in $LOG). Copy what you need, then delete that folder: the next update needs it gone."
 fi
 
 xattr -dr com.apple.quarantine "$APP" 2>/dev/null || true
 rm -rf "$STAGE"
 echo "$(date): done"
-tell "The NLP Suite was updated to $VERSION. Open it again as usual."
+tell "$done_msg"
 """
 
 
 def _ps_quote(text):
-    return "'" + str(text).replace("'", "''") + "'"
+    # PowerShell also ends a single-quoted string at the typographic quotes (U+2018/2019/201A/201B);
+    # doubling any of them gives that character literally, as with '.
+    out = str(text)
+    for ch in ("'", "‘", "’", "‚", "‛"):
+        out = out.replace(ch, ch + ch)
+    return "'" + out + "'"
 
 
-def windows_swap_script(app, new, backup, stage, version, log):
+def windows_swap_script(app, new, backup, stage, version, log, keep_backup=False):  # noqa: PLR0917
     """PowerShell script (Windows) that swaps in the new release once no NLP Suite program is running."""
     q = _ps_quote
     keep = ", ".join(q(k) for k in KEEP_FROM_OLD)
@@ -298,7 +447,9 @@ $Old = {q(backup)}
 $Stage = {q(stage)}
 $Version = {q(version)}
 $Log = {q(log)}
+$KeepBackup = ${"true" if keep_backup else "false"}
 $ProgressPreference = 'SilentlyContinue'
+[System.IO.File]::WriteAllText((Join-Path $Stage '{STARTED_FLAG}'), '')
 Start-Transcript -LiteralPath $Log -Append | Out-Null
 Write-Output "$(Get-Date): updating the NLP Suite in $App to $Version"
 
@@ -337,7 +488,11 @@ while (Get-Process | Where-Object {{ $_.Path -and $_.Path.StartsWith($prefix, [S
     $waited += 2
 }}
 
+# only a backup this updater marked complete may be deleted; anything else there is the user's
 if (Test-Path -LiteralPath $Old) {{
+    if (-not (Test-Path -LiteralPath (Join-Path $Old '{BACKUP_MARKER}'))) {{
+        Fail "a folder named $Old is in the way and was not deleted. Copy what you need out of it, delete or rename it, and close the NLP Suite again."
+    }}
     Remove-Item -LiteralPath $Old -Recurse -Force -ErrorAction SilentlyContinue
     if (Test-Path -LiteralPath $Old) {{ Fail "could not remove the old backup $Old." }}
 }}
@@ -345,8 +500,11 @@ if (-not (Move-WithRetry $App $Old)) {{
     Fail "could not move $App aside. Close any File Explorer window open on that folder and close the NLP Suite again."
 }}
 if (-not (Move-WithRetry $New $App)) {{
-    Move-WithRetry $Old $App | Out-Null
-    Fail 'could not move the new version into place.'
+    if (Move-WithRetry $Old $App) {{ Fail 'could not move the new version into place.' }}
+    Write-Output 'FAILED: could not move the new version into place, nor the old one back.'
+    Tell "The NLP Suite could not be updated to $Version, and its folder could not be put back.`n`nYour NLP Suite is now in $Old. Rename that folder back to $App to use it. Details are in $Log"
+    Stop-Transcript | Out-Null
+    exit 1
 }}
 
 # keep the user's settings
@@ -356,34 +514,44 @@ foreach ($d in @({keep})) {{
     if (Test-Path -LiteralPath $from) {{
         $to = Join-Path $App $d
         try {{
-            New-Item -ItemType Directory -Force -Path $to -ErrorAction Stop | Out-Null
+            [System.IO.Directory]::CreateDirectory($to) | Out-Null
             Get-ChildItem -LiteralPath $from -Force | Copy-Item -Destination $to -Recurse -Force -ErrorAction Stop
         }} catch {{ Write-Output "Could not copy ${{d}}: $_"; $carried = $false }}
     }}
 }}
-# keep anything the user added to the NLP Suite folder that the release does not ship
-Get-ChildItem -LiteralPath $Old -Force | ForEach-Object {{
-    $dest = Join-Path $App $_.Name
-    if (-not (Test-Path -LiteralPath $dest)) {{
-        try {{ Move-Item -LiteralPath $_.FullName -Destination $dest -ErrorAction Stop }}
-        catch {{ Write-Output "Could not move $($_.Exception.Message)"; $carried = $false }}
+# move over the user's own files (listed by user_files: added anywhere, not shipped by the new release)
+$carryList = Join-Path $Stage '{CARRY_LIST}'
+if (Test-Path -LiteralPath $carryList) {{
+    foreach ($rel in [System.IO.File]::ReadAllLines($carryList)) {{
+        if (-not $rel) {{ continue }}
+        $from = Join-Path $Old $rel
+        $to = Join-Path $App $rel
+        if (-not (Test-Path -LiteralPath $from)) {{ continue }}
+        if (Test-Path -LiteralPath $to) {{ Write-Output "Not moved, the new version has it too: $rel"; $carried = $false; continue }}
+        try {{
+            [System.IO.Directory]::CreateDirectory((Split-Path -Parent $to)) | Out-Null
+            Move-Item -LiteralPath $from -Destination $to -ErrorAction Stop
+        }} catch {{ Write-Output "Could not move ${{rel}}: $_"; $carried = $false }}
     }}
 }}
-if ($carried) {{
+$doneMsg = "The NLP Suite was updated to $Version. Open it again as usual."
+if ($carried -and -not $KeepBackup) {{
     Set-Content -LiteralPath (Join-Path $Old '{BACKUP_MARKER}') -Value "NLP Suite before the update to $Version. Deleted the first time the new version starts."
 }} else {{
-    Write-Output "Some files were not carried over; $Old is kept."
+    Write-Output "Some files of yours are still only in $Old; it is kept."
+    $doneMsg += "`n`nSome files of yours are still in the previous version, $Old (listed in $Log). Copy what you need, then delete that folder: the next update needs it gone."
 }}
 
 Remove-Item -LiteralPath $Stage -Recurse -Force -ErrorAction SilentlyContinue
 Write-Output "$(Get-Date): done"
-Tell "The NLP Suite was updated to $Version. Open it again as usual."
+Tell $doneMsg
 Stop-Transcript | Out-Null
 """
 
 
 def _delete_backup(backup):
-    # the marker goes last, so a deletion cut short (the NLP Suite closed meanwhile) is finished next time
+    # the marker goes last, and only once everything else is gone, so a deletion cut short (the NLP Suite
+    # closed meanwhile, a locked file, a path too long) is finished the next time the new version starts
     for name in os.listdir(backup):
         if name == BACKUP_MARKER:
             continue
@@ -395,6 +563,10 @@ def _delete_backup(backup):
                 os.remove(path)
             except OSError as e:
                 print("Could not delete " + path + ": " + str(e))
+    left = [n for n in os.listdir(backup) if n != BACKUP_MARKER]
+    if left:
+        print("The previous NLP Suite version in " + backup + " is not fully deleted yet; trying again next time.")
+        return
     try:
         os.remove(os.path.join(backup, BACKUP_MARKER))
         os.rmdir(backup)
@@ -420,13 +592,13 @@ def remove_previous_version(NLPPath, background=True):
     return thread
 
 
-def write_swap_script(paths, version, sys_platform=None):
+def write_swap_script(paths, version, sys_platform=None, keep_backup=False):
     """Write the swap script to the temp folder (outside the folders it moves). Returns (script, log)."""
     sys_platform = sys_platform or sys.platform
     temp = tempfile.gettempdir()
     log = os.path.join(temp, "NLP_Suite_update.log")
     new = os.path.join(paths["stage"], APP_FOLDER_IN_ZIP)
-    args = (paths["app"], new, paths["backup"], paths["stage"], version, log)
+    args = (paths["app"], new, paths["backup"], paths["stage"], version, log, keep_backup)
     if sys_platform == "win32":
         script = os.path.join(temp, "NLP_Suite_update.ps1")
         # BOM so Windows PowerShell 5.1 reads non-ASCII folder names correctly
@@ -460,6 +632,18 @@ def launch_swap_script(script, sys_platform=None):
         subprocess.Popen(
             ["/bin/sh", script], cwd=cwd, start_new_session=True, stdin=devnull, stdout=devnull, stderr=devnull
         )
+
+
+def swap_script_started(stage, timeout=30.0, poll=0.5):
+    """True once the swap script has written its start flag. Group policy or AppLocker can stop
+    PowerShell scripts from running at all; without this check the user would wait for nothing."""
+    flag = os.path.join(stage, STARTED_FLAG)
+    end = time.monotonic() + timeout
+    while time.monotonic() < end:
+        if os.path.exists(flag):
+            return True
+        time.sleep(poll)
+    return os.path.exists(flag)
 
 
 class _ProgressWindow:
@@ -537,6 +721,11 @@ def update_zip_install(NLPPath, GitHub_release_version):
     found = find_asset(release, name, version)
     if found is None:
         print("The NLP Suite " + version + " download for this computer is not on GitHub yet. Try again later.")
+        mb.showinfo(
+            title="NLP Suite update",
+            message="NLP Suite " + version + " has just been released, but its download is not ready yet (it takes "
+            "about an hour to build).\n\nYou will be asked again the next time you close the NLP Suite.",
+        )
         return None
     url, size = found
 
@@ -549,6 +738,14 @@ def update_zip_install(NLPPath, GitHub_release_version):
             + "\n\nwhich is where the new version is unpacked. To get automatic updates, move your NLP Suite "
             "folder into a folder you own, such as Documents or Desktop."
         )
+    blocker = backup_blocker(paths["backup"])
+    if blocker:
+        # checked before the download, so 1.5 GB is not fetched for a swap that would stop here
+        mb.showwarning(
+            title="NLP Suite update",
+            message="NLP Suite " + version + " is available, but it cannot be installed yet: " + blocker,
+        )
+        return None
     # the zip, the unpacked release (about 2.5 times the zip), and room to spare
     needed = size * 4
     free = shutil.disk_usage(parent).free
@@ -561,6 +758,15 @@ def update_zip_install(NLPPath, GitHub_release_version):
         )
         return None
 
+    onedrive = onedrive_folder(paths["app"])
+    onedrive_warning = (
+        "\n\nYour NLP Suite folder is inside OneDrive ("
+        + onedrive
+        + "). OneDrive will upload the whole new version (several GB) and can hold its files while it does, "
+        "which may stop the update. Moving the NLP Suite folder out of OneDrive (e.g. to C:\\NLP_Suite) avoids this."
+        if onedrive
+        else ""
+    )
     if not mb.askyesno(
         title="NLP Suite update",
         message="NLP Suite "
@@ -569,11 +775,22 @@ def update_zip_install(NLPPath, GitHub_release_version):
         + _gb(size)
         + " and can take several minutes.\n\nYour settings are kept. Your current version is kept in\n\n"
         + paths["backup"]
-        + "\n\nuntil the new version starts, and then deleted.\n\nIf you say No, you will be asked again the next time you close the NLP Suite.",
+        + "\n\nuntil the new version starts, and then deleted."
+        + onedrive_warning
+        + "\n\nIf you say No, you will be asked again the next time you close the NLP Suite.",
     ):
         return None
-    if not claim_stage(paths["stage"]):
+    try:
+        claimed = claim_stage(paths["stage"])
+    except OSError as e:
+        return "it cannot create the folder it unpacks the new version into (" + str(e) + ")."
+    if not claimed:
         print("An NLP Suite update is already in progress.")
+        mb.showinfo(
+            title="NLP Suite update",
+            message="An NLP Suite update is already in progress (started from another window, or within the last "
+            "day). If none is, delete the folder\n\n" + paths["stage"] + "\n\nand close the NLP Suite again.",
+        )
         return None
 
     zip_path = os.path.join(paths["stage"], name)
@@ -599,17 +816,38 @@ def update_zip_install(NLPPath, GitHub_release_version):
                 on_progress=lambda done, total: progress.show("Unpacking NLP Suite " + version, done, total),
                 cancelled=lambda: progress.cancelled,
             )
-        window.close()
-        window = None
         if not finished:
+            window.close()
+            window = None
             shutil.rmtree(paths["stage"], ignore_errors=True)
             print("NLP Suite update cancelled.")
             return None
         os.remove(zip_path)
-        if not staged_app_ok(os.path.join(paths["stage"], APP_FOLDER_IN_ZIP), version):
+        staged_app = os.path.join(paths["stage"], APP_FOLDER_IN_ZIP)
+        if not staged_app_ok(staged_app, version):
             raise ValueError("the downloaded release is not NLP Suite " + version + ".")
-        script, log = write_swap_script(paths, version)
+        progress.show("Finding your own files in the NLP Suite folder, so they are kept", 0, 1)
+        carry, changed, complete = user_files(paths["app"], staged_app)
+        window.close()
+        window = None
+        write_carry_list(paths["stage"], carry)
+        script, log = write_swap_script(paths, version, keep_backup=not complete)
+        with open(log, "a", encoding="utf-8") as f:
+            f.write("\nYour files moved to the new version: " + str(len(carry)) + "\n")
+            if changed:
+                f.write("Release files you changed, kept in " + paths["backup"] + ":\n")
+                f.write("".join("    " + rel + "\n" for rel in changed))
+            if not complete and not changed:
+                f.write(
+                    "This copy has no release file list (built before 1.6.41), so " + paths["backup"] + " is kept.\n"
+                )
         launch_swap_script(script)
+        if not swap_script_started(paths["stage"]):
+            raise OSError(
+                "the program that installs the new version did not start (this computer may block "
+                + ("PowerShell scripts" if sys.platform == "win32" else "shell scripts")
+                + ")"
+            )
     except (OSError, ValueError, zipfile.BadZipFile, tkinter.TclError, requests.RequestException) as e:
         if window is not None:
             window.close()
