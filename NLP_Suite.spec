@@ -87,7 +87,7 @@ _local_modules = [
     'NGrams_CoOccurrences_main', 'NGrams_CoOccurrences_util', 'NGrams_util',
     'NLP_menu_main', 'NLP_menu_tools_util', 'NLP_setup_download_jars',
     'NLP_setup_external_software_main', 'NLP_setup_IO_main',
-    'NLP_setup_package_language_main', 'NLP_setup_shortcut_add',
+    'NLP_setup_package_language_main', 'NLP_setup_self_update_util', 'NLP_setup_shortcut_add',
     'NLP_setup_shortcut_remove', 'NLP_setup_update_util', 'run_script_util',
     'NLP_welcome_main',
     'nominalization_main', 'nominalization_util',
