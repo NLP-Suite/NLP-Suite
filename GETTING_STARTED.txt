@@ -53,6 +53,13 @@ configuration files so you can start testing right away:
 You can change these at any time via the I/O Configuration
 options at the top of the main window.
 
+UPDATES
+-------
+When a new release is out, closing the NLP Suite asks whether
+to download and install it. Your settings are kept, and the
+previous version is kept next to the new one as
+NLP_Suite_previous until the next update.
+
 NEED HELP?
 ----------
 - Click the ? buttons next to each option for explanations

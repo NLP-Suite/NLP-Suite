@@ -18,6 +18,7 @@ import GUI_IO_util
 import GUI_util
 import IO_libraries_util
 import IO_user_interface_util
+import NLP_setup_self_update_util
 
 window = GUI_util.window
 
@@ -147,6 +148,11 @@ def update_self(GitHub_release_version):
     method = update_method(NLPPath)
 
     if method == "download":
+        # the downloaded (zip) build can install the new release itself once the NLP Suite is closed
+        if NLP_setup_self_update_util.is_zip_install(NLPPath) and NLP_setup_self_update_util.update_zip_install(
+            NLPPath, GitHub_release_version
+        ):
+            return True
         message_download = (
             "A new release of the NLP Suite is available on GitHub: "
             + str(GitHub_release_version).strip()

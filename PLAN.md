@@ -179,6 +179,7 @@ Deleting a remote branch is Roberto's call.
 ## 8. Done
 
 Since the 16 Jul audit:
+- The zip build updates itself (`NLP_setup_self_update_util`): on exit it downloads the release zip, unpacks it next to the app, and a detached sh/PowerShell script swaps the folders once every NLP Suite process has exited, keeping `config/`, `reminders/` and user-added files. The PowerShell path is only unit-tested on CI (Ubuntu); its end-to-end test runs on Windows.
 - Auto-update no longer needs pygit2: `NLP_setup_update_util` reads the branch with the git program, and the installer build (or any folder without `.git`) points the user to the latest release instead of running git.
 - `data_manipulation_main.py`: the unbound `comingFrom_Plus`/`comingFrom_OK` crash and the duplicate `build_extract_string` are gone.
 - One-shot Ruff format of `src/` (v1.6.40).
