@@ -149,14 +149,18 @@ def update_self(GitHub_release_version):
 
     if method == "download":
         # the downloaded (zip) build can install the new release itself once the NLP Suite is closed
-        if NLP_setup_self_update_util.is_zip_install(NLPPath) and NLP_setup_self_update_util.update_zip_install(
-            NLPPath, GitHub_release_version
-        ):
-            return True
+        if NLP_setup_self_update_util.is_zip_install(NLPPath):
+            reason = NLP_setup_self_update_util.update_zip_install(NLPPath, GitHub_release_version)
+            if reason is None:
+                return True
+        else:
+            reason = "this NLP Suite folder was neither downloaded from the release page nor installed with Git."
         message_download = (
             "A new release of the NLP Suite is available on GitHub: "
             + str(GitHub_release_version).strip()
-            + ".\n\nThis copy of the NLP Suite cannot update itself. Download the new release from\n\n"
+            + ".\n\nThis copy of the NLP Suite cannot update itself: "
+            + reason
+            + "\n\nDownload the new release from\n\n"
             + RELEASES_URL
             + "\n\nunzip it, and replace your current NLP_Suite folder.\n\nDo you want to open the download page now?"
         )

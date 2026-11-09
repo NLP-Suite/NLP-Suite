@@ -14,6 +14,7 @@ time the new version starts (remove_previous_version, called by NLP_menu_main).
 # This module reports progress to the terminal, during exit, after the GUI window is gone.
 # ruff: noqa: T201
 
+import math
 import os
 import platform
 import shlex
@@ -62,6 +63,30 @@ def asset_name(sys_platform=None, machine=None):
     else:
         return None
     return ASSET_NAMES.get((sys_platform, arch))
+
+
+def no_download_reason(sys_platform=None, machine=None):
+    """Why there is no release zip for this computer (only asked when asset_name() is None)."""
+    sys_platform = sys_platform or sys.platform
+    machine = machine or platform.machine()
+    return (
+        "no NLP Suite download is built for this computer ("
+        + sys_platform
+        + ", "
+        + machine
+        + "). Downloads are built for 64-bit Windows and for Macs with Apple chips (M1 or later)."
+    )
+
+
+def time_left(done, total, elapsed):
+    """'about 3 minutes left', from the speed so far; '' for the first few seconds, while the speed settles."""
+    if done <= 0 or total <= done or elapsed < 3:
+        return ""
+    seconds = elapsed * (total - done) / done
+    if seconds < 60:
+        return "less than a minute left"
+    minutes = math.ceil(seconds / 60)
+    return "about " + str(minutes) + (" minute" if minutes == 1 else " minutes") + " left"
 
 
 def version_number(text):
@@ -446,10 +471,11 @@ class _ProgressWindow:
 
         self.cancelled = False
         self._last_redraw = 0.0
+        self._phase_start = time.monotonic()
         self.root = tk.Tk()
         self.root.title(title)
         self.root.resizable(False, False)
-        self.label = tk.Label(self.root, text="", width=64, anchor="w", justify="left")
+        self.label = tk.Label(self.root, text="\n ", width=64, anchor="w", justify="left")
         self.label.pack(padx=16, pady=(16, 8))
         self.bar = ttk.Progressbar(self.root, length=440, maximum=100)
         self.bar.pack(padx=16)
@@ -460,14 +486,20 @@ class _ProgressWindow:
     def _cancel(self):
         self.cancelled = True
 
-    def show(self, text, fraction):
+    def start_phase(self):
+        self._phase_start = time.monotonic()
+        self._last_redraw = 0.0
+
+    def show(self, text, done, total):
+        fraction = done / total if total else 1.0
         # Redraw at most 10 times a second: the Mac release has over 100,000 files, and redrawing
         # after each one made unpacking take half an hour instead of half a minute.
         now = time.monotonic()
         if now - self._last_redraw < 0.1 and fraction < 1:
             return
         self._last_redraw = now
-        self.label.config(text=text)
+        left = time_left(done, total, now - self._phase_start)
+        self.label.config(text=text + "\n" + (left or " "))
         self.bar["value"] = max(0.0, min(1.0, fraction)) * 100
         self.root.update()
 
@@ -482,8 +514,9 @@ def _gb(n):
 def update_zip_install(NLPPath, GitHub_release_version):
     """Download and stage the new release; a script installs it once the NLP Suite is closed.
 
-    Returns True when the update was handled here (started, declined, cancelled, or reported),
-    False when the caller should fall back to sending the user to the download page.
+    Returns None when the update was handled here (started, declined, cancelled, or reported).
+    Otherwise returns why this copy cannot update itself, finishing the sentence "This copy of the
+    NLP Suite cannot update itself: ...", and the caller sends the user to the download page.
     """
     import tkinter
     import tkinter.messagebox as mb
@@ -493,24 +526,29 @@ def update_zip_install(NLPPath, GitHub_release_version):
     version = version_number(GitHub_release_version)
     name = asset_name()
     if name is None:
-        return False
+        return no_download_reason()
     try:
         response = requests.get(RELEASE_API_URL, timeout=15, headers={"Accept": "application/vnd.github+json"})
         response.raise_for_status()
         release = response.json()
     except (requests.RequestException, ValueError) as e:
         print("Could not read the latest NLP Suite release from GitHub: " + str(e))
-        return False
+        return "GitHub could not be reached to download it (" + str(e) + ")."
     found = find_asset(release, name, version)
     if found is None:
         print("The NLP Suite " + version + " download for this computer is not on GitHub yet. Try again later.")
-        return True
+        return None
     url, size = found
 
     paths = update_paths(NLPPath)
     parent = os.path.dirname(paths["app"])
     if not os.access(parent, os.W_OK):
-        return False
+        return (
+            "it cannot write to the folder that holds it,\n\n"
+            + parent
+            + "\n\nwhich is where the new version is unpacked. To get automatic updates, move your NLP Suite "
+            "folder into a folder you own, such as Documents or Desktop."
+        )
     # the zip, the unpacked release (about 2.5 times the zip), and room to spare
     needed = size * 4
     free = shutil.disk_usage(parent).free
@@ -521,7 +559,7 @@ def update_zip_install(NLPPath, GitHub_release_version):
             "disk space and only " + _gb(free) + " is free.\n\nFree up some space and close the NLP Suite again, "
             "or download the new release yourself from\n\n" + RELEASES_URL,
         )
-        return True
+        return None
 
     if not mb.askyesno(
         title="NLP Suite update",
@@ -533,10 +571,10 @@ def update_zip_install(NLPPath, GitHub_release_version):
         + paths["backup"]
         + "\n\nuntil the new version starts, and then deleted.\n\nIf you say No, you will be asked again the next time you close the NLP Suite.",
     ):
-        return True
+        return None
     if not claim_stage(paths["stage"]):
         print("An NLP Suite update is already in progress.")
-        return True
+        return None
 
     zip_path = os.path.join(paths["stage"], name)
     window = None
@@ -547,17 +585,18 @@ def update_zip_install(NLPPath, GitHub_release_version):
             zip_path,
             size,
             on_progress=lambda done, total: progress.show(
-                "Downloading NLP Suite " + version + ": " + _gb(done) + " of " + _gb(total), done / total
+                "Downloading NLP Suite " + version + ": " + _gb(done) + " of " + _gb(total), done, total
             ),
             cancelled=lambda: progress.cancelled,
         )
         if finished:
             if shutil.disk_usage(parent).free < unpacked_size(zip_path) + (200 << 20):
                 raise OSError("there is not enough free disk space to unpack the new release.")
+            progress.start_phase()
             finished = extract_zip(
                 zip_path,
                 paths["stage"],
-                on_progress=lambda done, total: progress.show("Unpacking NLP Suite " + version, done / total),
+                on_progress=lambda done, total: progress.show("Unpacking NLP Suite " + version, done, total),
                 cancelled=lambda: progress.cancelled,
             )
         window.close()
@@ -565,7 +604,7 @@ def update_zip_install(NLPPath, GitHub_release_version):
         if not finished:
             shutil.rmtree(paths["stage"], ignore_errors=True)
             print("NLP Suite update cancelled.")
-            return True
+            return None
         os.remove(zip_path)
         if not staged_app_ok(os.path.join(paths["stage"], APP_FOLDER_IN_ZIP), version):
             raise ValueError("the downloaded release is not NLP Suite " + version + ".")
@@ -583,7 +622,7 @@ def update_zip_install(NLPPath, GitHub_release_version):
             + "\n\nYour current version still works. You can try again the next time you close the NLP Suite, "
             "or download the new release yourself from\n\n" + RELEASES_URL,
         )
-        return True
+        return None
 
     print("NLP Suite " + version + " is downloaded; it is installed as soon as every NLP Suite window is closed.")
     mb.showinfo(
@@ -592,4 +631,4 @@ def update_zip_install(NLPPath, GitHub_release_version):
         "a message tells you when it is done (about a minute).\n\nIf something goes wrong, the details are in\n\n"
         + log,
     )
-    return True
+    return None

@@ -330,3 +330,27 @@ def test_unmarked_backup_is_kept(tmp_path):
 
 def test_no_backup_is_fine(tmp_path):
     assert su.remove_previous_version(str(tmp_path / "NLP_Suite")) is None
+
+
+# --- what the student is told -------------------------------------------------------------
+
+
+def test_no_download_reason_names_the_computer():
+    reason = su.no_download_reason("darwin", "x86_64")
+    assert "x86_64" in reason and "Apple chips" in reason
+
+
+@pytest.mark.parametrize(
+    ("done", "total", "elapsed", "expected"),
+    [
+        (100, 1000, 1, ""),  # too early to tell
+        (0, 1000, 10, ""),
+        (1000, 1000, 10, ""),  # finished
+        (500, 1000, 20, "less than a minute left"),
+        (100, 1000, 10, "about 2 minutes left"),  # 90 s
+        (300, 1400, 60, "about 4 minutes left"),  # 220 s
+        (900, 1000, 540, "about 1 minute left"),
+    ],
+)
+def test_time_left(done, total, elapsed, expected):
+    assert su.time_left(done, total, elapsed) == expected
