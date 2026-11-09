@@ -445,6 +445,7 @@ class _ProgressWindow:
         from tkinter import ttk
 
         self.cancelled = False
+        self._last_redraw = 0.0
         self.root = tk.Tk()
         self.root.title(title)
         self.root.resizable(False, False)
@@ -460,6 +461,12 @@ class _ProgressWindow:
         self.cancelled = True
 
     def show(self, text, fraction):
+        # Redraw at most 10 times a second: the Mac release has over 100,000 files, and redrawing
+        # after each one made unpacking take half an hour instead of half a minute.
+        now = time.monotonic()
+        if now - self._last_redraw < 0.1 and fraction < 1:
+            return
+        self._last_redraw = now
         self.label.config(text=text)
         self.bar["value"] = max(0.0, min(1.0, fraction)) * 100
         self.root.update()
