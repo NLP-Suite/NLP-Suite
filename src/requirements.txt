@@ -16,7 +16,6 @@
 # versioning (which states that breaking changes should occur only in major versions).
 #
 #used in NLP_setup_update_util for the automatic update to the latest release available on GitHub using git
-pygit2
 #
 spacy<3.8  # 3.8+ pulls blis>=1.0, which requires numpy>=2.0 and drops Python 3.8 support
 stanza==1.5.1

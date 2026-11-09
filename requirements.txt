@@ -129,9 +129,6 @@ tkcolorpicker
 # the NLP_menu_main setup panel and tool browser (the other GUIs are plain tkinter)
 customtkinter==6.0.0
 
-# Auto-update via git
-pygit2
-
 # Jupyter widgets (used by pyLDAvis visualizations)
 ipython
 ipywidgets
