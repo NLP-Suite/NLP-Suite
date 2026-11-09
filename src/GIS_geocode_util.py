@@ -793,7 +793,7 @@ def geocode(
                         distinctGeocodedLocations[itemToGeocode] = (lat, lng, address)
                         address_list = address.split(",")
                         country_geocoder = address_list[-1].strip()
-                        print(f" → ({lat}, {lng}) [cached]")
+                        print(f" -> ({lat}, {lng}) [cached]")
                     else:
                         locationsNotFound += 1
                         geowriterNotFound.writerow([itemToGeocode, NER_Tag])
@@ -847,7 +847,7 @@ def geocode(
                             location.longitude,
                             location.address,
                         )  # extracting lat from the request results
-                        print(f" → ({lat}, {lng})")
+                        print(f" -> ({lat}, {lng})")
                     except:
                         lat, lng, address = 0, 0, " LOCATION NOT FOUND BY " + geocoder
                         locationsNotFound = locationsNotFound + 1

@@ -2,6 +2,15 @@
 
 import sys
 
+# When the output goes to a file or pipe on Windows (a log, a launcher), Python writes it in cp1252, and a
+# print of any character outside it -- an arrow, a dash, a place name like Zurich with its umlaut -- raised
+# UnicodeEncodeError and stopped the tool (a GIS map run died this way). Replace such characters instead.
+for _stream in (sys.stdout, sys.stderr):
+    try:
+        _stream.reconfigure(errors="backslashreplace")
+    except (AttributeError, ValueError, OSError):  # None (no console) or not a text stream
+        pass
+
 # Creates a circular dependent imports
 # if IO_libraries_util.install_all_Python_packages(GUI_util.window, "GUI_util", ['tkinter', 'os', 'subprocess', 'PIL']) == False:
 #     sys.exit(0)

@@ -5258,7 +5258,7 @@ network.on("click", function(params) {{
                         filesToOpen.append(gexf_file)
                         print(f"  Gephi .gexf saved: {gexf_file}")
                     except ImportError:
-                        print("  Gephi_util not available — skipping .gexf export")
+                        print("  Gephi_util not available - skipping .gexf export")
                     except Exception as ge:
                         print(f"  WARNING: Gephi .gexf export: {ge}")
 
