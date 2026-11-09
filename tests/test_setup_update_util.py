@@ -70,3 +70,28 @@ def test_current_git_branch_returns_none_outside_a_repo(tmp_path):
 )
 def test_newer_release_available(local, remote, expected):
     assert upd.newer_release_available(local, remote) is expected
+
+
+@pytest.mark.parametrize(
+    ("error", "damaged"),
+    [
+        ("fatal: not a git repository (or any of the parent directories): .git", True),
+        ("error: object file .git/objects/ab/cd is empty\nfatal: loose object abcd is corrupt", True),
+        ("fatal: detected dubious ownership in repository at 'C:/NLP-Suite'", False),
+        ("fatal: Unable to create '.git/index.lock': File exists.", False),
+        ("Could not run git: timed out", False),
+        ("", False),
+    ],
+)
+def test_git_folder_is_damaged_only_for_real_damage(error, damaged):
+    # deleting .git on any other error would wipe a working checkout (e.g. a lab machine where the folder
+    # belongs to another account and git refuses it as "dubious ownership")
+    assert upd.git_folder_is_damaged(error) is damaged
+
+
+@pytest.mark.skipif(shutil.which("git") is None, reason="needs the git program")
+def test_read_git_branch_returns_gits_error_outside_a_repo(tmp_path):
+    with mock.patch.dict(os.environ, {"GIT_CEILING_DIRECTORIES": str(tmp_path.parent)}):
+        branch, error = upd.read_git_branch(str(tmp_path))
+    assert branch is None
+    assert "not a git repository" in error.lower()

@@ -118,8 +118,8 @@ def update_method(NLPPath, frozen=None):
     return "git"
 
 
-def current_git_branch(NLPPath):
-    """Name of the checked-out branch, or None if git cannot read it. Uses the git program, not pygit2."""
+def read_git_branch(NLPPath):
+    """(branch, error): the checked-out branch, or None and git's error text. Uses the git program, not pygit2."""
     try:
         result = subprocess.run(
             ["git", "rev-parse", "--abbrev-ref", "HEAD"],
@@ -129,11 +129,26 @@ def current_git_branch(NLPPath):
             timeout=30,
         )
     except (OSError, subprocess.SubprocessError) as e:
-        print("Could not run git: " + str(e))
-        return None
+        return None, "Could not run git: " + str(e)
     if result.returncode != 0:
-        return None
-    return result.stdout.strip() or None
+        return None, (result.stderr or "").strip() or "git rev-parse exited with code " + str(result.returncode)
+    return (result.stdout.strip() or None), ""
+
+
+def current_git_branch(NLPPath):
+    """Name of the checked-out branch, or None if git cannot read it."""
+    return read_git_branch(NLPPath)[0]
+
+
+# Only these errors mean the .git folder itself is broken and may be rebuilt from GitHub. Anything else
+# (e.g. "detected dubious ownership" when the folder belongs to another Windows account, a git lock, a
+# timeout) leaves .git alone: deleting it would destroy a working checkout and the user's branches.
+_DAMAGED_GIT_ERRORS = ("not a git repository", "corrupt", "bad object", "loose object", "bad index file")
+
+
+def git_folder_is_damaged(error):
+    text = str(error or "").lower()
+    return "dubious ownership" not in text and any(e in text for e in _DAMAGED_GIT_ERRORS)
 
 
 # called by exit_window
@@ -190,7 +205,7 @@ def update_self(GitHub_release_version):
         IO_libraries_util.open_url("Git", url, ask_to_open=True, message_title="Git installation", message=message_Git)
         return True
 
-    branch = current_git_branch(NLPPath)
+    branch, git_error = read_git_branch(NLPPath)
     if branch == "current-stable":
         print("Updating the NLP Suite...")
         for command in (["git", "add", "-A", "."], ["git", "stash"], ["git", "pull", "-f", "origin"]):
@@ -206,7 +221,20 @@ def update_self(GitHub_release_version):
         )
         return True
 
-    # git could not read the branch: the .git folder is damaged. Rebuild it from GitHub.
+    if not git_folder_is_damaged(git_error):
+        print("Git error: " + git_error + "\nUpdate aborted; the .git folder was left as it is.")
+        mb.showwarning(
+            title="NLP Suite update",
+            message="The NLP Suite could not be updated, because Git reported this error in your NLP Suite folder ("
+            + NLPPath
+            + "):\n\n"
+            + git_error
+            + "\n\nNothing was changed. You can update by hand with 'git pull' in that folder, or download the new "
+            "release from\n\n" + RELEASES_URL,
+        )
+        return True
+
+    # git says the .git folder itself is damaged. Rebuild it from GitHub.
     print("Git fatal error: could not read the current branch with 'git rev-parse'.")
     mb.showwarning(
         title="Git fatal error",
