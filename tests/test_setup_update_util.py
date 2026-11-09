@@ -1,0 +1,57 @@
+"""Auto-update must not depend on pygit2, and must not try git on the installer build.
+
+Most students run the prebuilt installer (no Python, no pygit2, no .git folder) or a source
+install that never got pygit2. Before this fix both hit "pygit2 is not available" on every exit.
+"""
+
+import os
+import shutil
+import subprocess
+import sys
+from unittest import mock
+
+import pytest
+
+import NLP_setup_update_util as upd
+
+
+def test_module_does_not_import_pygit2():
+    assert "pygit2" not in sys.modules or not hasattr(upd, "Repository")
+    assert not hasattr(upd, "_has_pygit2")
+
+
+def test_installer_build_uses_download_page(tmp_path):
+    (tmp_path / ".git").mkdir()
+    assert upd.update_method(str(tmp_path), frozen=True) == "download"
+
+
+def test_folder_without_git_uses_download_page(tmp_path):
+    assert upd.update_method(str(tmp_path), frozen=False) == "download"
+
+
+def test_git_checkout_without_git_program_asks_for_git(tmp_path):
+    (tmp_path / ".git").mkdir()
+    with mock.patch.object(upd.shutil, "which", return_value=None):
+        assert upd.update_method(str(tmp_path), frozen=False) == "install_git"
+
+
+def test_git_checkout_with_git_program_uses_git(tmp_path):
+    (tmp_path / ".git").mkdir()
+    with mock.patch.object(upd.shutil, "which", return_value="/usr/bin/git"):
+        assert upd.update_method(str(tmp_path), frozen=False) == "git"
+
+
+@pytest.mark.skipif(shutil.which("git") is None, reason="needs the git program")
+def test_current_git_branch_reads_branch_without_pygit2(tmp_path):
+    subprocess.run(["git", "init", "-q", "-b", "current-stable", str(tmp_path)], check=True)
+    env = dict(
+        os.environ, GIT_AUTHOR_NAME="t", GIT_AUTHOR_EMAIL="t@t", GIT_COMMITTER_NAME="t", GIT_COMMITTER_EMAIL="t@t"
+    )
+    subprocess.run(["git", "-C", str(tmp_path), "commit", "-q", "--allow-empty", "-m", "x"], check=True, env=env)
+    assert upd.current_git_branch(str(tmp_path)) == "current-stable"
+
+
+@pytest.mark.skipif(shutil.which("git") is None, reason="needs the git program")
+def test_current_git_branch_returns_none_outside_a_repo(tmp_path):
+    with mock.patch.dict(os.environ, {"GIT_CEILING_DIRECTORIES": str(tmp_path.parent)}):
+        assert upd.current_git_branch(str(tmp_path)) is None

@@ -179,6 +179,7 @@ Deleting a remote branch is Roberto's call.
 ## 8. Done
 
 Since the 16 Jul audit:
+- Auto-update no longer needs pygit2: `NLP_setup_update_util` reads the branch with the git program, and the installer build (or any folder without `.git`) points the user to the latest release instead of running git.
 - `data_manipulation_main.py`: the unbound `comingFrom_Plus`/`comingFrom_OK` crash and the duplicate `build_extract_string` are gone.
 - One-shot Ruff format of `src/` (v1.6.40).
 - Unused imports and invalid escape sequences cleared.

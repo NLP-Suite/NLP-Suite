@@ -4,6 +4,9 @@ The most recent release is at the top. Each release's bullets are shown as **"Wh
 on the corresponding GitHub Release page (the top section is added automatically by the
 release workflow). Keep the newest version's section at the very top and update it before tagging.
 
+## Unreleased
+- **Updating no longer asks for pygit2.** Closing the NLP Suite used to say "The pygit2 library is not available" and tell you to install it with pip, which most students could not do. If you installed the NLP Suite from the download (zip) page, closing it now tells you when a new release is out and offers to open the download page. If you run it from source, it updates with Git alone, as long as Git is installed.
+
 ## v1.6.40
 - **A new main menu: find any tool by typing.** The menu's hundred-odd tools sat in seven dropdowns across two tabs, so finding one meant guessing which dropdown held it. They are now in one list you can browse by category, as before, or search: type "WSI", "topic", "SVO" or "duplicate" and the tool comes up, with a one-line description of what it does. About twenty tools that were in no dropdown, and so could not be reached at all, are found by search too. The three setup steps (input/output, NLP package and language, external software) now say plainly whether each is Ready or Needs setup. Running a tool works exactly as before. If you run the NLP Suite from source (Anaconda), the first launch installs the one new package the menu needs, customtkinter.
 - **Optional, anonymous usage counts.** The first time you open a tool, the Suite asks whether it may send its developers anonymous counts of which tools are opened and how often RUN is clicked, with the Suite version and your operating system. Nothing is sent unless you say yes, and No is the default. Your name, files, folder paths and texts are never sent. To change your answer later, delete the file `.nlp_suite/usage.json` in your home folder.
