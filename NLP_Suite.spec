@@ -269,7 +269,7 @@ a = Analysis(
         'gmaps',
         'nltk',      # hook incompatible with Python 3.8; nltk downloads data at runtime
         'spacy_langdetect', 'contextualSpellCheck',  # optional, may not be installed
-        'pygit2',    # not needed in bundled app; auto-update disabled when frozen
+        'pygit2',    # no longer a requirement (the updater uses the git program); excluded in case it is installed
         # SRL (transformer_srl/allennlp) runs ONLY in a separate Python 3.8 subprocess env, never in
         # this py3.10 bundle. src/SRL_worker.py ships as a data script and imports them lazily at run
         # time, so it never needs to import here. Exclude them so the legacy stack is never pulled in.

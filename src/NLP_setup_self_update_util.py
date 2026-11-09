@@ -870,3 +870,48 @@ def update_zip_install(NLPPath, GitHub_release_version):
         + log,
     )
     return None
+
+
+def release_download_ready(version, timeout=6):
+    """True once this computer's zip for `version` is on the GitHub release page.
+
+    Right after a release is tagged, current-stable already reports the new version, but the zips take
+    about an hour to build. A HEAD request to the download link is not counted against GitHub's
+    60-an-hour API limit, so it can run every time a GUI opens. False also when GitHub can't be reached.
+    """
+    import requests
+
+    name = asset_name()
+    if name is None:
+        return False
+    url = "https://github.com/NLP-Suite/NLP-Suite/releases/download/v" + version_number(version) + "/" + name
+    try:
+        return requests.head(url, timeout=timeout, allow_redirects=False).status_code in (200, 301, 302, 303, 307)
+    except requests.RequestException:
+        return False
+
+
+def outdated_message(local_version, GitHub_version, zip_install):
+    """The launch-time 'a newer release is out' message: what THIS install does when it is closed."""
+    local, new = version_number(local_version), version_number(GitHub_version)
+    if zip_install:
+        how = (
+            "To install it, close the NLP Suite: it will offer to download and install the new release (about "
+            "1.5 GB), keeping your settings and files."
+        )
+    else:
+        how = (
+            "To install it, close the NLP Suite: if it runs from a Git copy of the 'current-stable' branch, it "
+            "updates itself with Git (download Git from https://git-scm.com/downloads if you don't have it). "
+            "Otherwise download the new release from " + RELEASES_URL + "."
+        )
+    return (
+        "You are running NLP Suite "
+        + local
+        + ". A newer release, "
+        + new
+        + ", is available.\n\n"
+        + how
+        + "\n\nThe two release numbers are shown at the top left of every window: yours, then GitHub's "
+        "(0.0.0 when GitHub can't be reached).\n\nWOULD YOU LIKE TO SEE WHAT IS NEW IN " + new + "?"
+    )

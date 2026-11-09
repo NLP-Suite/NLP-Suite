@@ -408,13 +408,13 @@ def get_local_release_version():
 
 
 # also called from exit_window in NLP_setup_update_util
-def get_GitHub_release_version(silent=False):
-    # check internet connection
-    if not IO_internet_util.check_internet_availability_warning(
-        "GUI_util.py (Function Automatic check for NLP Suite newest release version on GitHub)"
-    ):
-        GitHub_newest_release = "0.0.0"
-        return GitHub_newest_release
+def get_GitHub_release_version(silent=True):
+    # A non-essential check that runs every time a window opens or closes: offline it must stay quiet.
+    # It used to ask "Internet is not available... bypass the check?" each time, so an offline student
+    # clicked through up to four popups per window. The 0.0.0 shown top-left already says "couldn't check".
+    if not IO_internet_util.internet_on():
+        print("NLP Suite version check: no internet connection; the latest release on GitHub was not checked.")
+        return "0.0.0"
     release_url = "https://raw.githubusercontent.com/NLP-Suite/NLP-Suite/current-stable/lib/release_version.txt"
     # This is a non-essential "is there a newer release?" check that runs on every launch. A single
     # transient blip (DNS hiccup, momentary SSL, slow IPv6->IPv4 fallback) must NOT nag the user with
@@ -461,9 +461,10 @@ def parse_release_version(version_string):
     return tuple(parts)
 
 
-def check_GitHub_release(local_release_version: str, silent=False):
-    GitHub_newest_release = get_GitHub_release_version()
-    if GitHub_newest_release == None or GitHub_newest_release == "0.0.0":  # when not connected to internet
+def check_GitHub_release(local_release_version: str, silent=False, GitHub_newest_release=None):
+    if GitHub_newest_release is None:
+        GitHub_newest_release = get_GitHub_release_version()
+    if GitHub_newest_release is None or GitHub_newest_release == "0.0.0":  # when not connected to internet
         return
     local_parsed = parse_release_version(local_release_version)
     GitHub_parsed = parse_release_version(GitHub_newest_release)
@@ -471,27 +472,24 @@ def check_GitHub_release(local_release_version: str, silent=False):
     if local_parsed == (0, 0, 0) or GitHub_parsed == (0, 0, 0):
         return
     # tuple comparison IS the major -> minor -> patch cascade the old nested ifs spelled out by hand
-    old_version = local_parsed < GitHub_parsed
-    if "Not Found" not in GitHub_newest_release and old_version:  # GitHub_newest_release != local_release_version:
-        # update is carried out in NLP_setup_update_util.py
-        result = mb.askyesno(
-            "NLP Suite Outdated",
-            "You are running the NLP Suite release version "
-            + str(local_release_version).rstrip()
-            + ", an OLD version."
-            + "\n\nA NEW version of the NLP Suite has been released on GitHub: "
-            + str(GitHub_newest_release)
-            + "\n\nThe OLD and NEW release versions are displayed on the top left-hand corner of the GUI, local OLD version left of \\ GitHUB new version right of \\ (0.0.0 is displayed when you are not connected to the internet to access GitHub)."
-            + "\n\nTo update to the newer release, EXIT the NLP Suite NOW by clicking on the CLOSE button and fire up the NLP Suite again.\n\nThe NLP Suite is automatically updated every time you exit the NLP Suite and fire it up again."
-            + "\n\nThe update features of the NLP Suite rely on Git. Please download Git at this link https://git-scm.com/downloads, if it hasn’t been installed already."
-            + "\n\nWOULD YOU LIKE TO SEE WHAT IS NEW IN THE RELEASE VERSION "
-            + str(GitHub_newest_release).rstrip()
-            + "?",
-        )
-        if result:
-            url = "https://github.com/NLP-Suite/NLP-Suite/wiki/NLP-Suite-Release-History"
-            IO_libraries_util.open_url("NLP Suite GitHub", url)
-            # webbrowser.open_new_tab("https://github.com/NLP-Suite/NLP-Suite/wiki/NLP-Suite-Release-History")
+    if not local_parsed < GitHub_parsed:
+        return
+    # update is carried out on CLOSE, in NLP_setup_update_util.py
+    import NLP_setup_self_update_util
+
+    zip_install = NLP_setup_self_update_util.is_zip_install(GUI_IO_util.NLPPath)
+    # current-stable announces a release about an hour before its zips are built: don't send zip users to
+    # a download that isn't there yet (git checkouts can pull at once)
+    if zip_install and not NLP_setup_self_update_util.release_download_ready(GitHub_newest_release):
+        print("NLP Suite " + GitHub_newest_release.strip() + " is announced but its download is not ready yet.")
+        return
+    result = mb.askyesno(
+        "NLP Suite Outdated",
+        NLP_setup_self_update_util.outdated_message(local_release_version, GitHub_newest_release, zip_install),
+    )
+    if result:
+        url = "https://github.com/NLP-Suite/NLP-Suite/blob/current-stable/CHANGELOG.md"
+        IO_libraries_util.open_url("NLP Suite GitHub", url)
 
 
 # get the release version available on GitHub
@@ -549,12 +547,10 @@ def display_release():
         )
     # check and display a possible warning message
     if GitHub_newest_release != "0.0.0":
-        check_GitHub_release(local_release_version)
+        check_GitHub_release(local_release_version, GitHub_newest_release=GitHub_newest_release)
     else:
-        mb.showwarning(
-            title="GitHub release version",
-            message="The GitHub release version is displayed on the top left-hand corner of the GUI as 0.0.0.\n\nWithout internet the newest release available on GitHub cannnot be retrieved.",
-        )
+        # no popup: the 0.0.0 top-left already says it, and its hover text explains it
+        print("The newest NLP Suite release on GitHub could not be checked (no internet); it is shown as 0.0.0.")
     return local_release_version, GitHub_newest_release
 
 
@@ -2631,8 +2627,7 @@ def GUI_bottom(
         # GitHub_release_version = GitHub_release_version.strip('\n')
         # GitHub_release_version = GitHub_release_version.strip('\r')
 
-        # hitting the CLOSE button will automatically pull from GitHub the latest release available on GitHub
-        GitHub_newest_release = get_GitHub_release_version()
+        # hitting the CLOSE button updates the NLP Suite when a newer release is out (exit_window checks GitHub)
         import NLP_setup_update_util
 
         NLP_setup_update_util.exit_window()

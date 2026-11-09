@@ -538,3 +538,27 @@ def test_swap_script_started(tmp_path):
     assert not su.swap_script_started(str(tmp_path), timeout=0.2, poll=0.05)
     (tmp_path / su.STARTED_FLAG).write_text("")
     assert su.swap_script_started(str(tmp_path), timeout=0.2, poll=0.05)
+
+
+def test_outdated_message_says_what_this_install_does():
+    zip_msg = su.outdated_message("1.6.40\n", "1.6.41\n", zip_install=True)
+    assert "1.6.40" in zip_msg and "1.6.41" in zip_msg
+    assert "close the NLP Suite" in zip_msg
+    assert "git-scm" not in zip_msg  # the downloaded build never needs Git
+    git_msg = su.outdated_message("1.6.40", "1.6.41", zip_install=False)
+    assert "git-scm.com" in git_msg and su.RELEASES_URL in git_msg
+
+
+def test_release_download_ready_checks_the_download_link():
+    class R:
+        def __init__(self, code):
+            self.status_code = code
+
+    with mock.patch.object(su, "asset_name", return_value="NLP-Suite-windows-x64.zip"):
+        with mock.patch("requests.head", return_value=R(302)) as head:
+            assert su.release_download_ready("1.6.41\n")
+        assert head.call_args[0][0].endswith("/download/v1.6.41/NLP-Suite-windows-x64.zip")
+        with mock.patch("requests.head", return_value=R(404)):
+            assert not su.release_download_ready("1.6.41")
+    with mock.patch.object(su, "asset_name", return_value=None):
+        assert not su.release_download_ready("1.6.41")

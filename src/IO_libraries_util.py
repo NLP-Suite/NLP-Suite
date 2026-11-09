@@ -160,12 +160,6 @@ def install_all_Python_packages(window, calling_script, modules_to_try):
             + "\n\nto install the module, close the NLP Suite, and try again."
         )
 
-        if "pygit2" in str(missingModules):
-            message = (
-                message
-                + "\n\nWithout pygit2 the NLP Suite will not be automatically updated.\n\nThis, however, may be a sign that either you have not run STEP2 or you have not run it to completion (STEP2 installs all software_names used by the NLP Suite and takes quite some time). To install all software_names, run STEP2 again or, in command line/prompt, type\n\npip install -r requirements.txt"
-            )
-
         answer = tk.messagebox.askyesno(
             "Module import error",
             message
