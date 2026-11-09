@@ -562,3 +562,15 @@ def test_release_download_ready_checks_the_download_link():
             assert not su.release_download_ready("1.6.41")
     with mock.patch.object(su, "asset_name", return_value=None):
         assert not su.release_download_ready("1.6.41")
+
+
+@windows_only
+def test_launch_swap_script_really_runs_powershell(tmp_path):
+    # The swap tests above start PowerShell directly. This goes through launch_swap_script, as the app does:
+    # started with DETACHED_PROCESS, Windows PowerShell exited at once without running the script, and a real
+    # update stopped with "the program that installs the new version did not start".
+    flag = tmp_path / su.STARTED_FLAG
+    script = tmp_path / "probe.ps1"
+    script.write_text("[System.IO.File]::WriteAllText('" + str(flag) + "', '')\n", encoding="utf-8-sig")
+    su.launch_swap_script(str(script), "win32")
+    assert su.swap_script_started(str(tmp_path), timeout=30)
