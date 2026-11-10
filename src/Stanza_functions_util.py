@@ -37,11 +37,7 @@ import IO_internet_util
 # already there, 8.7 s to build the pipeline) before its window appeared, whatever the user then ran.
 # A failure of either step is shown in a dialog and raised (see IO_internet_util.LazyModel).
 def _build_stanza_pipeline():
-    if not IO_internet_util.ensure_stanza_model(
-        "Stanza_functions_util.py (stanza.download(en))",
-        lambda: stanza.download("en"),
-        "the Stanza English language model",
-    ):
+    if not IO_internet_util.ensure_stanza_model("Stanza_functions_util.py", lang="en", window=GUI_util.window):
         return None  # the download failure has been shown; LazyModel raises
     return stanza.Pipeline(lang="en", processors="tokenize, lemma")
 

@@ -18,27 +18,19 @@ if (
 # https://amueller.github.io/word_cloud/
 
 from collections import Counter, defaultdict
+import csv
 import os
 import tkinter.messagebox as mb
 
+import matplotlib.pyplot as plt  # pip install matplotlib
 import numpy as np
 import pandas as pd
 from PIL import Image
 import stanza
-
-import IO_internet_util
-
-# Download the model only when it is not on disk yet (stanza.download re-checks a present model for
-# 9-11 s, and this runs when a GUI opens). A failed download is reported in a dialog.
-IO_internet_util.ensure_stanza_model(
-    "wordclouds_util.py (stanza.download(en))", lambda: stanza.download("en"), "the Stanza English language model"
-)
-import csv
-
-import matplotlib.pyplot as plt  # pip install matplotlib
 from wordcloud import STOPWORDS, WordCloud
 
 import IO_files_util
+import IO_internet_util
 import IO_user_interface_util
 
 
@@ -753,6 +745,8 @@ def python_wordCloud(
     if fileType == ".txt":
         # always tokenize to convert each token to lowercase
         #   to avoid the same improper word to appear with lower and upper case at the beginning of a sentence
+        if not IO_internet_util.ensure_stanza_model("wordclouds_util.py", lang="en", window=GUI_util.window):
+            return filesToOpen
         stannlp = stanza.Pipeline(lang="en", processors="tokenize, mwt")
         runStanza = True
         processors = "tokenize, mwt"

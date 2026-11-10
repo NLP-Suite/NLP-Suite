@@ -142,16 +142,112 @@ def stanza_model_present(lang="en", resources_dir=None):
         return False
 
 
-def ensure_stanza_model(script, download_function, resource="a language model", lang="en", resources_dir=None):
+def folder_size_mb(path):
+    """Size of everything under `path`, in whole MB (0 if it does not exist yet)."""
+    import os
+
+    total = 0
+    for root, _dirs, files in os.walk(path):
+        for name in files:
+            try:
+                total += os.path.getsize(os.path.join(root, name))
+            except OSError:
+                continue  # a file the download is renaming or unpacking right now; counted on the next pass
+    return total // (1024 * 1024)
+
+
+def run_with_progress(work, window=None, *, title="Please wait", message="", watch_dir=None, poll_seconds=0.25):
+    """Run `work()` in a background thread, keeping the GUI alive until it ends.
+
+    With a `window`, a small modal window shows `message` (and, with `watch_dir`, how many MB have been
+    written so far) and stays up until the work ends, so a long download neither freezes the GUI nor
+    disappears after a few seconds. An exception raised by `work` is re-raised here, on the calling thread."""
+    import threading
+    import tkinter as tk
+
+    outcome = {}
+
+    def target():
+        try:
+            work()
+        except BaseException as e:  # handed back to the calling thread below
+            outcome["error"] = e
+
+    thread = threading.Thread(target=target, daemon=True)
+    thread.start()
+    box = status = None
+    if window is not None:
+        box = tk.Toplevel(window)
+        box.title(title)
+        box.resizable(False, False)
+        box.transient(window)
+        box.protocol("WM_DELETE_WINDOW", lambda: None)  # it closes by itself when the work ends
+        tk.Label(box, text=message, justify=tk.LEFT, wraplength=440, padx=20, pady=12).pack()
+        status = tk.Label(box, text="", padx=20, pady=8)
+        status.pack()
+        box.grab_set()  # no second RUN while the first one waits for its model
+    try:
+        while thread.is_alive():
+            if box is not None:
+                if watch_dir and status is not None:
+                    status.config(text="Downloaded so far: " + str(folder_size_mb(watch_dir)) + " MB")
+                box.update()
+            thread.join(poll_seconds)
+    finally:
+        if box is not None:
+            box.grab_release()
+            box.destroy()
+    if "error" in outcome:
+        raise outcome["error"]
+
+
+def stanza_download_message(lang="en", language_name=None):
+    """What the user reads while a Stanza model downloads."""
+    name = language_name or ("English" if lang == "en" else lang)
+    size = "about 1 GB" if lang == "en" else "several hundred MB to about 1 GB"
+    return (
+        "Downloading the Stanza " + name + " language model (" + size + ").\n\n"
+        "This happens only the first time the model is used. It may take several minutes, depending on "
+        "your internet connection.\n\nThis window closes by itself when the download is done."
+    )
+
+
+def ensure_stanza_model(
+    script, download_function=None, resource=None, *, lang="en", resources_dir=None, window=None, language_name=None
+):
     """Download the Stanza model only when it is not on disk yet. Returns True when it is available.
 
-    stanza.download() fetches the resources list from GitHub and re-hashes every model file even when
-    nothing is missing: 9-11 seconds per call, and it used to run at import in four modules, so opening a
-    GUI repeated it up to three times. A model that is present is trusted here; if one of its files is
-    missing, stanza.Pipeline() fetches that file itself when the pipeline is built."""
+    Call it when a tool is about to use Stanza, not at import. stanza.download() fetches the resources
+    list from GitHub and re-hashes every model file even when nothing is missing (9-11 s per call), and
+    with no network it waits. A model that is present is trusted here; if one of its files is missing,
+    stanza.Pipeline() fetches that file itself when the pipeline is built.
+
+    With a `window`, the download runs in the background behind a window that stays up until it ends
+    (see run_with_progress). A failed download is shown in a dialog (download_with_warning)."""
+    import os
+
     if stanza_model_present(lang, resources_dir):
         return True
-    return download_with_warning(script, download_function, resource)
+
+    def stanza_download():
+        import stanza
+
+        stanza.download(lang, model_dir=resources_dir or stanza_resources_dir())
+
+    if resource is None:
+        resource = "the Stanza " + (language_name or lang) + " language model"
+    watch_dir = os.path.join(resources_dir or stanza_resources_dir(), lang)
+
+    def download():
+        run_with_progress(
+            download_function or stanza_download,
+            window,
+            title="Stanza model download",
+            message=stanza_download_message(lang, language_name),
+            watch_dir=watch_dir,
+        )
+
+    return download_with_warning(script, download, resource)
 
 
 class LazyModel:

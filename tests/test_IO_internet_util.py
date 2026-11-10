@@ -5,8 +5,11 @@ downloaded: previously a ConnectionError reached the terminal only and the proce
 running the Suite from the app saw the window vanish with no explanation.
 """
 
+import ast
 import os
 import sys
+import threading
+import time
 import types
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "src"))
@@ -150,6 +153,86 @@ class TestEnsureStanzaModel:
         rec = _offline(monkeypatch, answer=False)
         assert net.ensure_stanza_model("x", _boom, resources_dir=str(tmp_path)) is False
         assert len(rec.errors) == 1
+
+    def test_the_default_download_fetches_the_requested_language(self, tmp_path, monkeypatch):
+        monkeypatch.setattr(net, "mb", _Recorder())
+        calls = []
+        fake = types.ModuleType("stanza")
+        fake.download = lambda lang, model_dir=None: calls.append((lang, model_dir))
+        monkeypatch.setitem(sys.modules, "stanza", fake)
+        assert net.ensure_stanza_model("x", lang="it", resources_dir=str(tmp_path)) is True
+        assert calls == [("it", str(tmp_path))]
+
+    def test_the_download_does_not_run_on_the_calling_thread(self, tmp_path, monkeypatch):
+        # the calling thread is the Tk thread: blocking it is what froze the GUI (issue #1703)
+        monkeypatch.setattr(net, "mb", _Recorder())
+        threads = []
+        net.ensure_stanza_model("x", lambda: threads.append(threading.current_thread()), resources_dir=str(tmp_path))
+        assert threads and threads[0] is not threading.current_thread()
+
+
+class TestRunWithProgress:
+    def test_runs_the_work_and_waits_for_it(self):
+        done = []
+        net.run_with_progress(lambda: (time.sleep(0.05), done.append(1)), poll_seconds=0.01)
+        assert done == [1]
+
+    def test_an_error_in_the_work_reaches_the_caller(self):
+        try:
+            net.run_with_progress(_boom, poll_seconds=0.01)
+        except ConnectionError:
+            return
+        raise AssertionError("the error was swallowed")
+
+
+class TestDownloadMessage:
+    def test_gives_the_real_size_and_says_it_stays_up(self):
+        msg = net.stanza_download_message("en")
+        assert "about 1 GB" in msg and "525" not in msg
+        assert "closes by itself" in msg
+
+    def test_names_the_language(self):
+        assert "Italian" in net.stanza_download_message("it", "Italian")
+
+
+class TestFolderSize:
+    def test_counts_every_file_below(self, tmp_path):
+        (tmp_path / "a").mkdir()
+        (tmp_path / "a" / "big.bin").write_bytes(b"x" * (3 * 1024 * 1024))
+        assert net.folder_size_mb(str(tmp_path)) == 3
+
+    def test_a_missing_folder_is_zero(self, tmp_path):
+        assert net.folder_size_mb(str(tmp_path / "nope")) == 0
+
+
+def _module_level_calls(path):
+    """Names of the functions a module calls when it is imported (outside def/class bodies)."""
+    tree = ast.parse(open(path, encoding="utf-8").read())
+    names = []
+
+    def visit(node):
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef, ast.Lambda)):
+            return
+        if isinstance(node, ast.Call):
+            f = node.func
+            names.append(f.attr if isinstance(f, ast.Attribute) else getattr(f, "id", ""))
+        for child in ast.iter_child_nodes(node):
+            visit(child)
+
+    for stmt in tree.body:
+        visit(stmt)
+    return names
+
+
+class TestNoDownloadAtImport:
+    """Opening a GUI must not download or re-check a Stanza model (issue #1703)."""
+
+    def test_the_stanza_modules_do_not_download_when_imported(self):
+        src = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "src")
+        for module in ("Stanza_util", "Stanza_functions_util", "statistics_txt_util", "wordclouds_util"):
+            calls = _module_level_calls(os.path.join(src, module + ".py"))
+            for banned in ("download", "ensure_stanza_model", "Pipeline", "timed_alert"):
+                assert banned not in calls, module + " calls " + banned + " at import"
 
 
 class TestLazyModel:

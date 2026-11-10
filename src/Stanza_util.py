@@ -24,27 +24,6 @@ if (
 ):
     sys.exit(0)
 
-import stanza
-
-import IO_internet_util
-
-# Download the English model only when it is not on disk yet. stanza.download() used to run on every
-# import, i.e. every time a GUI that uses Stanza opened, and it re-checks a present model for 9-11 s.
-# A failed download is now reported in a dialog; the bare except used to swallow it.
-if not IO_internet_util.stanza_model_present("en"):
-    import IO_user_interface_util
-
-    IO_user_interface_util.timed_alert(
-        GUI_util.window,
-        6000,
-        "Stanza model download",
-        "Downloading the Stanza language model for the first time (~525 MB).\n\nThis is a one-time download. Please be patient, it may take several minutes depending on your internet connection.",
-        False,
-    )
-    IO_internet_util.ensure_stanza_model(
-        "Stanza_util.py (stanza.download(en))", lambda: stanza.download("en"), "the Stanza English language model"
-    )
-
 import os
 import re
 import sys
@@ -52,6 +31,7 @@ import tkinter.messagebox as mb
 import warnings
 
 import pandas as pd
+import stanza
 from stanza.pipeline.multilingual import MultilingualPipeline
 
 import constants_util
@@ -61,6 +41,7 @@ import IO_csv_util
 
 # from tenacity import retry_unless_exception_type
 import IO_files_util
+import IO_internet_util
 import IO_user_interface_util
 import parsers_annotators_visualization_util
 import Stanford_CoreNLP_clause_util
@@ -287,9 +268,13 @@ def Stanza_annotate(
     long_lang = long_lang_list[0]
     # check if selected language is only one and NOT multilingual
     if len(language) == 1 and language[0] != "multilingual":
-        # test if the selected language model is already downloaded, if not, download
-        # IMPORTANT: no need to manually download language package after Stanza v1.4.0,
-        #            if Stanza gives error for downloading, check the current version of Stanza
+        # Download the language model the first time it is used, in the background behind a window that
+        # stays up until the download ends (stanza.Pipeline would also download it, but silently, on the
+        # Tk thread, with progress only on the console).
+        if not IO_internet_util.ensure_stanza_model(
+            "Stanza_util.py", lang=short_lang, window=GUI_util.window, language_name=long_lang
+        ):
+            return filesToOpen
         nlp = stanza.Pipeline(short_lang, processors="tokenize", verbose=False)
 
         if "Lemma" in annotator_params:
@@ -1775,6 +1760,9 @@ def Stanza_coref(
         "",
         False,
     )
+
+    if not IO_internet_util.ensure_stanza_model("Stanza_util.py", lang="en", window=GUI_util.window):
+        return [], True
 
     # Build pipeline with coref
     try:
