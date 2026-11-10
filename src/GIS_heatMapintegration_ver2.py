@@ -14,7 +14,7 @@ import googlemaps
 ##need to insert googlemaps api key " "
 gmaps = googlemaps.Client(
     key=" "
-)  # AIzaSyApsnv-diA8hrDMrfEEp6Ci6tfUYN7POzg <- This is Denny's key, but when integrated, need to call distinct key
+)  # <- need to call a distinct key
 
 # importing Location file produced (below is my local address)
 lynchLocation = pd.read_csv(
@@ -44,7 +44,7 @@ coordinatsList
 
 import gmaps.datasets
 
-gmaps.configure(api_key="")  # <- insert distinct API Key. My key is: AIzaSyApsnv-diA8hrDMrfEEp6Ci6tfUYN7POzg
+gmaps.configure(api_key="")  # <- insert distinct API Key.
 
 fig = gmaps.figure()
 heatmap_layer = gmaps.heatmap_layer(lynchLocation[["lat", "lng"]], max_intensity=40, point_radius=3.0)

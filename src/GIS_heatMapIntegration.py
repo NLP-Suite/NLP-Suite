@@ -14,7 +14,7 @@ import googlemaps
 ##need to insert googlemaps api key " "
 gmaps = googlemaps.Client(
     key=" "
-)  # AIzaSyApsnv-diA8hrDMrfEEp6Ci6tfUYN7POzg <- This is Denny's key, but when integrated, need to call distinct key
+)  # <- need to call a distinct key
 
 # importing Location file produced (below is my local address)
 lynchLocation = pd.read_csv(
@@ -43,7 +43,7 @@ coordinatsList
 
 import gmaps  # need to import gmaps although i already imported earlier
 
-gmaps.configure(api_key="AIzaSyApsnv-diA8hrDMrfEEp6Ci6tfUYN7POzg")
+gmaps.configure(api_key="")  # <- insert distinct API Key.
 
 
 fig = gmaps.figure(map_type="SATELLITE")

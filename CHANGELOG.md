@@ -6,6 +6,7 @@ release workflow). Keep the newest version's section at the very top and update 
 
 ## Unreleased
 - **Shape of Stories opens on a new install.** It crashed at open with "FileNotFoundError: lib/sampleData/newspaperArticles", because the default settings that come with the download store their folders as relative paths, which were looked up in the wrong place. The sample-data input folder and the `NLP_output` output folder are now found inside the NLP Suite folder, in every tool.
+- **Wordclouds opens on a first run.** With no settings saved yet (a new install), the Wordclouds window showed the "config file could not be found" warning and then crashed instead of opening the language setup.
 
 ## v1.6.41
 - **Download this release by hand once; after that the NLP Suite updates itself.** Copies of v1.6.40 and earlier do not have the new updater: when you close them they still ask for pygit2, or send you to the Git website. Download 1.6.41 from the release page and unzip it in place of your current folder (copy your `config` folder across to keep your settings). From 1.6.41 on, closing the NLP Suite offers to install each new release for you.
