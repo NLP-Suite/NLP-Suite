@@ -22,7 +22,7 @@ What's open, what to close, what to fix next. How to fix an issue is in [CLAUDE.
 
 ## 1. Release 1.6.41
 
-A patch release whose top priority is auto-update (issue #1700). **State (9 Nov 2026):** everything below is merged on `roberto`; `lib/release_version.txt` and CHANGELOG say 1.6.41. **Not yet promoted to `current-stable` or tagged** (Roberto's step, §1.4). What each change does is in CHANGELOG v1.6.41.
+A patch release whose top priority is auto-update (issue #1700). **Released 10 Nov 2026** as `v1.6.41` (§1.4). What each change does is in CHANGELOG v1.6.41.
 
 ### 1.1 In 1.6.41
 
@@ -66,14 +66,15 @@ Open, not blocking (for after 1.6.41):
 - The Git update on `current-stable` still runs `git add -A` + `git stash`, so local edits go into a stash silently (unchanged behaviour).
 - A release file the NLP Suite itself rewrites at run time would keep the backup every time; none is known. Watch the first 1.6.42 update logs (`%TEMP%\NLP_Suite_update.log`).
 
-### 1.4 Before promoting and tagging (Roberto)
+### 1.4 Release record and what is left
 
-1. **Hand checks on Windows** (CI can't do these):
-   - One real self-update with the app open, using the PR's steps: build or unzip a release, replace its `src/` with `roberto`'s, write a manifest (`python -c "import sys; sys.path.insert(0,'src'); import NLP_setup_self_update_util as u; u.write_manifest('.')"` in that folder), set `lib/release_version.txt` to 1.6.40, start with `python-env\python.exe src\NLP_menu_main.py`, close, accept. Until 1.6.41's zips exist the updater has no newer release to fetch, so do this right after tagging, against 1.6.41 itself.
-   - A source checkout on `current-stable` updates with git; one on `roberto` is left alone.
-   - Offline: open and close a GUI with the network off; no popups.
-2. Promote `roberto` → `current-stable`; tag `v1.6.41` on that commit. CI checks `lib/release_version.txt` = tag and that the file list has over 1,000 files. Then the usual artifact check (§7), plus: `lib/release_manifest.tsv` is in both zips.
-3. **Tell students once:** they must download 1.6.41 by hand (CHANGELOG's first bullet says how). Course announcement too.
+**Released 10 Nov 2026** (UTC): `current-stable` = `roberto` @ `34ae0ff2`, tag `v1.6.41`; both installer builds passed and both zips are on the release page. Checked inside the zips (read remotely): Windows `NLP_Suite.exe`, the Mac launcher, `lib/release_version.txt` = 1.6.41, `lib/release_manifest.tsv` (77,507 / 74,113 files), the updater with the launch fix.
+
+**Self-update tested for real on Windows (9 Nov),** on a 26 MB stand-in release served from localhost (the disk was too full for the 1.6 GB one): the menu run from the install's own python, CLOSE, the offer, progress window, download, unpack, the PowerShell swap after the app exited, and the student's files kept (a folder of their own, a file added in `lib/sampleData`, a `config` setting); on the next start the backup was deleted and no update offered. This run found the `DETACHED_PROCESS` bug (PowerShell exited without running the script), fixed in `34ae0ff2` with a test through the real launcher.
+
+Still to do:
+1. **Tell students once:** they must download 1.6.41 by hand (CHANGELOG's first bullet says how). Course announcement too.
+2. **Not yet tested by hand:** a full-size update (first chance: 1.6.41 → 1.6.42), a Mac update, a source checkout on `current-stable` updating with git, and opening/closing a GUI offline (no popups expected).
 
 ## 2. Next steps after 1.6.41
 
@@ -115,7 +116,6 @@ All 2026 PRs are by coralynnkc and target `roberto`.
 
 | # | Title | Kind | Note |
 |---|---|---|---|
-| 1700 | Auto-update fails on most student machines: asks for pygit2 | Bug | Fixed in 1.6.41 (§1). Close when 1.6.41 is tagged |
 | 1671 | BERT word embeddings are context-free | Design | Each word is encoded alone, so vectors don't depend on the corpus. Affects a homework question. Decide: keep, document, or encode in context |
 | 1653 | Windows zip: JavaScript paths too long under `AppData\Local\Programs` | Bug | MAX_PATH in bundled node_modules. Shorten in the build or document the install location. Also matters for the self-updater's `_update` folder |
 | 1623 | Boxplot: asks for an option but none appear | Bug | |
