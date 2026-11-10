@@ -24,7 +24,7 @@ SRC_DIR = os.path.join(PROJECT_ROOT, 'src')
 if sys.platform == 'darwin':
     APP_ICON = os.path.join(PROJECT_ROOT, 'lib', 'images', 'NLP_Suite.icns')
 else:
-    APP_ICON = os.path.join(PROJECT_ROOT, 'setup_Windows', 'NLP_Suite.ico')
+    APP_ICON = os.path.join(PROJECT_ROOT, 'lib', 'images', 'NLP_Suite.ico')
 
 # ── Local hidden imports ────────────────────────────────────────────────────
 # All .py files in src/ that might be imported dynamically at runtime.
@@ -33,7 +33,7 @@ else:
 
 _local_modules = [
     'BERT_util',
-    'charts_Excel_main', 'charts_Excel_util', 'charts_matplotlib_seaborn_util',
+    'charts_Excel_main', 'charts_Excel_util',
     'charts_Plotly_util', 'charts_util',
     'config_util',
     'CoNLL_adjective_analysis_util', 'CoNLL_adverb_analysis_util',
@@ -44,7 +44,6 @@ _local_modules = [
     'constants_util',
     'coreference_main',
     'data_manipulation_main', 'data_manipulation_util',
-    'data_visualization_1_main', 'data_visualization_2_main',
     'DB_PCACE_data_analysis_main', 'DB_PCACE_data_analysis_util',
     'DB_PCACE_data_validation_main',
     'DB_SQL_main', 'DB_SQL_util',
@@ -65,7 +64,7 @@ _local_modules = [
     'file_summary_checker_util',
     'Gephi_util',
     'GIS_distance_main', 'GIS_distance_util',
-    'GIS_file_check_util', 'GIS_folium_map_util', 'GIS_folium_util',
+    'GIS_file_check_util', 'GIS_folium_util',
     'GIS_geocode_util', 'GIS_Google_Earth_main', 'GIS_Google_Maps_util',
     'GIS_Google_pin_util', 'GIS_KML_util', 'GIS_location_util',
     'GIS_main', 'GIS_pipeline_util',
@@ -76,7 +75,7 @@ _local_modules = [
     'html_annotator_main',
     'IO_csv_util', 'IO_files_util', 'IO_internet_util',
     'IO_libraries_util', 'IO_string_util', 'IO_user_interface_util',
-    'knowledge_graphs_DBpedia_util', 'knowledge_graphs_DBpedia_YAGO_main',
+    'knowledge_graphs_DBpedia_util',
     'semantic_aggregation_main', 'semantic_aggregation_WordNet_util',
     'semantic_aggregation_util',
     'basic_NLP_util',
@@ -85,16 +84,14 @@ _local_modules = [
     'narrative_analysis_ALL_main',
     'NER_main',
     'NGrams_CoOccurrences_main', 'NGrams_CoOccurrences_util', 'NGrams_util',
-    'NLP_menu_main', 'NLP_menu_tools_util', 'NLP_setup_download_jars',
+    'NLP_menu_main', 'NLP_menu_tools_util',
     'NLP_setup_external_software_main', 'NLP_setup_IO_main',
-    'NLP_setup_package_language_main', 'NLP_setup_self_update_util', 'NLP_setup_shortcut_add',
-    'NLP_setup_shortcut_remove', 'NLP_setup_update_util', 'run_script_util',
+    'NLP_setup_package_language_main', 'NLP_setup_self_update_util', 'NLP_setup_update_util', 'run_script_util',
     'NLP_welcome_main',
     'nominalization_main', 'nominalization_util',
     'parsers_annotators_main', 'parsers_annotators_visualization_util',
     'reminders_util',
     'sample_corpus_main', 'sample_corpus_util',
-    'SENNA_util',
     'sentence_analysis_main', 'sentence_analysis_util',
     'sentence_complexity_node_util',
     'sentiment_analysis_ANEW_util', 'sentiment_analysis_hedonometer_util',
@@ -103,7 +100,6 @@ _local_modules = [
     'sentiments_emotions_ALL_main',
     'shape_of_stories_clustering_util', 'shape_of_stories_main',
     'shape_of_stories_vectorizer_util', 'shape_of_stories_visualization_util',
-    'social_science_research_main',
     'spaCy_util',
     'Stanford_CoreNLP_clause_util', 'Stanford_CoreNLP_coreference_util',
     'Stanford_CoreNLP_port_util', 'Stanford_CoreNLP_SVO_enhanced_dependencies_util',
@@ -118,8 +114,7 @@ _local_modules = [
     'TIPS_util',
     'topic_modeling_bert_util', 'topic_modeling_corpus_size_util', 'topic_modeling_gensim_util',
     'topic_modeling_main', 'topic_modeling_mallet_util',
-    'tree', 'videos_util',
-    'whats_in_your_corpus_main',
+    'tree',
     'word2vec_distances_util', 'word2vec_Gensim_util',
     'word2vec_main', 'word2vec_tsne_plot_util',
     'wordclouds_main', 'wordclouds_util',
@@ -202,8 +197,8 @@ except Exception:
 # Therefore data directories (src, lib, config, TIPS, reminders) must be
 # at the exe root level.
 #
-# After building, run the post-build script (or the CI workflow) to copy
-# data files to the correct location. See post_build_fixup() below.
+# The CI workflow (build-installers.yml, "Copy data directories to dist")
+# copies them there after PyInstaller runs.
 
 def _collect_tree(src_dir, dest_prefix):
     """Recursively collect all files under src_dir into dest_prefix."""
