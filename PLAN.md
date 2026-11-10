@@ -348,7 +348,7 @@ A scan of all of `src/`, `reminders/`, the docs and the setup scripts for text a
 
 **Not read line by line:** the long help/readMe bodies of `DB_PCACE_data_analysis_main`, `DB_PCACE_data_validation_main`, `data_visualization_main`, `file_manager_main`, `DB_SQL_main`; the middle of `GUI_util` (about lines 1100–1750, 2190–2600), `NGrams_CoOccurrences_main` (400–1280), `NLP_setup_IO_main` (630–1050), `knowledge_graphs_main` (240–730). These were keyword-searched only. The TIPS pdfs themselves were not opened (only their names were checked). No web link was tested online.
 
-### 9.1 Changed in this PR
+### 9.1 Changed in PR #1705 (open, not yet in `roberto`)
 
 Docs:
 
@@ -414,7 +414,7 @@ Deletions and behaviour changes. Each is ready to do once decided.
 
 ### 9.3 Smaller copy still to fix
 
-Low risk, not done only to keep this PR reviewable.
+Low risk, not done only to keep PR #1705 reviewable.
 
 - **CoreNLP-era wording where three or four packages now work:** `NER_main` 611, 634, 658, 990; `GIS_main` 1290, 1322, 1343; `coreference_main` 272, 364, 563, 592, 635; `narrative_analysis_ALL_main` 443, 459, 927; `corpus_profiler_main` 717 ("hundreds" of documents), 726; `parsers_annotators_main` 972 (a "*" option that does not exist); `shape_of_stories_main` 599–600, 996, 1061 and `sentiments_emotions_ALL_main` 247 (spaCy listed as neural); `sentiment_analysis_main` 1077–1083, 1123 (old script names, `nltk.downloader`); `language_tools_advisor_util` 186, 254, 263; `NLP_setup_external_software_main` 491, 499, 518.
 - **"Setup NLP package and corpus language"** (the item is "Setup NLP package (parsers & annotators) and corpus language"): `NER_main` 144, `NGrams_CoOccurrences_main` 1571, `Stanza_util` 202/731, `Stanford_CoreNLP_util` 177, `sentiment_analysis_main` (7 places), `semantic_aggregation_main` 1417, `IO_internet_util` 89, and the "NLP setup options" reminder built in 9 GUIs.
