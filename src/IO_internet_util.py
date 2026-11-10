@@ -117,12 +117,15 @@ def download_with_warning(script, download_function, resource="a language model"
         return False
 
 
-def stanza_resources_dir(environ=None):
-    """Where Stanza keeps its models: STANZA_RESOURCES_DIR if set, else ~/stanza_resources (Stanza's own rule)."""
-    import os
+def stanza_resources_dir():
+    """Where Stanza keeps its models, asked of Stanza itself.
 
-    environ = os.environ if environ is None else environ
-    return environ.get("STANZA_RESOURCES_DIR") or os.path.join(os.path.expanduser("~"), "stanza_resources")
+    Since Stanza 1.10 this is a per-version cache folder (STANZA_RESOURCES_DIR if set), e.g.
+    ~/Library/Caches/stanza/1.14.0/resources on Mac. The old ~/stanza_resources is no longer used; checking
+    it made the model look missing on every machine, so it was re-downloaded at every import (issue #1703)."""
+    from stanza.resources.common import DEFAULT_MODEL_DIR
+
+    return DEFAULT_MODEL_DIR
 
 
 def stanza_model_present(lang="en", resources_dir=None):

@@ -7,6 +7,7 @@ running the Suite from the app saw the window vanish with no explanation.
 
 import os
 import sys
+import types
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "src"))
 
@@ -118,10 +119,17 @@ class TestStanzaModelPresent:
         (tmp_path / "en" / "tokenize").mkdir(parents=True)
         assert net.stanza_model_present("en", resources_dir=str(tmp_path)) is False
 
-    def test_honours_the_stanza_environment_variable(self, tmp_path):
+    def test_looks_where_stanza_itself_keeps_models(self, tmp_path, monkeypatch):
+        # Stanza 1.10+ keeps models in a per-version cache folder (e.g. ~/Library/Caches/stanza/1.14.0/resources
+        # on Mac, %LOCALAPPDATA%\StanfordNLP\stanza\Cache\<version>\resources on Windows), not in
+        # ~/stanza_resources. Checking the old folder made every import re-download (issue #1703).
         root = _model_folder(tmp_path)
-        assert net.stanza_resources_dir({"STANZA_RESOURCES_DIR": root}) == root
-        assert net.stanza_resources_dir({}).endswith("stanza_resources")
+        fake = types.ModuleType("stanza.resources.common")
+        fake.DEFAULT_MODEL_DIR = root
+        monkeypatch.setitem(sys.modules, "stanza.resources", types.ModuleType("stanza.resources"))
+        monkeypatch.setitem(sys.modules, "stanza.resources.common", fake)
+        assert net.stanza_resources_dir() == root
+        assert net.stanza_model_present("en") is True
 
 
 class TestEnsureStanzaModel:
