@@ -104,9 +104,8 @@ psutil
 # pypdf: decodes the images embedded in a pdf for the pdf --> docx converter; pdfminer's own
 #   ImageWriter fails on ordinary png images ('unrecognized image mode') and what it writes,
 #   python-docx then refuses
-# pdf2image + pytesseract were dropped with the OCR converter: that menu option never ran
-#   (it was wired to pdfminer), and real OCR needs the Tesseract + poppler BINARIES, which the
-#   frozen installers do not ship
+# pdf2image + pytesseract are NOT listed: the OCR converter (v1.6.34) also needs the Tesseract +
+#   poppler BINARIES, which the frozen installers do not ship; the tool tells the user what to install
 pdfminer.six
 pypdf
 python-docx

@@ -67,11 +67,12 @@ def exit_window():
                 # ScriptName = inspect.stack()
                 # if not "NLP_setup_IO_main.py" in ScriptName:
                 #     print("ScriptName", ScriptName)
-                print(
-                    "\nYour NLP Suite is up-to-date with the latest release available on GitHub ("
-                    + GitHub_release_version
-                    + ")."
-                )
+                if GitHub_release_version.strip() != "0.0.0":  # 0.0.0 = the release could not be checked
+                    print(
+                        "\nYour NLP Suite is up-to-date with the latest release available on GitHub ("
+                        + GitHub_release_version
+                        + ")."
+                    )
         except Exception as e:
             print(str(e))
 
@@ -203,7 +204,7 @@ def update_self(GitHub_release_version):
     message_Git = (
         "The NLP Suite update function relies on Git.\n\nGit is not installed on your machine.\n\nGit can be downloaded at this link "
         + Git_download
-        + "\n\nAfter downloading Git, run the downloaded exe file. You need to do this only once.\n\nDo you want to open the Git website now and install it?"
+        + "\n\nAfter downloading Git, run the downloaded installer. You need to do this only once.\n\nDo you want to open the Git website now and install it?"
     )
     message_update = (
         "The NLP Suite was successfully updated to the latest release available on GitHub: "

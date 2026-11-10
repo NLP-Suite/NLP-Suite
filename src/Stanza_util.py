@@ -1688,8 +1688,8 @@ def _check_coref_available():
             title="Stanza version too old",
             message="Stanza coreference resolution requires Stanza 1.7.0 or later.\n\n"
             "Your installed version is " + stanza.__version__ + ".\n\n"
-            "To upgrade, open a terminal and run:\n"
-            "   conda activate NLP\n"
+            "Please, download the latest release of the NLP Suite, which includes a newer Stanza.\n\n"
+            "If you run the NLP Suite from source code, type:\n"
             "   pip install --upgrade stanza",
         )
         return False
@@ -1986,9 +1986,9 @@ resources_path = os.path.join(DEFAULT_MODEL_DIR, "resources.json")
 if not os.path.exists(resources_path):
     mb.showwarning(
         title="Warning",
-        message="Stanza does not seem to be installed in your machine. The file-path\n\n"
+        message="The Stanza language models could not be downloaded. The file-path\n\n"
         + resources_path
-        + "\n\ncould not be found.\n\nPlease, open terminal, type conda activate NLP (Enter) and then type pip install stanza (Enter) and try again.",
+        + "\n\ncould not be found.\n\nStanza is part of the NLP Suite, but its language models are downloaded the first time they are used. Please, make sure you are connected to the internet and try again.",
     )
     sys.exit()
 

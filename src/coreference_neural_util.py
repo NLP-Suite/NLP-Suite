@@ -170,13 +170,12 @@ def fastcoref_coref(
         from fastcoref import FCoref
     except ImportError:
         mb.showerror(
-            title="fastcoref not installed",
-            message="The BERT coreference option requires the 'fastcoref' package, which is not installed.\n\n"
-            "To install it, open a terminal and run:\n"
-            "   conda activate NLP\n"
-            "   pip install fastcoref\n\n"
-            "fastcoref uses PyTorch + Transformers (already bundled with the NLP Suite) and, "
-            "on first use, downloads its model (~500 MB) - so the first run needs an internet connection.",
+            title="fastcoref not available",
+            message="The BERT coreference option requires the 'fastcoref' package, which could not be loaded.\n\n"
+            "fastcoref is part of the downloaded NLP Suite: if you see this message there, please report it "
+            "to the NLP Suite developers. If you run the NLP Suite from source code, type\n"
+            "   pip install -r requirements.txt\n\n"
+            "On first use fastcoref downloads its model (~500 MB), so the first run needs an internet connection.",
         )
         return [], True
 

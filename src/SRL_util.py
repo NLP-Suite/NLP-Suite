@@ -110,12 +110,19 @@ def availability_message():
         missing.append("the SRL model (lib/SRL/%s)" % _MODEL_FILENAME)
     if not os.path.isfile(SRL_WORKER):
         missing.append("the SRL worker script (src/SRL_worker.py)")
+    if getattr(sys, "frozen", False):
+        # the downloaded (zip) NLP Suite has no conda and no setup_SRL.py
+        return (
+            "Semantic Role Labeling is not included in the downloaded NLP Suite: it needs its own "
+            "Python 3.8 environment, which cannot be bundled.\n\nSRL is available when the NLP Suite "
+            "is run from source code (see setup_SRL.py in the NLP Suite repository on GitHub)."
+        )
     return (
         "Semantic Role Labeling needs a one-time setup that is not yet complete on this "
         "machine.\n\nMissing:\n - "
         + "\n - ".join(missing)
-        + "\n\nRun  python setup_SRL.py  (in the NLP Suite folder) to create the SRL environment "
-        "and download the model.\n\nSRL runs in its own isolated environment - it cannot share "
+        + "\n\nRun  python setup_SRL.py  (in the NLP Suite folder; it needs Anaconda) to create the SRL "
+        "environment and download the model.\n\nSRL runs in its own isolated environment - it cannot share "
         "the Suite's packages."
     )
 
