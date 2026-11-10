@@ -16,6 +16,7 @@ What's open, what to close, what to fix next. How to fix an issue is in [CLAUDE.
 6. [Requirements, release checks and settled decisions](#6-requirements-release-checks-and-settled-decisions)
 7. [Branches](#7-branches)
 8. [Performance: slow GUI opening and "downloading"](#8-performance-slow-gui-opening-and-downloading)
+9. [Outdated copy and flows (scan of 9 Nov 2026)](#9-outdated-copy-and-flows-scan-of-9-nov-2026)
 
 ---
 
@@ -340,3 +341,84 @@ Read from the code only: 96 `iterrows()` / row-append patterns in 29 files, most
 6. Re-measure with the same commands, on Windows and on a Mac, and on the zip build. Add a CI check that `import GUI_util` under the test stubs does not import pandas or requests, so the gain is not lost.
 
 Every change follows CLAUDE.md: unit tests for new helpers, `pytest tests/`, and `python tests/gui_smoke.py` after any GUI edit.
+
+## 9. Outdated copy and flows (scan of 9 Nov 2026)
+
+A scan of all of `src/`, `reminders/`, the docs and the setup scripts for text and flows that predate how the NLP Suite works now: the zip build (no Anaconda, no pip, no terminal), Stanza as default parser, the bundled Java runtime, the self-updater, the new menu, fastcoref, pandas 2, Python 3.10. Six read-only passes, one per slice; each finding below was checked against the code before it was changed or listed.
+
+**Not read line by line:** the long help/readMe bodies of `DB_PCACE_data_analysis_main`, `DB_PCACE_data_validation_main`, `data_visualization_main`, `file_manager_main`, `DB_SQL_main`; the middle of `GUI_util` (about lines 1100–1750, 2190–2600), `NGrams_CoOccurrences_main` (400–1280), `NLP_setup_IO_main` (630–1050), `knowledge_graphs_main` (240–730). These were keyword-searched only. The TIPS pdfs themselves were not opened (only their names were checked). No web link was tested online.
+
+### 9.1 Changed in PR #1705 (open, not yet in `roberto`)
+
+Docs:
+
+| Where | What |
+|---|---|
+| `docs/Installing-the-NLP-Suite.md`, `Download-Install-Update-Run.md`, `Troubleshooting.md` | Mac: the removed "NLP Suite Mac Setup" app replaced by `Launch NLP Suite (Mac).command` (v1.6.33). Update: describes the 1.6.41 self-update; "config resets after an update" and "extract to a new folder" removed; not Program Files, not OneDrive. Java: bundled, no JDK download. NLTK/WordNet data: downloaded on first use, not bundled. Developer setup: `pip install -r requirements.txt` and `python src/NLP_menu_main.py` (was a hand-typed pip list and `NLP_Suite_main.py`, which does not exist). New "Updating" troubleshooting table |
+| `docs/Installing-External-Software.md` | Java row moved to "no longer required"; Stanza does not replace the CoreNLP-only annotators |
+| `docs/What-the-NLP-Suite-Does.md` | spaCy (TextBlob) sentiment is dictionary-based, as in the GUI |
+| `docs/release_body_header.md` | "Already have an older version?" now matches the updater; "zip", not "installer" |
+| `docs/Narrative_Symbolic_Space_design.md`, `corpus_profiler_spec.md` | Status lines: both are implemented |
+| `README.txt` | Was the 2021 STEP1/STEP2 Anaconda instructions; now points to Releases and `GETTING_STARTED.txt` |
+| `README.md`, `GETTING_STARTED.txt` | What is bundled (Java yes; models download on first use); Windows "Unblock", not "Unlock" |
+| `CLAUDE.md` | Ruff target is py310; `setup_Windows/`, `setup_Mac/` are legacy scripts, not installers |
+| `requirements.txt`, `build-installers.yml` | Comments only: OCR did ship (v1.6.34); two builds, not three; no Setup app |
+
+Popups and flows:
+
+| Where | What |
+|---|---|
+| `IO_libraries_util` missing-module popup | Was STEP3 / `(base)` / zsh / "Conda install Python=3.7" / a torch + cudatoolkit recipe, three popups. Now one: `pip install -r requirements.txt`, or use the download. Source checkouts only (the zip returns early). `which_shell()` removed: on a Mac with bash it blocked the message and returned False |
+| `IO_libraries_util.import_nltk_resource` | Shown in the zip build too. No more STEP3/conda advice there; the source run keeps one command |
+| `IO_libraries_util` Java messages | No Oracle account. In the zip a Java failure means the bundled `jre` is missing: says so. Link goes to Temurin 17. Gephi no longer triggers the Java check |
+| `IO_libraries_util` external software | "You cannot do any textual analysis without Stanford CoreNLP" removed: all external software is optional. Gephi download text no longer talks about Intel Macs. `open_url` named every website "Check on GitHub the NLP Suite newest release version" when offline |
+| `NLP_menu_main` start-up | The "three setup options not completed" question fired at every start when any optional external program was missing, described buttons the menu no longer has, and offered a video. Now a warning only when Input & output or Parser & language needs setup. Removed: the Mac TensorFlow reminder shown to every Mac user and the source-only `pip install tensorflow-metal` popup |
+| `GUI_util` Setup dropdown | "Setup preferences" removed: in every GUI it only said "not available yet". Licence message names the right file |
+| 11 GUIs | "click on the Setup NLP button" (no such button) → the Setup dropdown item by its real name |
+| `NLP_setup_package_language_main`, `Stanza_util` | "Stanza does not seem to be installed… conda activate NLP… pip install stanza" → the model download failed, check the internet. The video question used a key that does not exist (KeyError on Yes): fixed |
+| `NLP_setup_IO_main` | Video question removed: its link is empty |
+| `NLP_setup_external_software_main` | The config file test looked in the current folder, so the long first-time popup always showed. "All external software has been installed" warning at every opening removed |
+| `NLP_setup_update_util` | Offline no longer prints "up-to-date (0.0.0)" |
+| `file_checker_converter_cleaner_main` | rtf → txt showed Mac terminal instructions on every platform before running the Suite's own converter: removed |
+| `file_search_ALL_main` | "Search word(s) for different word senses" opened Word2Vec; word sense induction now lives in Semantic analysis |
+| `SRL_util`, `run_script_util`, `coreference_*`, `file_converter_util`, `topic_modeling_gensim_util`, `statistics_csv_util`, `config_util`, `CoNLL_*`, `corpus_profiler_util`, `IO_files_util` | pip/conda/Anaconda Prompt advice replaced by what a zip user can do, with one line for source runs; names of scripts and buttons that no longer exist (`StanfordCoreNLP.py`, `NLP_GUI.py`, "Setup button") corrected. SRL says plainly that it is not in the zip build |
+| `reminders_util`, `reminders.csv` | Rewritten: NLP Suite architecture (was "type Python knowledge_graphs_main.py… NLP_main.py"), coreference (was "exclusively Stanford CoreNLP"), VADER (was "run python -m nltk.downloader all"), GIS txt input, `Stanford_CoreNLP_NER_main.py` → `NER_main.py`, wrong TIPS name for the Google API key. Removed 9 rows for tools that no longer exist (`whats_in_your_corpus`, `NGrams_CoOccurrences_Viewer`, `file-spell-checker`, "SVO Someone?", "GIS Multi-word Locations") |
+
+New tests: `tests/test_install_messages.py`. `pytest`: only the 2 known local failures. **Not run:** `tests/gui_smoke.py` (it hangs in a checkout without `config/`) and no GUI was opened by hand; the Mac paths were not run.
+
+### 9.2 Decisions for Roberto (not changed)
+
+Deletions and behaviour changes. Each is ready to do once decided.
+
+| # | What | Evidence | Proposal |
+|---|---|---|---|
+| 1 | `setup_Windows/` and `setup_Mac/` scripts (STEP1-3, `run_NLP-Suite.*`, `NLP.bat`, shortcut scripts, `readme_*_beta.md`) | Not in the zip. Anaconda 2021.05, `python=3.8`, `cudatoolkit` on a Mac, `git checkout -f`, read the stale `src/requirements.txt`; the Mac STEP3 points to a folder that does not exist | Delete; keep `NLP_Suite.ico`, `logo.ico` (the spec uses the first). With them: `src/NLP_setup_shortcut_add.py`, `_remove.py`, `src/requirements.txt`, `src/requirements_mac.txt` |
+| 2 | SRL in the zip build | `setup_SRL.py` is not shipped and needs conda, so SRL cannot be set up there. The checkboxes in SVO, Semantic analysis and SRL_main stay enabled; the menu entry "SRL Semantic Role Labeling" shows as unavailable although `SRL_main.py` exists | Either disable the SRL checkboxes when frozen, or ship an SRL environment. Then fix the menu entry to match |
+| 3 | Java as "external software" | A JRE is bundled, but Setup external software still lists "Java (JDK)" as missing and offers to download it. In the install branch (`IO_libraries_util`, "RF 8/30") the test reads `if Java_errorFound:` → "IS ALREADY INSTALLED" | Hide the Java row when the bundled `jre` is found. Check the RF 8/30 condition |
+| 4 | Coreference default | `coreference_main` defaults to Stanford CoreNLP (needs CoreNLP); Stanza and BERT need nothing. Menu labels still say "CoreNLP annotator - coreference", "Pronominal resolution via CoreNLP" (`constants_util` 1011, 1067; `NLP_menu_tools_util` 40, 87, 97) | Default to Stanza; rename the labels (keys change in three files together) |
+| 5 | `config_util` fallback | When the package config cannot be read the fallback is Stanford CoreNLP (line 199) | Stanza |
+| 6 | First three launches open `NLP_welcome_main` in a second process | §8.7; its video button is disabled, Enter only reopens the menu | Remove the redirect and the file |
+| 7 | `NLP_menu_main` external-software reminder | `setup_external_programs_checkbox` returns the module global (always ""), so the reminder never shows; `setup_external_software_warning`/`callback` are never called | Delete the three |
+| 8 | N-grams VIEWER | The checkbox and two menu entries are live; RUN answers "temporarily disconnected" | Hide until it is back, or reconnect |
+| 9 | Topic modeling "Run MALLET (coherence)" checkbox | Calls `gensim.models.wrappers`, removed in Gensim 4; always ends in "install Gensim 3.8.3" | Remove, or rewrite with Gensim's CoherenceModel. Help text also says "Gensim uses the MALLET algorithm" (it does not) |
+| 10 | OCR menu item | pytesseract/pdf2image are not bundled, so in the zip it can only end in the "missing" message | Hide when frozen, or bundle |
+| 11 | `parsers_annotators_main` | Two unreachable "select Stanford CoreNLP as your default package" branches (300–313, 395–408); "Open coreference GUI" checkbox is read and never used; Word2Vec item never matches its own label; coreference item says "via spaCy" (coreferee is gone); Stanza constituency says "not available yet" though Setup offers it | One PR for the annotator menu |
+| 12 | Open-GUI launchers that use `sys.executable` | `DB_PCACE_data_analysis_main`, `DB_PCACE_data_validation_main`, `DB_SQL_main` (frozen: that is the app, not Python); `corpus_checker_PCACE_data_main` runs `sudo Python X_main.py` on a Mac and launches `WordNet.py`, which does not exist | Use `run_script_util` everywhere |
+| 13 | TIPS menu | "pip install & Anaconda environments", "Python: download, install, run", "Anaconda & pip useful commands" are second in the main TIPS list | Move to the end as developer TIPS, or remove. The pdfs themselves, and the Java / CoreNLP / MALLET install TIPS and "Topic modeling and corpus size", need a read |
+| 14 | Dead files | `videos_util.py` (pafy/vlc, imported nowhere), `NLP_setup_download_jars.py`, `knowledge_graphs_DBpedia_util_SPARQL.py`, `nyt_api_call.py`, `html_annotator_extractor_util_NEW.py`, `TensorFlow_semantic_analysis.py`, `GIS_heatMapIntegration.py`, `GIS_heatMapintegration_ver2.py`, `post_build_fixup.py`, `wiki-draft-About.md`, `.github/workflows/build-family-viewer.yml` (its spec files are not in the repo) | Delete. **`GIS_heatMapintegration_ver2.py:47` has what looks like a real Google API key in a comment: revoke it** |
+| 15 | `NLP_Suite.spec` | Hidden imports for 8 modules that do not exist (`data_visualization_1_main`, `_2_main`, `whats_in_your_corpus_main`, `GIS_folium_map_util`, `SENNA_util`, `social_science_research_main`, `knowledge_graphs_DBpedia_YAGO_main`, `charts_matplotlib_seaborn_util`); a local build bundles the live `config/` (API keys); "Python 3.8" comment | Clean in a build PR, tested by a build |
+| 16 | Reminders | 50 titles are in `reminders.csv` twice, under a GUI and under `*`. Popups read only the `*` row, the dropdown toggles the GUI row, so switching a reminder off there does nothing. About 12 definitions in `reminders_util` are used nowhere (Java 64-bit `-d64`, "CoreNLP Server is shutting down", tkinter Mac bug, SVO/WordNet/MALLET/Google Earth "system requirements") | Delete the per-GUI duplicates and the unused definitions |
+| 17 | Release history button | Opens the wiki page `NLP-Suite-Release-History`; the update popup already links `CHANGELOG.md` | Point to CHANGELOG if the wiki page is no longer kept |
+| 18 | wordclouds | Menu offers Wordle (site gone) and Tagxedo (needs Silverlight); "Tagul" is now WordArt; Python WordCloud asks for internet though it needs none | Remove the two, rename the third, drop the check |
+| 19 | `MEMO_Development_Notes.md`, `docs/CustomTkinter-Migration-Plan.md` | June 2026 history (Python 3.8 build, Mac Intel CI, files since deleted); a plan that names `setup-app/` and says installers build from `roberto` | A "historical" banner on each, or delete |
+
+### 9.3 Smaller copy still to fix
+
+Low risk, not done only to keep PR #1705 reviewable.
+
+- **CoreNLP-era wording where three or four packages now work:** `NER_main` 611, 634, 658, 990; `GIS_main` 1290, 1322, 1343; `coreference_main` 272, 364, 563, 592, 635; `narrative_analysis_ALL_main` 443, 459, 927; `corpus_profiler_main` 717 ("hundreds" of documents), 726; `parsers_annotators_main` 972 (a "*" option that does not exist); `shape_of_stories_main` 599–600, 996, 1061 and `sentiments_emotions_ALL_main` 247 (spaCy listed as neural); `sentiment_analysis_main` 1077–1083, 1123 (old script names, `nltk.downloader`); `language_tools_advisor_util` 186, 254, 263; `NLP_setup_external_software_main` 491, 499, 518.
+- **"Setup NLP package and corpus language"** (the item is "Setup NLP package (parsers & annotators) and corpus language"): `NER_main` 144, `NGrams_CoOccurrences_main` 1571, `Stanza_util` 202/731, `Stanford_CoreNLP_util` 177, `sentiment_analysis_main` (7 places), `semantic_aggregation_main` 1417, `IO_internet_util` 89, and the "NLP setup options" reminder built in 9 GUIs.
+- **"pulling the latest release from GitHub"** hover on CLOSE: `GUI_util` 2659, `NLP_welcome_main` 316, `NLP_setup_package_language_main` 775, `NLP_setup_external_software_main` 455.
+- **Names that do not exist:** `knowledge_graphs_main` 989 (TIPS name), 928–941 (YAGO and Wikipedia TIPS not offered); `file_classifier_NER_util` 40–46 and `file_find_non_related_documents_util` 43–49 (`concreteness_analysis.py`, then `sys.exit`); `sentiment_analysis_hedonometer_util` 59, `sentiment_analysis_VADER_util` 85 (wrong lib path and script name); `semantic_aggregation_main` 499 and `semantic_analysis_main` 1086 launch `Word2Vec_main.py` (the file is `word2vec_main.py`: fails on a case-sensitive disk).
+- **Windows-only advice also shown on a Mac:** `config_util` 130, 159, 250, 284, 665, 698; `license_GUI` 77; `GUI_IO_util` 22.
+- **Other:** `IO_libraries_util` Windows 64-bit Java branch; MALLET and Google Earth download links to check; `topic_modeling_mallet_util` "TEMPORARY FIX… environment variables" popups on every run (the code sets them itself); `file_manager_main` utf-8/ASCII checkboxes that only say "not available yet"; `file_merger_main` 326; `NLP_menu_main` 593–598, 1157 (readMe: "Java and Python tools", LGPL 2.1 though the licence file is GPL 3, CoreNLP 4.3.1); `docs/Supported-Systems-Languages.md` 38; `requirements-mac.txt` still lists pafy/python-vlc.
