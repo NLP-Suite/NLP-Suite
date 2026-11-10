@@ -45,7 +45,7 @@ In merge order:
 | 2 | `gui_smoke.py` no longer hangs in a checkout with no `config/` | — | Not started | A setup GUI opens as a real window and waits; create or stub the config. Needed to check #1705 |
 | 3 | Outdated copy and flows (§9.1) | #1705 | Mergeable, CI green; merges cleanly with #1704 | `tests/gui_smoke.py`; open the menu with an empty `config/` on Windows and on a Mac, and each Setup GUI; trigger the missing-module popup in a source run |
 | 4 | Dead files and the legacy setup scripts (§10.1) | — | Done on local branch `chore/remove-dead-files` (`e65ebcef`), not pushed; needs Roberto's yes | After #1705: both touch `README.txt` and `CLAUDE.md`. The spec changes, so the pre-tag build is its test |
-| 4b | Shape of Stories crashes at open with the default config (§11.3) | — | Not started | First check on a fresh 1.6.41 zip. If it reproduces there, it is a first-run crash and belongs in 1.6.42; the fix touches `config_util` or `IO_files_util`, so after #1705 |
+| 4b | Shape of Stories crashes at open with the default config (§11.3) | branch `fix/shape-of-stories-relative-config` | PR open | `config_util.read_config_file` resolves relative I/O paths against the NLP Suite folder; the `chdir` stays. Merges cleanly with #1705 (different lines of `config_util`). Still check on a fresh 1.6.41 zip |
 | 5 | HW 4 leftover: GIS "(NER tag: …)" log line | — | Not started | `GIS_geocode_util.py` ~704 prints the date when there is one; the tag used is `item[2]` |
 | 6 | §9.3 smaller copy | — | Optional | Only if ready before the freeze: strings, plus the `Word2Vec_main.py` case fix. Otherwise 1.6.43 |
 
