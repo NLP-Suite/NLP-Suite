@@ -4,7 +4,7 @@ What's open, what to close, what to fix next. How to fix an issue is in [CLAUDE.
 
 **Last updated:** 10 Nov 2026, getting ready for 1.6.42 (v1.6.41 released 10 Nov).
 
-**State on GitHub (10 Nov 2026):** 7 open PRs (§2). The issue lists are proposals for Roberto: nothing in them has been closed or commented on.
+**State on GitHub (10 Nov 2026):** 9 open PRs (§2). The issue lists are proposals for Roberto: nothing in them has been closed or commented on.
 
 ## Contents
 
@@ -17,6 +17,8 @@ What's open, what to close, what to fix next. How to fix an issue is in [CLAUDE.
 7. [Branches](#7-branches)
 8. [Performance: slow GUI opening and "downloading"](#8-performance-slow-gui-opening-and-downloading)
 9. [Outdated copy and flows (scan of 9 Nov 2026)](#9-outdated-copy-and-flows-scan-of-9-nov-2026)
+10. [Dead code (scan of 10 Nov 2026)](#10-dead-code-scan-of-10-nov-2026)
+11. [UI overhaul: findings (10 Nov 2026)](#11-ui-overhaul-findings-10-nov-2026)
 
 ---
 
@@ -26,17 +28,32 @@ What's open, what to close, what to fix next. How to fix an issue is in [CLAUDE.
 
 **Still owed from 1.6.41:** send the students the one-time "download 1.6.41 by hand" email: draft in [NLP Suite 1.6.41: student email](https://claude.ai/artifact/KrHdadt32qC61AfRjK2fCi).
 
-### 1.1 Candidates
+**Do now, not with the release:** revoke the Google Maps API key in `src/GIS_heatMapintegration_ver2.py` (lines 17 and 47, in comments). It is in the git history and in the 1.6.41 zip, which ships every `src/*.py` (`NLP_Suite.spec:222`), so deleting the file in 1.6.42 does not take it back. Revoking is for whoever owns the key, in the Google Cloud console.
 
-| What | Where | Note |
-|---|---|---|
-| Stanza model re-checked every time a GUI opens | §8.1 | Largest opening-time saving, one small PR |
-| pandas and requests out of `GUI_util`'s import chain | §8.3 | Every GUI opens ~3 s faster |
-| PR #1682 spaCy CoNLL ID/HEAD | §2 | Correct; needs the ruff-only rebase; CHANGELOG must say "re-parse old spaCy tables" |
-| `gui_smoke.py` hangs in a checkout with no `config/` | `tests/gui_smoke.py` | A setup GUI opens as a real window and waits; create or stub the config |
-| HW 4 leftovers (minor) | `GIS_geocode_util.py` ~704 | The "(NER tag: …)" log line prints the date when there is one; the tag used is `item[2]` |
+### 1.1 Scope: what goes in, and why
 
-Not in 1.6.42: PR #1688 (Python 3.11 + Pillow 13, its own release once the updater has proven itself), PR #1683 (needs changes, §2), backlog triage (§4), the bulk of tech debt (§5).
+The rule: nothing that changes a shared structure (CoNLL columns, config files, chart inputs), the parsers, or the updater. Copy and dead files pass that rule, since neither changes what an analysis computes, and both belong in this release in particular:
+
+- **The copy (PR #1705).** 1.6.42 is the first version that reaches every student without their doing anything. Without #1705, the version they get automatically still tells zip users to run STEP3 and `conda`, asks the "three setup options" question at every start, and the release page's "Already have an older version?" text predates the updater. The risk is in the start-up flows #1705 changes (`NLP_menu_main` start-up, the `IO_libraries_util` popups, the Setup GUIs), so it needs the GUI checks it has not had yet.
+- **Dead files (§10.1).** Nothing imports them, yet the zip ships them. The updater swaps the whole folder, so a file dropped from the release is gone from the install after the update (§6); deleting files is not a new path for it.
+
+In merge order:
+
+| # | What | PR | State | Before merging |
+|---|---|---|---|---|
+| 1 | Stanza model checked only when missing, pipeline built on first use (§8.1) | #1704 | Mergeable, CI green | Its PLAN.md hunk still uses the old numbers (§9.1, §9.2 for what is now §8.1, §8.2): renumber on the branch, or drop its PLAN.md change and move the measured results into §8.1 after the merge. Open Style analysis and RUN it once by hand |
+| 2 | `gui_smoke.py` no longer hangs in a checkout with no `config/` | — | Not started | A setup GUI opens as a real window and waits; create or stub the config. Needed to check #1705 |
+| 3 | Outdated copy and flows (§9.1) | #1705 | Mergeable, CI green; merges cleanly with #1704 | `tests/gui_smoke.py`; open the menu with an empty `config/` on Windows and on a Mac, and each Setup GUI; trigger the missing-module popup in a source run |
+| 4 | Dead files and the legacy setup scripts (§10.1) | — | Done on local branch `chore/remove-dead-files` (`e65ebcef`), not pushed; needs Roberto's yes | After #1705: both touch `README.txt` and `CLAUDE.md`. The spec changes, so the pre-tag build is its test |
+| 4b | Shape of Stories crashes at open with the default config (§11.3) | — | Not started | First check on a fresh 1.6.41 zip. If it reproduces there, it is a first-run crash and belongs in 1.6.42; the fix touches `config_util` or `IO_files_util`, so after #1705 |
+| 5 | HW 4 leftover: GIS "(NER tag: …)" log line | — | Not started | `GIS_geocode_util.py` ~704 prints the date when there is one; the tag used is `item[2]` |
+| 6 | §9.3 smaller copy | — | Optional | Only if ready before the freeze: strings, plus the `Word2Vec_main.py` case fix. Otherwise 1.6.43 |
+
+Not in 1.6.42:
+- PR #1682 (spaCy CoNLL ID/HEAD): correct, but it changes the CoNLL table, a shared structure (§2). 1.6.43.
+- §8.3 (pandas and requests out of `GUI_util`'s import chain): it rewrites how every GUI reads its config, in `config_util` and `reminders_util`, which #1705 also edits. 1.6.43.
+- §9.2's behaviour changes (decisions for Roberto); only its deletions (#1, #14, #15) are in, via §10.1.
+- PR #1688 (Python 3.11 + Pillow 13, its own release once the updater has proven itself), PR #1683 (needs changes, §2), backlog triage (§4), the bulk of tech debt (§5).
 
 ### 1.2 The updater: known limits (open)
 
@@ -48,7 +65,7 @@ Not in 1.6.42: PR #1688 (Python 3.11 + Pillow 13, its own release once the updat
 
 ### 1.3 Before tagging 1.6.42
 
-1. The usual checks (§6), plus: `lib/release_manifest.tsv` is in both zips.
+1. The usual checks (§6), plus: `lib/release_manifest.tsv` is in both zips; the app icon still resolves after the icons moved (§10.1); none of the §10.1 files is in the zips.
 2. **Right after the zips are up, update a real 1.6.41 install** on Windows and on a Mac: close it, accept, check that config and user files survive and that `NLP_Suite_previous` is gone after the next start. Read `%TEMP%\NLP_Suite_update.log` (Mac: the log named in the message). This is the first full-size run; the 9 Nov test used a 26 MB stand-in release on localhost.
 3. Not yet tested by hand: a source checkout on `current-stable` updating with git; opening and closing a GUI offline (no popups expected).
 4. Ask students who report update problems to send that log to coralynn.yang@emory.edu.
@@ -59,18 +76,21 @@ Not in 1.6.42: PR #1688 (Python 3.11 + Pillow 13, its own release once the updat
 2. **Retest and close the recent issues that releases may have fixed** (§3, "Retest" rows).
 3. **Fix the open recent bugs** (§3, "Bug" rows), one branch and test each, per CLAUDE.md.
 4. **Triage the 2021–2024 backlog** (§4). Proposal: bulk-close the stale ones with a comment inviting a reopen.
-5. **Performance** in §8.10's order; **tech debt** in §5's order.
-6. **Add the missing regression tests**: an empty-DataFrame test and a multi-column chart test for `charts_util` (§5.6).
+5. **1.6.43:** PR #1682, §8.3, §9.3 if it missed 1.6.42, and §9.2's behaviour changes as Roberto decides them.
+6. **Performance** in §8.10's order; **tech debt** in §5's order.
+7. **Add the missing regression tests**: an empty-DataFrame test and a multi-column chart test for `charts_util` (§5.6).
 
 ## 2. Open pull requests
 
-Reviewed 9 Nov 2026 (#1699, #1701, #1702 shipped in 1.6.41; #1679 and #1656 were re-applied there and closed). The older PRs conflict only because v1.6.40 reformatted all of `src/` (PR #1687).
+Reviewed 9 Nov 2026 (#1699, #1701, #1702 shipped in 1.6.41; #1679 and #1656 were re-applied there and closed); #1704 and #1705 checked 10 Nov. The older PRs conflict only because v1.6.40 reformatted all of `src/` (PR #1687).
 
 "Tests" = the PR's own new tests, run on Windows in the NLP env on 9 Nov.
 
 | PR | Opened | What | Merge | Tests | 1.6.42? | Review |
 |---|---|---|---|---|---|---|
-| #1682 | 10-16 | spaCy CoNLL ID/HEAD sentence-level and 1-based | Conflict: ruff only, mechanical | 2 pass | Candidate | Correct: Stanza and CoreNLP already write 1-based, sentence-level, root 0, and no reader compensates for spaCy's old values. Shared structure, so not in a release about the updater. spaCy tables already on disk stay 0-based: say "re-parse" in the CHANGELOG |
+| #1704 | 11-09 | Stanza model downloaded only when missing; pipeline built on first use (§8.1) | Clean; CI green | 15 new; pytest 613 pass, the 2 known failures; gui_smoke 49 ok | Yes, first | Not opened and RUN by hand; no first-download, Mac or zip test. Its PLAN.md hunk uses the old section numbers (§1.1) |
+| #1705 | 11-10 | Outdated copy and flows: docs, popups, reminders (§9.1), 49 files | Clean; CI green; clean with #1704 | `test_install_messages.py`; pytest 2 known failures | Yes, after #1704 | `gui_smoke.py` not run (hangs without `config/`), no GUI opened, Mac paths not run: §1.1 row 3 |
+| #1682 | 10-16 | spaCy CoNLL ID/HEAD sentence-level and 1-based | Conflict: ruff only, mechanical | 2 pass | No: 1.6.43 (shared structure) | Correct: Stanza and CoreNLP already write 1-based, sentence-level, root 0, and no reader compensates for spaCy's old values. Shared structure, so not in a release about the updater. spaCy tables already on disk stay 0-based: say "re-parse" in the CHANGELOG |
 | #1683 | 10-16 | Gender dictionary looks up only PERSON tokens | Conflict: ruff only | 5 pass | No | **Needs changes:** hardcodes `Stanford_CoreNLP_util.CoreNLP_annotate` whatever parser is configured (so the option now needs Java); returns `''` with no message when no NER csv comes back; once "Will" is a PERSON anywhere, every "will" is tagged |
 | #1688 | 10-26 | Python 3.11 build so Pillow can go to 13.0.0 | Conflict: 2 adjacent lines | CI only | No (§1.1) | Decide. Whole pinned stack must rebuild on 3.11. STEP2 scripts still create `python=3.8` envs (`setup_Windows/STEP2-install_NLP-Suite.ps1:12`, `setup_Mac/STEP2-install_NLP-Suite.command:35`) and `pyproject.toml`/`pyrightconfig.json` say py310; the PR touches none of them |
 | #1528 | 2024-09 | "dictionary functionality" (CallaGong) | — | — | No | **Close**: targets `current-stable`, 2 years old |
@@ -194,6 +214,7 @@ Coverage is 508 test functions in 52 files [3]. Gaps:
 - **coreferee** is gone from `requirements.txt` (it pins `spacy<3.6` and broke the PyInstaller build). `fastcoref` replaces it. Don't re-add it. spaCy is unpinned.
 - **pygit2** is no longer a requirement (1.6.41): the source-checkout updater uses the `git` program. Don't re-add it.
 - **`lib/release_manifest.tsv`** is written by the build's last step before zipping (1.6.41). The self-updater relies on it to tell the user's files from the release's: any step that adds files to `dist/` must come before it.
+- **A release may delete files.** The self-updater installs the new release as a whole folder and carries over only `config/`, `reminders/` and files the user added (not in the old manifest); a release file the new release drops is left in `<folder>_previous` and goes with it. A dropped file the user had edited stays in that backup, which is then kept (`user_files` in `NLP_setup_self_update_util.py`).
 - **Pillow** is pinned to 10.4.0 (12.x breaks the bundled Tcl/Tk 8.6). PR #1688 tests Python 3.11 + Pillow 13 for the security advisory; its own release (§1.1).
 - **CI Python:** 3.10 for tests and installers. SRL stays on its own 3.8 env.
 - **Mac runners:** `macos-15` since 2 Nov 2026 (`macos-14` retired). No Intel Mac build.
@@ -392,7 +413,7 @@ Deletions and behaviour changes. Each is ready to do once decided.
 
 | # | What | Evidence | Proposal |
 |---|---|---|---|
-| 1 | `setup_Windows/` and `setup_Mac/` scripts (STEP1-3, `run_NLP-Suite.*`, `NLP.bat`, shortcut scripts, `readme_*_beta.md`) | Not in the zip. Anaconda 2021.05, `python=3.8`, `cudatoolkit` on a Mac, `git checkout -f`, read the stale `src/requirements.txt`; the Mac STEP3 points to a folder that does not exist | Delete; keep `NLP_Suite.ico`, `logo.ico` (the spec uses the first). With them: `src/NLP_setup_shortcut_add.py`, `_remove.py`, `src/requirements.txt`, `src/requirements_mac.txt` |
+| 1 | `setup_Windows/` and `setup_Mac/` scripts (STEP1-3, `run_NLP-Suite.*`, `NLP.bat`, shortcut scripts, `readme_*_beta.md`) | Not in the zip. Anaconda 2021.05, `python=3.8`, `cudatoolkit` on a Mac, `git checkout -f`, read the stale `src/requirements.txt`; the Mac STEP3 points to a folder that does not exist | **1.6.42, §10.1** |
 | 2 | SRL in the zip build | `setup_SRL.py` is not shipped and needs conda, so SRL cannot be set up there. The checkboxes in SVO, Semantic analysis and SRL_main stay enabled; the menu entry "SRL Semantic Role Labeling" shows as unavailable although `SRL_main.py` exists | Either disable the SRL checkboxes when frozen, or ship an SRL environment. Then fix the menu entry to match |
 | 3 | Java as "external software" | A JRE is bundled, but Setup external software still lists "Java (JDK)" as missing and offers to download it. In the install branch (`IO_libraries_util`, "RF 8/30") the test reads `if Java_errorFound:` → "IS ALREADY INSTALLED" | Hide the Java row when the bundled `jre` is found. Check the RF 8/30 condition |
 | 4 | Coreference default | `coreference_main` defaults to Stanford CoreNLP (needs CoreNLP); Stanza and BERT need nothing. Menu labels still say "CoreNLP annotator - coreference", "Pronominal resolution via CoreNLP" (`constants_util` 1011, 1067; `NLP_menu_tools_util` 40, 87, 97) | Default to Stanza; rename the labels (keys change in three files together) |
@@ -405,8 +426,8 @@ Deletions and behaviour changes. Each is ready to do once decided.
 | 11 | `parsers_annotators_main` | Two unreachable "select Stanford CoreNLP as your default package" branches (300–313, 395–408); "Open coreference GUI" checkbox is read and never used; Word2Vec item never matches its own label; coreference item says "via spaCy" (coreferee is gone); Stanza constituency says "not available yet" though Setup offers it | One PR for the annotator menu |
 | 12 | Open-GUI launchers that use `sys.executable` | `DB_PCACE_data_analysis_main`, `DB_PCACE_data_validation_main`, `DB_SQL_main` (frozen: that is the app, not Python); `corpus_checker_PCACE_data_main` runs `sudo Python X_main.py` on a Mac and launches `WordNet.py`, which does not exist | Use `run_script_util` everywhere |
 | 13 | TIPS menu | "pip install & Anaconda environments", "Python: download, install, run", "Anaconda & pip useful commands" are second in the main TIPS list | Move to the end as developer TIPS, or remove. The pdfs themselves, and the Java / CoreNLP / MALLET install TIPS and "Topic modeling and corpus size", need a read |
-| 14 | Dead files | `videos_util.py` (pafy/vlc, imported nowhere), `NLP_setup_download_jars.py`, `knowledge_graphs_DBpedia_util_SPARQL.py`, `nyt_api_call.py`, `html_annotator_extractor_util_NEW.py`, `TensorFlow_semantic_analysis.py`, `GIS_heatMapIntegration.py`, `GIS_heatMapintegration_ver2.py`, `post_build_fixup.py`, `wiki-draft-About.md`, `.github/workflows/build-family-viewer.yml` (its spec files are not in the repo) | Delete. **`GIS_heatMapintegration_ver2.py:47` has what looks like a real Google API key in a comment: revoke it** |
-| 15 | `NLP_Suite.spec` | Hidden imports for 8 modules that do not exist (`data_visualization_1_main`, `_2_main`, `whats_in_your_corpus_main`, `GIS_folium_map_util`, `SENNA_util`, `social_science_research_main`, `knowledge_graphs_DBpedia_YAGO_main`, `charts_matplotlib_seaborn_util`); a local build bundles the live `config/` (API keys); "Python 3.8" comment | Clean in a build PR, tested by a build |
+| 14 | Dead files | `videos_util.py` (pafy/vlc, imported nowhere), `NLP_setup_download_jars.py`, `knowledge_graphs_DBpedia_util_SPARQL.py`, `nyt_api_call.py`, `html_annotator_extractor_util_NEW.py`, `TensorFlow_semantic_analysis.py`, `GIS_heatMapIntegration.py`, `GIS_heatMapintegration_ver2.py`, `post_build_fixup.py`, `wiki-draft-About.md`, `.github/workflows/build-family-viewer.yml` (its spec files are not in the repo) | **1.6.42, §10.1.** The API key: revoke now (§1) |
+| 15 | `NLP_Suite.spec` | Hidden imports for 8 modules that do not exist (`data_visualization_1_main`, `_2_main`, `whats_in_your_corpus_main`, `GIS_folium_map_util`, `SENNA_util`, `social_science_research_main`, `knowledge_graphs_DBpedia_YAGO_main`, `charts_matplotlib_seaborn_util`); a local build bundles the live `config/` (API keys); "Python 3.8" comment | Hidden imports and the comment: **1.6.42, §10.1**. The `config/` bundling changes what a build ships: 1.6.43 |
 | 16 | Reminders | 50 titles are in `reminders.csv` twice, under a GUI and under `*`. Popups read only the `*` row, the dropdown toggles the GUI row, so switching a reminder off there does nothing. About 12 definitions in `reminders_util` are used nowhere (Java 64-bit `-d64`, "CoreNLP Server is shutting down", tkinter Mac bug, SVO/WordNet/MALLET/Google Earth "system requirements") | Delete the per-GUI duplicates and the unused definitions |
 | 17 | Release history button | Opens the wiki page `NLP-Suite-Release-History`; the update popup already links `CHANGELOG.md` | Point to CHANGELOG if the wiki page is no longer kept |
 | 18 | wordclouds | Menu offers Wordle (site gone) and Tagxedo (needs Silverlight); "Tagul" is now WordArt; Python WordCloud asks for internet though it needs none | Remove the two, rename the third, drop the check |
@@ -422,3 +443,86 @@ Low risk, not done only to keep PR #1705 reviewable.
 - **Names that do not exist:** `knowledge_graphs_main` 989 (TIPS name), 928–941 (YAGO and Wikipedia TIPS not offered); `file_classifier_NER_util` 40–46 and `file_find_non_related_documents_util` 43–49 (`concreteness_analysis.py`, then `sys.exit`); `sentiment_analysis_hedonometer_util` 59, `sentiment_analysis_VADER_util` 85 (wrong lib path and script name); `semantic_aggregation_main` 499 and `semantic_analysis_main` 1086 launch `Word2Vec_main.py` (the file is `word2vec_main.py`: fails on a case-sensitive disk).
 - **Windows-only advice also shown on a Mac:** `config_util` 130, 159, 250, 284, 665, 698; `license_GUI` 77; `GUI_IO_util` 22.
 - **Other:** `IO_libraries_util` Windows 64-bit Java branch; MALLET and Google Earth download links to check; `topic_modeling_mallet_util` "TEMPORARY FIX… environment variables" popups on every run (the code sets them itself); `file_manager_main` utf-8/ASCII checkboxes that only say "not available yet"; `file_merger_main` 326; `NLP_menu_main` 593–598, 1157 (readMe: "Java and Python tools", LGPL 2.1 though the licence file is GPL 3, CoreNLP 4.3.1); `docs/Supported-Systems-Languages.md` 38; `requirements-mac.txt` still lists pafy/python-vlc.
+
+## 10. Dead code (scan of 10 Nov 2026)
+
+**How it was found:** every `src/*.py` whose module name appears nowhere else in `src/`, `tests/`, `lib/`, the specs, the workflows or the setup scripts (`grep -w`), plus the §9.2 findings. A mention in a comment counts as a use, so the list is short of complete (`videos_util` was found only by reading). Not swept: dead functions and branches inside live modules (§5.7 counts 498 unused variables); `lib/` data files; TIPS pdfs no GUI names.
+
+### 10.1 Delete in 1.6.42 (needs Roberto's yes)
+
+One PR, after #1705 (§1.1 row 4). Each file was checked: nothing imports it, launches it with `run_script`, or names it in a workflow; the spec names some of them only as hidden imports.
+
+| Group | Files | Evidence |
+|---|---|---|
+| Legacy setup scripts | `setup_Windows/`, `setup_Mac/` (all but the two icons), `src/NLP_setup_shortcut_add.py`, `src/NLP_setup_shortcut_remove.py`, `src/requirements.txt`, `src/requirements_mac.txt` | §9.2 #1. Outside those folders, only the spec uses them: its icon path and two hidden imports. The two `src/requirements*` files are read only by STEP2 |
+| Icons (move, don't delete) | `setup_Windows/NLP_Suite.ico`, `logo.ico` | `NLP_Suite.spec:27` uses `NLP_Suite.ico`; `logo.ico` is used nowhere. Move the first (e.g. to `lib/`), update line 27, drop the second |
+| PC-ACE debugging scripts (June 2026) | `src/_add_indexes.py`, `_add_indexes_now.py`, `_check_idx.py`, `_check_path.py`, `_debug_hops.py`, `_debug_xref.py`, `_test_actor_process.py`, `_test_cross_join.py` | One-off scripts with a hard-coded `C:/Users/rfranzo/Desktop/...sqlite` path; imported nowhere |
+| Unused modules | `GIS_heatMapIntegration.py`, `GIS_heatMapintegration_ver2.py` (API key, §1), `html_annotator_extractor_util_NEW.py`, `knowledge_graphs_DBpedia_util_SPARQL.py` (440 lines), `nyt_api_call.py`, `TensorFlow_semantic_analysis.py`, `POTUS_webscraper.py` (2023), `pandas_compat_util.py`, `videos_util.py`, `NLP_setup_download_jars.py` | Imported nowhere. `pandas_compat_util` (July 2026) is a shim for pandas < 1.3 that nothing ever adopted; pandas 2 is pinned. `videos_util` is imported only in commented-out lines (`GUI_util`, `NLP_welcome_main`); drop `pafy` and `python-vlc` from `requirements-mac.txt` with it. `NLP_setup_download_jars` appears only in the spec's hidden imports |
+| Repo root and workflows | `post_build_fixup.py`, `wiki-draft-About.md`, `.github/workflows/build-family-viewer.yml` | §9.2 #14. The spec mentions `post_build_fixup` only in a comment |
+| `NLP_Suite.spec` | Hidden imports of the modules above and of the 8 that do not exist (§9.2 #15); the "Python 3.8" comment | The pre-tag build checks it |
+
+**Checks for the PR:** rerun the grep on the final tree; `pytest tests/`; `tests/gui_smoke.py`; CHANGELOG: one line ("Removed the 2021 Anaconda setup scripts and unused files; nothing a tool uses changed").
+
+### 10.2 Looks dead, is not
+
+- `src/network_graph_app.py` and `NetworkGraphViewer.spec`: the standalone Network Graph Viewer, built by `build-network-viewer.yml` on `ngv-*` tags.
+- `setup_SRL.py`: sets up the SRL environment for source runs (§9.2 #2).
+- `requirements-mac.txt`, `requirements-windows.txt` (root): installed by `build-installers.yml`.
+
+### 10.3 Later
+
+- `NLP_menu_main`: `setup_external_software_warning` and its callback are never called (§9.2 #7). `setup_external_programs_checkbox` is called and runs `java -version` at every start (§8.8), so it goes with that decision, not here.
+- `MEMO_Development_Notes.md`, `docs/CustomTkinter-Migration-Plan.md`: a "historical" banner or delete (§9.2 #19).
+- `NLP_welcome_main.py`: dead once §9.2 #6 removes the redirect.
+- Stale remote branches (§7).
+- A `vulture src/` pass for dead functions. Expect false positives: GUI callbacks are bound by name and modules are launched by string.
+
+## 11. UI overhaul: findings (10 Nov 2026)
+
+**Decision so far:** stay with CustomTkinter (CTk). A TypeScript front end would mean rewriting 55 GUIs and the way they start each other; CTk keeps every `run()` as it is.
+
+**How it was looked at:** each `*_main.py` built under real Tk on a Mac (macOS, 1470×956 logical screen, the NLP310 env, `config/` seeded from `lib/config_defaults`), screenshotted, and its widgets walked: the `gui_layout_gate.py` method, plus the screenshot step of `tests/gui_gallery.py` from the CTk branch, adapted to `roberto`. All 55 GUIs, Windows not looked at. Counts are from `grep` over `src/`.
+
+### 11.1 Where the migration stands
+
+- **A CTk migration was mostly built in July and never merged.** Branch `ctk/phase1-grid` on the coralynnkc fork (last commit 23 Jul): `GUI_theme_util.py` (theme, widget factories, tooltips; 880 lines), `ctk_bundle_util.py` (the `CTkImage` fix for the bundled Python), `nlp_suite_theme.json`, `tests/ctk_bundle_smoke.py`, `tests/gui_gallery.py`, and Phases 2–3 (all GUIs converted, PRs #7–#20 on the fork). It is 49 commits ahead and 196 behind `roberto`, and 64 files conflict, mostly because v1.6.40 reformatted `src/`. Only the grid half of Phase 1 (`placeWidget` → grid) reached `roberto`.
+- **On `roberto` only the menu's tool browser is CTk.** Everything else is plain Tk: 326 `tk.Label`, 321 `tk.Checkbutton`, 273 `tk.Button`, 214 `tk.OptionMenu`, 136 `tk.Entry`, 58 `ttk.Combobox`, 9 `tk.Scale`. 171 raw `.place()` calls bypass the layout helper.
+- 9 GUIs opt out of the grid layout (`GUI_IO_util.GRID_OPT_OUT`): 7 on all platforms, `charts_Excel` and `file_manager` on Mac only.
+- `docs/CustomTkinter-Migration-Plan.md` describes the branch, not `roberto`. Its Windows bundle smoke test (§5.1 there) was never run.
+
+### 11.2 What the screenshots show
+
+Most of these are about content and chrome, not the widget toolkit; CTk alone fixes only the last few.
+
+| # | Finding | Where |
+|---|---|---|
+| 1 | The same five-line "Welcome to this Python 3 script…" block tops every GUI (about 110 px): it explains the HELP buttons, TIPS and RUN, and calls the tool a script | `GUI_util.GUI_top`, all 55 |
+| 2 | A "? HELP" button starts every row: 597 of them. Some rows have nothing else (`file_classifier`, two in `DB_PCACE_data_validation`) | `place_help_button` |
+| 3 | Four blank buttons right of the I/O row (`text=""`, 9 such buttons in `GUI_util`); what they do shows only on hover. The right-most is cut off at the window edge: Wordclouds draws 71 px past its window | `GUI_util` I/O row |
+| 4 | "Release 1.6.41/1.6.41": local/GitHub version, not explained | `GUI_util.py:533` |
+| 5 | Nine controls of chrome on every analysis GUI: the chart row (Excel, Bar chart, No transformation, Data tools), even in tools that make no chart, plus Read Me, Watch videos, Open TIPS files, Open reminders, Setup. "Watch videos" is red in some GUIs and black in others; the colour code is not explained | `GUI_util.GUI_bottom` |
+| 6 | Window titles all start "Graphical User Interface (GUI) for …" | `GUI_label` in each GUI |
+| 7 | The grid spreads columns across the full 1350 px, so a value can sit far from its label (GIS "Country bias", N-grams "Options", Sample corpus "Date type"); columns do not line up across rows | grid layout |
+| 8 | Disabled controls are very faint, and a disabled RUN looks almost like an enabled one; why it is disabled is said only in a popup at open | all |
+| 9 | 14 GUIs show one to three popups before the window can be used, mostly "requires a csv FILE in INPUT; RUN is disabled": CoNLL table analyzer (2), PC-ACE data analysis (3), Excel charts (2), Data manipulation (2), Setup external software (2, one asks to watch a video), the menu (the "three setup options" question, removed in #1705), GIS Google Earth, GIS distance, GIS symbolic, Corpus checker, Data visualization, File classifier, File manager, Statistics csv | `check_IO_requirements`-style code at the end of each GUI |
+| 10 | Mixed fonts: tab labels and section headings in red bold Courier (PC-ACE data analysis, Data visualization, Narrative analysis ALL); italic red headings in the welcome window | those GUIs |
+| 11 | The five "ALL" hubs (File handler, File search, Semantic analysis, Sentiments & emotions, Syntactic analysis) are lists of "(Open GUI)" buttons, each with a HELP button. The menu's searchable tool list already does this | the `_ALL_main` GUIs |
+| 12 | Column groups without headers: SVO's three Lemmatize/Filter groups do not say which parser each is | `SVO_main` |
+| 13 | Every window is 1350 px wide (Wordclouds 1450, File search by word 1418) on a 1470 px screen, though most use the left half. None is taller than this screen | `get_GUI_width` |
+| 14 | The menu mixes the CTk tool browser with the Tk header and footer; its footer still has RUN beside the browser's own Open button | `NLP_menu_main` |
+| 15 | Old-style Tk sliders (`tk.Scale`) | Setup package & language, Semantic analysis (WSI) |
+
+### 11.3 Bugs found along the way
+
+- **Shape of Stories crashes at open** with the default config: `FileNotFoundError: 'lib/sampleData/newspaperArticles'` at `IO_files_util.py:1408`, called from `shape_of_stories_main.py:813`. `lib/config_defaults/NLP_default_IO_config.csv` stores relative paths (`lib/sampleData/newspaperArticles`, `NLP_output`), and importing `IO_files_util` runs `os.chdir` into `src/` (line 39), so they resolve under `src/`. PC-ACE data analysis says the same folder "does not exist". The zip build seeds `config/` from those defaults, and the menu's `ensure_default_configs` writes absolute paths only when the file is missing, so a fresh zip install probably hits this. **Check on a fresh 1.6.41 zip** (§1.1 row 4b). Fix: resolve relative config paths against `GUI_IO_util.NLPPath`; drop the `chdir`. Also check where `NLP_output` lands: possibly `src/NLP_output`.
+- Not bugs: `NLP_setup_IO_main` refuses to run on its own (by design); `data_manipulation`, the menu and the setup GUIs build their window only under `__main__`.
+
+### 11.4 Proposed order (not before 1.6.42; its own releases)
+
+1. **Content and chrome first, no new toolkit** (11.2 #1–9, #11; decisions for Roberto): cut the welcome block to one line or nothing; replace the HELP column with an ⓘ beside each label that shows the same text; label or icon the four I/O buttons; show the chart row only in GUIs that chart; say why RUN is disabled next to RUN instead of in popups; shorter titles. Almost all of it lives in `GUI_util` and `GUI_IO_util`, so all 55 GUIs change at once.
+2. **Bring the CTk groundwork over as new files** (no conflicts): `GUI_theme_util.py`, `ctk_bundle_util.py`, the theme JSON, `tests/ctk_bundle_smoke.py`. Run the bundle smoke test inside a built zip on Windows and on a Mac before anything uses it.
+3. **CTk chrome:** `GUI_top`, `GUI_bottom`, the help/tooltip and popup widgets through the factories. Every GUI gets the new look outside its own rows.
+4. **Per-GUI conversion in tranches**, re-running the branch's mechanical recipe on today's files instead of rebasing its 49 commits; use the branch commits as the reference for each GUI's quirks.
+5. **Fold the hubs into the menu** (11.2 #11) and hide what the zip cannot run (§9.2).
+
+Each PR carries before/after screenshots from a gallery script. Add one to `tests/` that runs on a Mac too (the branch's `gui_gallery.py` reads Windows screen scaling; on a Mac `screencapture -R` works, and the GUIs that build only under `__main__` need `runpy`).
