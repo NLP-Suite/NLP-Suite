@@ -5,6 +5,7 @@ on the corresponding GitHub Release page (the top section is added automatically
 release workflow). Keep the newest version's section at the very top and update it before tagging.
 
 ## Unreleased
+- **Shape of Stories opens on a new install.** It crashed at open with "FileNotFoundError: lib/sampleData/newspaperArticles", because the default settings that come with the download store their folders as relative paths, which were looked up in the wrong place. The sample-data input folder and the `NLP_output` output folder are now found inside the NLP Suite folder, in every tool.
 - **Wordclouds opens on a first run.** With no settings saved yet (a new install), the Wordclouds window showed the "config file could not be found" warning and then crashed instead of opening the language setup.
 
 ## v1.6.41
