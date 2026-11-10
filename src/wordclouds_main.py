@@ -22,6 +22,7 @@ import IO_csv_util
 import IO_files_util
 import IO_internet_util
 import reminders_util
+import run_script_util
 
 os.environ["KMP_DUPLICATE_LIB_OK"] = (
     "True"  # for mac users to solve one error: https://stackoverflow.com/questions/53014306/error-15-initializing-libiomp5-dylib-but-found-libiomp5-dylib-already-initial
@@ -1215,7 +1216,6 @@ message = (
 )
 reminders_util.checkReminder(scriptName, title, message)
 
-import run_script_util
 import wordclouds_util
 
 font_list = wordclouds_util.get_font_list()

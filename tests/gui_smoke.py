@@ -21,10 +21,13 @@ has no pytest CI. Run it before shipping a GUI change. Exit 0 = all good; non-ze
 missing golden widget. Prints a per-GUI report.
 """
 
+import argparse
 import glob
 import os
+import shutil
 import subprocess
 import sys
+import tempfile
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
 _SRC = os.path.join(os.path.dirname(_HERE), "src")
@@ -139,6 +142,10 @@ sys.modules['GUI_util'] = _guiu
 # `git status` was never clean after a smoke run. A test harness must not touch the working tree.
 sys.modules['reminders_util'] = MagicMock()
 
+# run_script_util starts another GUI as a real process and waits for it. With no config file a GUI
+# opens the setup GUI this way, so the smoke run sat waiting on a real window. Record, never launch.
+sys.modules['run_script_util'] = MagicMock()
+
 # ---------- stub ENTIRE heavy dependency trees (submodules included) via a meta-path finder ----------
 # A flat MagicMock in sys.modules can't satisfy `from nltk.stem.porter import X` or
 # `from plotly.subplots import Y` (those need real sub-package resolution). A finder that returns a
@@ -179,6 +186,10 @@ sys.meta_path.insert(0, _StubFinder())
 
 _srcdir, _target = sys.argv[1], sys.argv[2]
 sys.path.insert(0, _srcdir)
+# the config folder for this run (empty, or seeded from lib/config_defaults), set by the parent
+if os.environ.get('NLP_SMOKE_CONFIG_DIR'):
+    import GUI_IO_util
+    GUI_IO_util.configPath = os.environ['NLP_SMOKE_CONFIG_DIR']
 try:
     import importlib.util
     spec = importlib.util.spec_from_file_location('_gui_under_test', os.path.join(_srcdir, _target))
@@ -197,9 +208,14 @@ for _t in _texts:
 """
 
 
-def _smoke_one(target):
+def _smoke_one(target, config_dir=None):
+    env = dict(os.environ)
+    if config_dir:
+        env["NLP_SMOKE_CONFIG_DIR"] = config_dir
     try:
-        p = subprocess.run([sys.executable, "-c", _HARNESS, _SRC, target], capture_output=True, text=True, timeout=180)
+        p = subprocess.run(
+            [sys.executable, "-c", _HARNESS, _SRC, target], capture_output=True, text=True, timeout=180, env=env
+        )
     except subprocess.TimeoutExpired:
         return False, [], "(timed out)"
     ok = "SMOKE_OK" in p.stdout
@@ -211,18 +227,53 @@ def _smoke_one(target):
     return ok, texts, err_tail
 
 
-def main():
+# Config folders each GUI is built with. "yours" is the checkout's own config/ (if any); "empty" is a
+# first run with no config files; "defaults" is a fresh zip install, whose config/ the build copies
+# from lib/config_defaults. Each GUI gets a new temporary folder, since a GUI may write config files.
+CONFIGS = ("yours", "empty", "defaults")
+_CONFIG_DEFAULTS = os.path.join(os.path.dirname(_HERE), "lib", "config_defaults")
+
+
+def _config_dir(kind, parent):
+    if kind == "yours":
+        return None
+    d = tempfile.mkdtemp(dir=parent)
+    if kind == "defaults":
+        for name in os.listdir(_CONFIG_DEFAULTS):
+            shutil.copy(os.path.join(_CONFIG_DEFAULTS, name), d)
+    return d
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(description="Build every *_main.py GUI under stubs.")
+    parser.add_argument(
+        "--config",
+        choices=CONFIGS + ("all",),
+        default="all",
+        help="which config folder to build the GUIs with (default: all three)",
+    )
+    configs = CONFIGS if parser.parse_args(argv).config == "all" else (parser.parse_args(argv).config,)
     gui_files = sorted(
         os.path.basename(f)
         for f in glob.glob(os.path.join(_SRC, "*_main.py"))
         if not any(s in os.path.basename(f) for s in _NOT_GUI)
     )
-    print("GUI construction smoke test: %d *_main.py GUIs under %s\n" % (len(gui_files), _SRC))
+    print(
+        "GUI construction smoke test: %d *_main.py GUIs under %s, config: %s\n"
+        % (len(gui_files), _SRC, ", ".join(configs))
+    )
+    with tempfile.TemporaryDirectory() as tmp:
+        return _run(gui_files, configs, tmp)
+
+
+def _run(gui_files, configs, tmp):
     crashed, missing, skipped = [], [], []
-    for f in gui_files:
-        ok, texts, err_tail = _smoke_one(f)
+    for f, kind in [(f, k) for f in gui_files for k in configs]:
+        ok, texts, err_tail = _smoke_one(f, _config_dir(kind, tmp))
+        if len(configs) > 1:
+            f = "%s [%s]" % (f, kind)
         if not ok:
-            if f in KNOWN_SKIP:
+            if f.split(" ")[0] in KNOWN_SKIP:
                 skipped.append(f)
                 print("SKIP   %-52s (not smoke-testable under stubs -- verify by launching)" % f)
                 continue
@@ -231,10 +282,10 @@ def main():
             if err_tail:
                 print("      " + err_tail)
             continue
-        if f in KNOWN_SKIP:
+        if f.split(" ")[0] in KNOWN_SKIP:
             print("OK*    %-52s (built now -- consider removing from KNOWN_SKIP)" % f)
         # golden widget-label check (only for curated GUIs that imported OK)
-        want = GOLDEN.get(f)
+        want = GOLDEN.get(f.split(" ")[0])
         if want:
             blob = " \n ".join(texts)
             absent = [w for w in want if w not in blob]
@@ -247,10 +298,10 @@ def main():
             print("OK     %-52s (built; %d widgets)" % (f, len(texts)))
 
     print(
-        "\n%d GUIs: %d ok, %d crashed, %d missing golden, %d skipped (stub-limited)."
+        "\n%d GUI builds: %d ok, %d crashed, %d missing golden, %d skipped (stub-limited)."
         % (
-            len(gui_files),
-            len(gui_files) - len(crashed) - len(missing) - len(skipped),
+            len(gui_files) * len(configs),
+            len(gui_files) * len(configs) - len(crashed) - len(missing) - len(skipped),
             len(crashed),
             len(missing),
             len(skipped),
