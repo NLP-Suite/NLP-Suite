@@ -156,12 +156,64 @@ def folder_size_mb(path):
     return total // (1024 * 1024)
 
 
-def run_with_progress(work, window=None, *, title="Please wait", message="", watch_dir=None, poll_seconds=0.25):
+def downloaded_mb(dirs):
+    """MB written so far to the first of `dirs` that exists (None entries are skipped).
+
+    A download may land in more than one folder (a cache first, then a copy); counting only the first
+    one that exists shows the bytes that came over the network, without counting the copy twice."""
+    import os
+
+    for path in dirs:
+        if path and os.path.isdir(path):
+            return folder_size_mb(path)
+    return 0
+
+
+def huggingface_stanza_cache_dir(lang):
+    """The Hugging Face cache folder that a Stanza `lang` download writes to first, or None without
+    huggingface_hub (older Stanza versions download straight into their own folder)."""
+    import os
+
+    try:
+        import huggingface_hub.constants as hf_constants
+    except ImportError:
+        return None
+    return os.path.join(hf_constants.HF_HUB_CACHE, "models--stanfordnlp--stanza-" + lang)
+
+
+class xet_off:
+    """Download from Hugging Face over plain HTTP, not Xet, while inside this `with` block.
+
+    Xet downloads of the Stanza models stalled at 0 bytes on a Mac for minutes, while the same files over
+    plain HTTP finished (issue #1703). huggingface_hub reads the HF_HUB_DISABLE_XET environment variable
+    only at import, but it checks this constant on every download, so setting it here works at run time.
+    The previous value is restored on the way out."""
+
+    def __enter__(self):
+        try:
+            import huggingface_hub.constants as hf_constants
+        except ImportError:
+            self._constants = None  # older Stanza: no huggingface_hub, no Xet
+            return self
+        self._constants = hf_constants
+        self._previous = hf_constants.HF_HUB_DISABLE_XET
+        hf_constants.HF_HUB_DISABLE_XET = True
+        return self
+
+    def __exit__(self, *exc):
+        if self._constants is not None:
+            self._constants.HF_HUB_DISABLE_XET = self._previous
+        return False
+
+
+def run_with_progress(work, window=None, *, title="Please wait", message="", watch_dir=None, poll_seconds=0.1):
     """Run `work()` in a background thread, keeping the GUI alive until it ends.
 
     With a `window`, a small modal window shows `message` (and, with `watch_dir`, how many MB have been
     written so far) and stays up until the work ends, so a long download neither freezes the GUI nor
-    disappears after a few seconds. An exception raised by `work` is re-raised here, on the calling thread."""
+    disappears after a few seconds. `watch_dir` is a folder or a list of folders (see downloaded_mb).
+    An exception raised by `work` is re-raised here, on the calling thread."""
+    watch_dirs = [watch_dir] if isinstance(watch_dir, str) else list(watch_dir or [])
     import threading
     import tkinter as tk
 
@@ -186,11 +238,13 @@ def run_with_progress(work, window=None, *, title="Please wait", message="", wat
         status = tk.Label(box, text="", padx=20, pady=8)
         status.pack()
         box.grab_set()  # no second RUN while the first one waits for its model
+        box.lift()  # in front, not hidden behind another app's window
+        box.focus_force()
     try:
         while thread.is_alive():
             if box is not None:
-                if watch_dir and status is not None:
-                    status.config(text="Downloaded so far: " + str(folder_size_mb(watch_dir)) + " MB")
+                if watch_dirs and status is not None:
+                    status.config(text="Downloaded so far: " + str(downloaded_mb(watch_dirs)) + " MB")
                 box.update()
             thread.join(poll_seconds)
     finally:
@@ -232,11 +286,14 @@ def ensure_stanza_model(
     def stanza_download():
         import stanza
 
-        stanza.download(lang, model_dir=resources_dir or stanza_resources_dir())
+        with xet_off():
+            stanza.download(lang, model_dir=resources_dir or stanza_resources_dir())
 
     if resource is None:
         resource = "the Stanza " + (language_name or lang) + " language model"
-    watch_dir = os.path.join(resources_dir or stanza_resources_dir(), lang)
+    # Stanza 1.14 downloads into the Hugging Face cache and copies each file over only when it is complete,
+    # so the Stanza folder alone stays at 0 MB until the end
+    watch_dir = [huggingface_stanza_cache_dir(lang), os.path.join(resources_dir or stanza_resources_dir(), lang)]
 
     def download():
         run_with_progress(

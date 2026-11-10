@@ -41,6 +41,14 @@ def _offline(monkeypatch, answer=True):
     return rec
 
 
+def _module(name, **attrs):
+    """A stand-in module with the given attributes."""
+    module = types.ModuleType(name)
+    for key, value in attrs.items():
+        setattr(module, key, value)
+    return module
+
+
 def _boom():
     raise ConnectionError("getaddrinfo failed")
 
@@ -127,8 +135,7 @@ class TestStanzaModelPresent:
         # on Mac, %LOCALAPPDATA%\StanfordNLP\stanza\Cache\<version>\resources on Windows), not in
         # ~/stanza_resources. Checking the old folder made every import re-download (issue #1703).
         root = _model_folder(tmp_path)
-        fake = types.ModuleType("stanza.resources.common")
-        fake.DEFAULT_MODEL_DIR = root
+        fake = _module("stanza.resources.common", DEFAULT_MODEL_DIR=root)
         monkeypatch.setitem(sys.modules, "stanza.resources", types.ModuleType("stanza.resources"))
         monkeypatch.setitem(sys.modules, "stanza.resources.common", fake)
         assert net.stanza_resources_dir() == root
@@ -157,8 +164,7 @@ class TestEnsureStanzaModel:
     def test_the_default_download_fetches_the_requested_language(self, tmp_path, monkeypatch):
         monkeypatch.setattr(net, "mb", _Recorder())
         calls = []
-        fake = types.ModuleType("stanza")
-        fake.download = lambda lang, model_dir=None: calls.append((lang, model_dir))
+        fake = _module("stanza", download=lambda lang, model_dir=None: calls.append((lang, model_dir)))
         monkeypatch.setitem(sys.modules, "stanza", fake)
         assert net.ensure_stanza_model("x", lang="it", resources_dir=str(tmp_path)) is True
         assert calls == [("it", str(tmp_path))]
@@ -169,6 +175,68 @@ class TestEnsureStanzaModel:
         threads = []
         net.ensure_stanza_model("x", lambda: threads.append(threading.current_thread()), resources_dir=str(tmp_path))
         assert threads and threads[0] is not threading.current_thread()
+
+
+def _fake_huggingface_hub(monkeypatch, cache="/nowhere"):
+    """A stand-in huggingface_hub whose constants the download code reads and changes."""
+    constants = _module("huggingface_hub.constants", HF_HUB_DISABLE_XET=False, HF_HUB_CACHE=cache)
+    hub = _module("huggingface_hub", constants=constants)
+    monkeypatch.setitem(sys.modules, "huggingface_hub", hub)
+    monkeypatch.setitem(sys.modules, "huggingface_hub.constants", constants)
+    return constants
+
+
+class TestXetOff:
+    """Xet downloads of the Stanza models stalled at 0 bytes on a Mac; plain HTTP finished (issue #1703)."""
+
+    def test_the_stanza_download_runs_with_xet_off_and_restores_it(self, tmp_path, monkeypatch):
+        monkeypatch.setattr(net, "mb", _Recorder())
+        constants = _fake_huggingface_hub(monkeypatch)
+        seen = []
+        fake = _module("stanza", download=lambda lang, model_dir=None: seen.append(constants.HF_HUB_DISABLE_XET))
+        monkeypatch.setitem(sys.modules, "stanza", fake)
+        assert net.ensure_stanza_model("x", resources_dir=str(tmp_path)) is True
+        assert seen == [True]
+        assert constants.HF_HUB_DISABLE_XET is False  # the rest of the Suite is left as it was
+
+    def test_restored_even_when_the_download_fails(self, monkeypatch):
+        constants = _fake_huggingface_hub(monkeypatch)
+        try:
+            with net.xet_off():
+                raise ConnectionError("x")
+        except ConnectionError:
+            pass
+        assert constants.HF_HUB_DISABLE_XET is False
+
+    def test_works_without_huggingface_hub(self, monkeypatch):
+        monkeypatch.setitem(sys.modules, "huggingface_hub", None)  # older Stanza downloads without it
+        with net.xet_off():
+            pass
+
+
+class TestDownloadProgress:
+    """Stanza 1.14 downloads into the Hugging Face cache and copies the files over at the end, so the
+    Stanza folder alone showed 0 MB for the whole download."""
+
+    def test_the_huggingface_cache_folder_of_the_language(self, monkeypatch):
+        _fake_huggingface_hub(monkeypatch, cache=os.path.join("c", "hub"))
+        assert net.huggingface_stanza_cache_dir("my") == os.path.join("c", "hub", "models--stanfordnlp--stanza-my")
+
+    def test_no_cache_folder_without_huggingface_hub(self, monkeypatch):
+        monkeypatch.setitem(sys.modules, "huggingface_hub", None)
+        assert net.huggingface_stanza_cache_dir("en") is None
+
+    def test_counts_the_first_folder_that_exists(self, tmp_path):
+        (tmp_path / "hf").mkdir()
+        (tmp_path / "hf" / "blob.incomplete").write_bytes(b"x" * (2 * 1024 * 1024))
+        (tmp_path / "stanza").mkdir()
+        dirs = [str(tmp_path / "hf"), str(tmp_path / "stanza")]
+        assert net.downloaded_mb(dirs) == 2
+
+    def test_falls_back_to_the_stanza_folder(self, tmp_path):
+        (tmp_path / "stanza").mkdir()
+        (tmp_path / "stanza" / "default.zip").write_bytes(b"x" * (1024 * 1024))
+        assert net.downloaded_mb([None, str(tmp_path / "hf"), str(tmp_path / "stanza")]) == 1
 
 
 class TestRunWithProgress:
