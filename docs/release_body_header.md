@@ -2,14 +2,14 @@
 
 ## 📥 What you need to do
 
-1. **Download** the installer for your computer from the **Assets** below:
+1. **Download** the zip for your computer from the **Assets** below:
    - **Windows** → `NLP-Suite-windows-x64.zip`
    - **Mac (Apple Silicon)** → `NLP-Suite-mac-arm64.zip`
 2. **Unzip** it and open the unzipped folder. No separate Python install is needed — a portable Python is bundled. See the **getting-started guide** inside the folder if it's your first time.
    - **Windows** → double-click **`NLP_Suite.exe`**.
    - **Mac** → double-click **`Launch NLP Suite (Mac).command`** (this clears the macOS quarantine and starts the suite). Do **not** run the `NLP_Suite` file directly.
 3. **Mac only:** the first time, macOS may block the launcher ("unidentified developer"). Right-click **`Launch NLP Suite (Mac).command`** → **Open** → **Open**. This is only needed once.
-4. **Already have an older version?** Just download this one — there's nothing to uninstall, and your data folders are untouched.
+4. **Already have an older version?** From 1.6.41 on, closing the NLP Suite offers to install new releases for you. On 1.6.40 or older, unzip this one in place of your current folder and copy your `config` folder across to keep your settings.
 
 ---
 ## ✨ What's new in this release

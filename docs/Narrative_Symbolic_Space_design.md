@@ -1,6 +1,6 @@
 # Narrative / Symbolic Space Analyzer — design memo
 
-**Status:** design only (not yet implemented).
+**Status:** implemented (`GIS_symbolic_main.py`, v1.6.0 and later). This memo is kept for the rationale.
 **Author:** Roberto Franzosi & Claude, 2026-07-07.
 
 ## 1. The research question

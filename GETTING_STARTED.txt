@@ -9,7 +9,7 @@ WINDOWS
 3. If Windows shows "Windows protected your PC" (SmartScreen):
    Primary method:
    - Right-click NLP_Suite.exe → Properties
-   - Click "Unlock" (bottom right) → OK/Apply
+   - Tick "Unblock" (bottom right) → OK/Apply
 
    Alternative method:
    - Click "More info" → Click "Run anyway"

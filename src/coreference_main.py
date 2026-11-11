@@ -87,7 +87,7 @@ def run():
     if package_display_area_value == "":
         mb.showwarning(
             title="No setup for NLP package and language",
-            message="The default NLP package and language has not been setup.\n\nPlease, click on the Setup NLP button and try again.",
+            message="The default NLP package and language has not been setup.\n\nPlease, use the Setup dropdown menu at the bottom of this GUI, select 'Setup NLP package (parsers & annotators) and corpus language' and try again.",
         )
         return
 
@@ -371,8 +371,8 @@ def activate_options(*args):
         mb.showwarning(
             title="BERT coreference (fastcoref)",
             message="BERT coreference uses the 'fastcoref' neural model (English only).\n\n"
-            "It requires the 'fastcoref' package (pip install fastcoref); the first run "
-            "downloads the model (~500 MB) and needs an internet connection.\n\n"
+            "fastcoref is part of the NLP Suite; the first run "
+            "downloads its model (~500 MB) and needs an internet connection.\n\n"
             "Unlike CoreNLP/Stanza (pronominal only), it also clusters nominal mentions, "
             "but the NLP Suite replaces only pronouns with their referent.",
         )

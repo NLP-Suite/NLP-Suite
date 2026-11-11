@@ -14,7 +14,7 @@ SVO,SVO default visualization options,"The SVO algorithms use default settings f
 GIS,GIS default visualization options,"The Google Earth Pro visualization options in the GIS GUI are set by default. If you want to customize Google Earth Pro, please, use the GIS Google Earth GUI with the list of locations or of geocoded locations produced by the GIS pipeline as csv files.",OFF
 GIS,GIS default GUI options,"The options available on the GUI have been automatically set for you depending upon the type of input file selected: txt or csv.
 
-With a TXT file, NER extraction via Stanford CoreNLP must be first performed.
+With a TXT file, locations are first extracted by the NER annotator of your NLP package (Stanza, BERT, spaCy or Stanford CoreNLP).
 
 With a CSV file, the script checks whether the file is a CoNLL table, a geocoded file containing latitude and longitude values, or a file containing a list of locations that need to be geocoded.",OFF
 GIS,Google Maps API,"If the heatmap produced by Google Maps is displayed correctly for a split second and then displays ""Oops! Something went wrong"" you probably:
@@ -25,7 +25,7 @@ GIS,Google Maps API,"If the heatmap produced by Google Maps is displayed correct
 
 Please, check the API key, your billing information, and the API enabled and try again.
 
-PLEASE, read the TIPS_NLP_Google API Key.pdf for help.",OFF
+PLEASE, read the TIPS_NLP_GIS_Google API Key.pdf for help.",OFF
 *,csv files,"If csv ouput files open displaying weird characters in a Windows OS (e.g., a€), most likely the cause is due to non utf-8 compliant input text. Apostrophes and quotes are the typical culprits, but also other punctuation characters.
 
 Please, run the tool to check documents for utf-8 compliance and, if necessary, run the tool for automatic apostrophe and quote conversion from non utf-8 to utf-8.
@@ -41,7 +41,6 @@ SVO,WordNet VERB aggregation,"CAVEAT!
 For VERBS, the aggregated 'stative' category includes the auxiliary 'be' probably making up the vast majority of stative verbs. Similarly, the category 'possession' include the auxiliary 'have' (and 'get'). You may wish to exclude these auxiliary verbs from frequencies.
 
 The WordNet_UP function will automatically compute VERB frequencies with/without auxiliaries and display both Excel charts.",OFF
-SVO,SVO Someone?,"The SVO algorithms convert passive sentences into active ones. When no subject is present (e.g., ""A beautiful car was bought""), a subject is automatically added as Someone?.",OFF
 SVO,No SVO records extracted,"The SVO algorithms have not extracted any SVOs. If you have selected to filter Subject and/or Verb, the filtering algorithms may have excluded available records.
 
 You may want to untick either/both checkboxes and try again.",OFF
@@ -58,11 +57,6 @@ Your selected NLP package for basic functions (e.g., sentence splitting, tokeniz
 
 You can always view your default selection saved in the config file NLP_default_package_language_config.csv by hovering over the Setup widget at the bottom of this GUI and change your default options by selecting Setup NLP package and corpus language.",OFF
 style_analysis,K sentences repetition finder in CoNLL table,"In the CoNLL table analyzer GUI there is another K-sentences repetition finder algorithm. It provides data based based on the CoNLL table POS tags on counts and proportions of nouns, verbs, adjectives, and proper nouns in the first and last K sentences of a document.",OFF
-file-spell-checker,Language detection,"Language detection algorithms are very slow. The NLP Suite runs three different types of algorithms: LANGDETECT, SPACY, and LANGID.
-
-Please, arm yourself with patience, depending upon the number and size of documents processed.
-
-Stanza, contrary to the other algorithms, does not compute the probability of language detection.",OFF
 sentiment_analysis,NLP setup options,"Some of the algorithms behind this GUI rely on a specific NLP package to carry out basic NLP functions (e.g., sentence splitting, tokenizing, lemmatizing) for a specific language your corpus is written in.
 
 Your selected corpus language is English.
@@ -90,24 +84,14 @@ Tick the checkbox, if the filenames in the selected INPUT option embed a date (e
 Please, enter the character used to separate the date field embedded in the filenames from the other fields (e.g., _ in the filename The New York Times_12-23-1992) (default _).
 
 Please, using the dropdown menu, select the position of the date field in the filename (e.g., 2 in the filename The New York Times_12-23-1992; 4 in the filename The New York Times_1_3_12-23-1992 where perhaps fields 2 and 3 refer respectively to the page and column numbers) (default 2)",OFF
-NGrams_CoOccurrences_Viewer,NLP setup options,"Some of the algorithms behind this GUI rely on a specific NLP package to carry out basic NLP functions (e.g., sentence splitting, tokenizing, lemmatizing) for a specific language your corpus is written in.
-
-Your selected corpus language is English.
-Your selected NLP package for basic functions (e.g., sentence splitting, tokenizing, lemmatizing) is Stanza.
-
-You can always view your default selection saved in the config file NLP_default_package_language_config.csv by hovering over the Setup widget at the bottom of this GUI and change your default options by selecting Setup NLP package and corpus language.",OFF
 CoNLL_table_analyzer,Clause tags with CoreNLP neural network parser,The CoreNLP neural network parser does not produce clause tags in output. The column 'Clause Tag' in the output csv CoNLL table would contain all blank values.,OFF
 CoNLL_verb_analysis,CoNLL table - Verb modality,"The categories of Verb modality (Obligation, Will/would, Can/may) computed from the CoNLL table are NOT mutually exclusive. The same verb may appear in several categories.",OFF
-coreference,Stanford CoreNLP coreference,"The coreference algorithms in this GUI are based exclusively on Stanford CoreNLP coref annotator.
+coreference,Stanford CoreNLP coreference,"The coreference algorithms in this GUI are available for three NLP packages: Stanford CoreNLP (it requires the external software Stanford CoreNLP), Stanza, and BERT (fastcoref, English only).
 
-Watch this space for an extension to spaCy of coreference resolution (Stanza relies on Stanford CoreNLP coreference annotator).",OFF
-whats_in_your_corpus,What is in your corpus - Topic modeling,"The topic modeling option requires in input a set of txt documents, rather than a single txt file. The topic modeling option is disabled for single documents.",OFF
+Select the package in this GUI.",OFF
 topic_modeling,Topic modelling: Number of topics,"You are running the topic modelling algorithm with the default value of 20 topics.
 
 YOU ARE STRONGLY ADVISED to run the algorithm repeatedly with different number of topics (e.g., 50, 40 30, 20, 10). You should then select the number of topics that gives you the best set of topics with no or minimum word overlap across topics. When running Gensim, the topic circles displayed in the Intertopic Distance Map (via multidimensional scaling) should be scattered throughout the four quadrants and should not be overlapping.",OFF
-whats_in_your_corpus,What is in your corpus - GIS redundant options,"You are running simultaneously two options that are redundant: ""References to geographical locations (CoreNLP NER)"" under ""What else is in your document(s)?"" and ""GIS (Geographic Information System) pipeline"".
-
-The GIS option has the advantage that it extracts locations via CoreNLP NER annotator and maps them via Google Earth Pro and Google Maps. But... you need to install these freeware software options.",OFF
 file_spell_checker,Language detection,"Language detection algorithms are very slow. The NLP Suite runs three different types of algorithms: LANGDETECT, SPACY, and LANGID.
 
 Please, arm yourself with patience, depending upon the number and size of documents processed.
@@ -122,7 +106,7 @@ GIS_Google_Maps,Google Maps API,"If the heatmap produced by Google Maps is displ
 
 Please, check the API key, your billing information, and the API enabled and try again.
 
-PLEASE, read the TIPS_NLP_Google API Key.pdf for help.",OFF
+PLEASE, read the TIPS_NLP_GIS_Google API Key.pdf for help.",OFF
 NER,spaCy annotators,"Contrary to Stanford CoreNLP and Stanza, spaCy does not process specific annotators (e.g., POS, NER). Regardless of selected annotator, spaCy will also process the corpus with its full parser.",OFF
 spaCy,spaCy annotators,"Contrary to Stanford CoreNLP and Stanza, spaCy does not process specific annotators (e.g., POS, NER). Regardless of selected annotator, spaCy will also process the corpus with its full parser.",OFF
 parsers_annotators_visualization,NER tags frequency,"O is likely to be the most frequent NER tag in your corpus. It is likely to 'mask' all other tags. If that is the case, when the chart is displayed you may want to delete the row containing the O tag in the Data worksheet of the Excel chart file to have a better view of all other tags.",OFF
@@ -140,15 +124,11 @@ NLP_menu,NLP Suite architecture & filenames,"The Python scripts in the NLP Suite
 
 The filename suffix designates two different types of files: _main and _util.
 
-_main files are the only ones that you can run in command line independently of others; they may call _util files.
+The _main files, with their GUI options, lay out on the screen the widgets of a tool; you open them from the NLP Suite menu. They may call _util files, which hold the algorithms.
 
-The _main files, with their GUI options, lay out on the screen the widgets of a script for easy Graphical User Interface (GUI).
+The filename prefix clusters together scripts used for the same purpose. Thus GIS_ identifies all files dealing with maps and html_annotator_ all files dealing with html annotation.
 
-ALL SCRIPTS SUFFIXED BY _main CAN BE RUN INDIPENDENTLY OF THE NLP SUITE. Thus on command line you can type
-Python knowledge_graphs_main.py
-and it will fire up the annotator GUI independently of NLP_main.py.
-
-The filename prefix cluster together scripts used for the same purpose. Thus annotator identifies all files dealing with html annotation.",OFF
+If you run the NLP Suite from source code, every _main script can also be started on its own, e.g., python src/knowledge_graphs_main.py.",OFF
 Stanford_CoreNLP,CoreNLP NER annotator timing,"Beware that the CoreNLP NER annotator on the 296 files (2042312 words total) of the President of the United States Inaugural and State of the Union speeches, takes approximately 50 minutes on a standard laptop.",OFF
 Stanford_CoreNLP,CoreNLP POS/NER max sentence length,"The CoreNLP POS/NER annotators set a maximum sentence length for processing.
 
@@ -165,7 +145,7 @@ parsers_annotators,CoreNLP NER tags,"The CoNLL table produced by the CoreNLP par
 
 If you are planning to produce frequency distributions of NER tags directly from the CoNLL table, you need to remember that tags such as 'Date' or 'City' may be grossly overestimated. For instance, in the expression 'the day before Christmas' each word 'the,' 'day,' 'before,' 'Christmas' will be tagged as NER date. The same is true for NER CITY tags such as 'New York City.'
 
-A better way to obtain frequency distributions of NER values is to run the NER annotators from the 'Stanford_CoreNLP_NER_main.py.'",OFF
+A better way to obtain frequency distributions of NER values is to run the NER annotators from the 'NER_main.py.'",OFF
 knowledge_graphs_WordNet_config.csv,English language & WordNet,WordNet is only available for texts in the English language.,OFF
 *,Excel Charts,"The Excel chart to be displayed has hover-over effects (i.e., when you hover the mouse over chart points some information will be displayed).
 
@@ -207,10 +187,6 @@ You can always view your default selection saved in the config file NLP_default_
 Stanford_CoreNLP,CoreNLP POS annotator timing,"Beware that the CoreNLP POS annotator on the 296 files (2042312 words total) of the President of the United States Inaugural and State of the Union speeches, takes approximately 2 minutes on a standard laptop.",OFF
 file_splitter_ByLength,Output directory of split files,"This is a reminder that all file splitter scripts save the split files inside a subdirectory by the name of split_files of the directory where the input txt files are located, regardless of the choice of output directory.",OFF
 data_manipulation,Merge option,"Please, click next the + sign on this line to select another KEY to be used for merging files or click OK to accept current selection.",OFF
-whats_in_your_corpus,What is in your corpus - Topic modeling Gensim,"The Gensim topic modeling routine run from here is a reduced version of the script, meant to provide a quick overview of the topics in your corpus.
-
-For a more in-depth analysis of topics, use the topic modeling scripts for Gensim and MALLET.",OFF
-whats_in_your_corpus,NER tags frequency,"O is likely to be the most frequent NER tag in your corpus. It is likely to 'mask' all other tags. If that is the case, when the chart is displayed you may want to delete the row containing the O tag in the Data worksheet of the Excel chart file to have a better view of all other tags.",OFF
 parsers_annotators,NER tags frequency,"O is likely to be the most frequent NER tag in your corpus. It is likely to 'mask' all other tags. If that is the case, when the chart is displayed you may want to delete the row containing the O tag in the Data worksheet of the Excel chart file to have a better view of all other tags.",OFF
 parsers_annotators,DepRel tags frequency,"punct (punctuation) and det (determiner/article) are likely to be the most frequent DepRel tags in your corpus. It is likely to 'mask' all other tags. If that is the case, when the chart is displayed you may want to delete in the Data worksheet of the Excel chart file the rows containing the 'punct' and 'det' tags to have a better view of all other tags.",OFF
 word2vec,Word2Vec HTML visual,"The Word2Vec HTML visual may be very messy.
@@ -221,9 +197,9 @@ If that happens, with your mouse, draw an area you want to focus on in the Carte
 
 YOU CAN GO BACK TO THE ORIGINAL DISPLAY BY CLICKING THE REFRESH BUTTON IN YOUR BROWSER.",OFF
 word2vec,Word2Vec Eucledian distance,The Word2Vec algorithms compute the Eucledian distance of every word with every other word for the 10 most frequent words. You can use this csv file to locate the most significant words in the Cartesian space.,OFF
-sentiment_analysis,VADER Sentiment Analysis system requirements,"VADER heavily relies on a number of NLTK libraries. If VADER fails to run, make sure that in command line you run
+sentiment_analysis,VADER Sentiment Analysis system requirements,"VADER relies on the NLTK resource vader_lexicon, which the NLP Suite downloads automatically the first time you run VADER (you must be connected to the internet).
 
-python -m nltk.downloader all",OFF
+If VADER fails to run, check your internet connection and run it again.",OFF
 sentiment_analysis,VADER Mean/Median,"VADER cannot compute sentence mean and median values because VADER computes a single compound value for the entire sentence.
 
 Use the hedonometer algorithm to compute separate values and word list of words found.",OFF
@@ -249,16 +225,11 @@ GIS,GIS/Google Earth Pro with CoNLL input,"You are using a GIS visualization too
 
 Thus, each word in 'New York City' would have a separate NER CITY tag.
 
-As input, you should use the csv file of NER values produced by 'Stanford_CoreNLP_NER_main.py.'",OFF
+As input, you should use the csv file of NER values produced by 'NER_main.py.'",OFF
 GIS,Input csv file,"You have a csv file in the 'Select INPUT CSV file' widget. The RUN command would process this file in input rather than the file stored in the I/O configuration.
 
 Press ESC if you want to clear the 'Select INPUT CSV file' widget.",OFF
 Stanford_CoreNLP,CoreNLP normalized date timing,"Beware that the CoreNLP normalized date algortithm on the 296 files (2042312 words total) of the President of the United States Inaugural and State of the Union speeches, takes approximately 50 minutes on a standard laptop.",OFF
-NGrams_CoOccurrences_Viewer,subprocess.call(cmd) error,"subprocess.call(cmd) error
-
-If the VIEWER you are running exits with an error code about a file not found, most likely your selected INPUT & OUTPUT directory options are too long for Windows to handle.
-
-You may need to move your input and output folders so as to have a shorter path (e.g., desktop).",OFF
 Stanford_CoreNLP_coreference,Stanford CoreNLP coref merged files,"The Stanford CoreNLP coref annotator with a corpus of files in a directory in input will create a merged corefed file (with filenames embedded in <@# #@>) in output.
 
 Manual coreference resolution will not be available; depending upon the number of files merged, bringing the files into memory for manual editing may exceed memory capacity. You can always
@@ -270,9 +241,6 @@ coreference,Stanford CoreNLP coref merged files,"The Stanford CoreNLP coref anno
 Manual coreference resolution will not be available; depending upon the number of files merged, bringing the files into memory for manual editing may exceed memory capacity. You can always
    1. manually edit the merged file anyway using the 'coreference_main' GUI;
    2. split the merged file and then edit the individual coreferenced files, again, using the 'coreference_main' GUI.",OFF
-GIS_pipeline,GIS Multi-word Locations,"Parsers and NER annotators will export each token as a separate record. Thus, a multi-word location such as 'Republic of China' may end up beging geocoded separately as 'Republic of' as LOCATION and 'China' as COUNTRY. To avoid this problem and improve geocoding, you can edit the csv file multi_word_locations.csv in the lib/wordLists subdirectory.
-
-Similarly, locations known under different names (e.g., 'United States', 'US', 'USA'), can be all geocoded under a single name (e.g., 'United States'). The multiple name locations are listed in the csv file multi_name_locations.csv Again, you can edit that file to your specific needs and improve geocoding.",OFF
 GIS,Open Google Earth GUI,"You should tick the Open GUI checkbox ONLY if you wish to open the Google Earth Pro GUI.
 
 The Google Earth Pro GUI will provide a number of options to personalize a Google Earth Pro map. Press Run if you wish to open the Google Earth Pro GUI.",OFF
@@ -400,7 +368,7 @@ If you are processing files in a directory, other files may similarly need to be
 
 If you are planning to produce frequency distributions of NER tags directly from the CoNLL table, you need to remember that tags such as 'Date' or 'City' may be grossly overestimated. For instance, in the expression 'the day before Christmas' each word 'the,' 'day,' 'before,' 'Christmas' will be tagged as NER date. The same is true for NER CITY tags such as 'New York City.'
 
-A better way to obtain frequency distributions of NER values is to run the NER annotators from the 'Stanford_CoreNLP_NER_main.py.'",OFF
+A better way to obtain frequency distributions of NER values is to run the NER annotators from the 'NER_main.py.'",OFF
 *,Stanford CoreNLP Sentiment Analysis system requirements,"The Stanford CoreNLP Sentiment Analysis tool requires two components.
 
 1. A copy of the FREEWARE Stanford CoreNLP suite installed on your machine. You can download the FREEWARE Stanford CoreNLP at https://stanfordnlp.github.io/CoreNLP/download.html.
@@ -417,7 +385,7 @@ You may need to move your input and output folders so as to have a shorter path 
 *,GIS default visualization options,"The Google Earth Pro visualization options in the GIS GUI are set by default. If you want to customize Google Earth Pro, please, use the GIS Google Earth GUI with the list of locations or of geocoded locations produced by the GIS pipeline as csv files.",OFF
 *,GIS default GUI options,"The options available on the GUI have been automatically set for you depending upon the type of input file selected: txt or csv.
 
-With a TXT file, NER extraction via Stanford CoreNLP must be first performed.
+With a TXT file, locations are first extracted by the NER annotator of your NLP package (Stanza, BERT, spaCy or Stanford CoreNLP).
 
 With a CSV file, the script checks whether the file is a CoNLL table, a geocoded file containing latitude and longitude values, or a file containing a list of locations that need to be geocoded.",OFF
 *,Open TIPS file,"You will be asked next if you want to open a TIPS file for help.
@@ -436,15 +404,11 @@ Manual coreference resolution will not be available; depending upon the number o
 
 The filename suffix designates two different types of files: _main and _util.
 
-_main files are the only ones that you can run in command line independently of others; they may call _util files.
+The _main files, with their GUI options, lay out on the screen the widgets of a tool; you open them from the NLP Suite menu. They may call _util files, which hold the algorithms.
 
-The _main files, with their GUI options, lay out on the screen the widgets of a script for easy Graphical User Interface (GUI).
+The filename prefix clusters together scripts used for the same purpose. Thus GIS_ identifies all files dealing with maps and html_annotator_ all files dealing with html annotation.
 
-ALL SCRIPTS SUFFIXED BY _main CAN BE RUN INDIPENDENTLY OF THE NLP SUITE. Thus on command line you can type
-Python knowledge_graphs_main.py
-and it will fire up the annotator GUI independently of NLP_main.py.
-
-The filename prefix cluster together scripts used for the same purpose. Thus annotator identifies all files dealing with html annotation.",OFF
+If you run the NLP Suite from source code, every _main script can also be started on its own, e.g., python src/knowledge_graphs_main.py.",OFF
 *,Topic modelling: Number of topics,"You are running the topic modelling algorithm with the default value of 20 topics.
 
 YOU ARE STRONGLY ADVISED to run the algorithm repeatedly with different number of topics (e.g., 50, 40 30, 20, 10). You should then select the number of topics that gives you the best set of topics with no or minimum word overlap across topics. When running Gensim, the topic circles displayed in the Intertopic Distance Map (via multidimensional scaling) should be scattered throughout the four quadrants and should not be overlapping.",OFF
@@ -455,9 +419,9 @@ Please, arm yourself with patience, depending upon the number and size of docume
 Stanza, contrary to the other algorithms, does not compute the probability of language detection.",OFF
 *,BERT Word2Vec timing,"Beware that BERT Word2Vec on the 296 files (2042312 words total) of the President of the United States Inaugural and State of the Union speeches, with the tokenizing, lemmatzing, and Eucledian distance options, takes approximately 2 hours on a standard laptop. Eucledian distance is the item taking the longest.",OFF
 *,Gensim Word2Vec timing,"Beware that Gensim Word2Vec on the 296 files (2042312 words total) of the President of the United States Inaugural and State of the Union speeches, with the tokenizing, lemmatzing, and Eucledian distance options, takes approximately 2 hours on a standard laptop. Eucledian distance is the item taking the longest.",OFF
-*,Stanford CoreNLP coreference,"The coreference algorithms in this GUI are based exclusively on Stanford CoreNLP coref annotator.
+*,Stanford CoreNLP coreference,"The coreference algorithms in this GUI are available for three NLP packages: Stanford CoreNLP (it requires the external software Stanford CoreNLP), Stanza, and BERT (fastcoref, English only).
 
-Watch this space for an extension to spaCy of coreference resolution (Stanza relies on Stanford CoreNLP coreference annotator).",OFF
+Select the package in this GUI.",OFF
 *,CoreNLP gender timing,"Beware that the CoreNLP gender algortithm on the 296 files (2042312 words total) of the President of the United States Inaugural and State of the Union speeches, takes approximately 3 hours on a standard laptop.",OFF
 *,English language & WordNet,WordNet is only available for texts in the English language.,OFF
 *,DBpedia/YAGO options,"You have several options available. You can

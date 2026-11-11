@@ -393,7 +393,7 @@ def getFileList(inputFile, inputDir, fileType=".*", silent=False, configFileName
                     title="Input config file error",
                     message="The GUI-specific config file "
                     + configFileName
-                    + ' does not exist.\n\nPlease, use the dropdown menu "I/O configuration" to select the GUI-specific option, then click on "Setup INPUT/OUTPUT configuration" button to setup the GUI-specific I/O config file and try again.',
+                    + ' does not exist.\n\nPlease, click on the "Setup INPUT/OUTPUT configuration" button to setup the I/O config file and try again.',
                 )
             return files
         # drop records with nan in Sort order
@@ -1467,7 +1467,7 @@ def getScript(pydict, script):
             title="Warning",
             message="The selected option '"
             + script
-            + "' was not found in the Python dictionary in NLP_GUI.py.\n\nPlease, inform the NLP Suite developers of the problem.\n\nSorry!",
+            + "' was not found in the list of options of this GUI.\n\nPlease, inform the NLP Suite developers of the problem.\n\nSorry!",
         )
         return script_to_run, IO_values
     # name of the python script
