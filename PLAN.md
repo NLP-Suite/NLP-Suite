@@ -596,7 +596,7 @@ Practical exposure is low across the board (the Suite opens the user's own files
 
 ### 13.2 What blocks transformers: `bert-extractive-summarizer`
 
-The pin exists because `bert-extractive-summarizer` 0.10.1 (its last release, 2021) imports `TransfoXLModel` at load time (`summarizer/bert.py:12`), and transformers removed it in 4.52. So `import summarizer` fails on anything that fixes the alerts, and `BERT_util.py:50` imports it at module level, so every BERT GUI would fail to open, not only the summary.
+The pin exists because `bert-extractive-summarizer` 0.10.1 (its last release, Jan 2022) imports `TransfoXLModel` at load time (`summarizer/bert.py:12`), and transformers removed it in 4.52. So `import summarizer` fails on anything that fixes the alerts, and `BERT_util.py:50` imports it at module level, so every BERT GUI would fail to open, not only the summary.
 
 It has **one caller**: `doc_summary_BERT`, `BERT_util.py:215`, `Summarizer()` then `bert_model(fullText, min_length=60)`. (It also builds the model inside the per-document loop, so it reloads bert-large-uncased once per file.)
 
