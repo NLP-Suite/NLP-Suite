@@ -478,6 +478,17 @@ def process_geocoded_data_for_kml(
     return kmloutputFilename
 
 
+def location_NER_tag(item, inputIsCoNLL, datePresent):
+    """The NER tag of one row of locations.
+
+    A CoNLL table has it in column 1. A csv of locations has it in column 1 too, unless the csv carries
+    dates, which come first: [location, date, NER tag, sentence, document].
+    """
+    if not inputIsCoNLL and datePresent:
+        return item[2]
+    return item[1]
+
+
 def geocode(
     window,
     locations,
@@ -702,14 +713,14 @@ def geocode(
                     + " for geocoding: "
                     + str(item[0])
                     + " (NER tag: "
-                    + str(item[1])
+                    + str(location_NER_tag(item, inputIsCoNLL, datePresent))
                     + ")"
                 )
             # for CoNLL tables as input rows & columns
             #   refer to the four fields exported by the NER locator
             if inputIsCoNLL:  # the filename was exported in GIS_location_util
                 itemToGeocode = item[0]  # location in FORM
-                NER_Tag = item[1]  # location in NER
+                NER_Tag = location_NER_tag(item, inputIsCoNLL, datePresent)  # location in NER
                 sentenceID = item[2]
                 sentence = item[3]
                 documentID = item[4]
@@ -721,9 +732,9 @@ def geocode(
                         date = extract_date_from_filename(document)
             else:  # not CoNLL
                 itemToGeocode = item[0]
+                NER_Tag = location_NER_tag(item, inputIsCoNLL, datePresent)
                 if datePresent:
                     date = item[1]
-                    NER_Tag = item[2]
                     # If date is empty or 'nan', try to extract from document
                     if pd.isna(date) or date == "" or date == "nan":
                         try:
@@ -731,8 +742,6 @@ def geocode(
                             date = extract_date_from_filename(doc)
                         except:
                             date = ""
-                else:
-                    NER_Tag = item[1]
                 if NER_Tag == "COUNTRY":
                     NER_Tag_Nominatim = "country"
                 elif NER_Tag == "STATE_OR_PROVINCE":
