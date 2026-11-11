@@ -17,7 +17,7 @@ No GitHub account needed.
 
 There is no installer — just extract the zip:
 
-- **Windows:** Right-click → **Extract All** → choose a location (e.g., Desktop or Program Files)
+- **Windows:** Right-click → **Extract All** → choose a location you can write to (e.g., Desktop or `C:\NLP_Suite`; not Program Files and not inside OneDrive, or the NLP Suite cannot update itself)
 - **macOS:** Double-click the zip in Finder
 
 That's it. The extracted folder contains everything the NLP Suite needs.
@@ -30,12 +30,12 @@ Double-click **NLP_Suite.exe**. If Windows shows "Windows protected your PC," cl
 
 ### macOS
 
-1. Double-click **NLP Suite Mac Setup** (included in the download)
-2. Click **Select NLP Suite Folder** and point it to the extracted folder
-3. Click **Remove Quarantine from Executable** and **Remove Quarantine from Folder** — this clears the macOS Gatekeeper block so the app can run
-4. Click **Open NLP Suite**
+1. Open the extracted folder and double-click **Launch NLP Suite (Mac).command**. It clears the macOS download quarantine and starts the NLP Suite.
+2. The first time, macOS may block the launcher ("cannot be opened because it is from an unidentified developer"). Right-click (or Control-click) **Launch NLP Suite (Mac).command** → **Open** → **Open**. After that, a normal double-click works.
 
-> **Note:** The Mac Setup app is included in the download alongside NLP_Suite. It replaces the manual System Settings → Privacy & Security workaround. See [Troubleshooting](https://github.com/NLP-Suite/NLP-Suite/wiki/Troubleshooting) if you run into issues.
+Do **not** double-click the `NLP_Suite` file itself: without the launcher it fails with a "code signature not valid" error.
+
+See [Troubleshooting](https://github.com/NLP-Suite/NLP-Suite/wiki/Troubleshooting) if you run into issues.
 
 ### First run
 
@@ -50,13 +50,11 @@ You can change these at any time in the I/O Configuration area at the top of the
 
 ## Update
 
-The NLP Suite automatically checks for new versions when you close the main window. If a newer release is available, it will prompt you to download and install it.
+When you close the NLP Suite it checks for a new release. If there is one, it asks whether to download and install it (about 1.5 GB; a progress window shows the download and you can cancel). Your settings (`config` folder) and any files of your own inside the NLP Suite folder are kept. The previous version stays next to the new one as `NLP_Suite_previous` until the new one starts, and is then deleted.
 
-**Manual update:** If you want to skip the automatic check, go to [Releases](https://github.com/NLP-Suite/NLP-Suite/releases) and download the latest version, then extract it to a new folder.
+The NLP Suite can only update a folder it can write to: not Program Files, and preferably not inside OneDrive.
 
-Your output files and any external data are not stored inside the NLP Suite folder, so they are not affected by updates.
-
-> **Note:** Your I/O configuration will reset to defaults after an update. The first-launch auto-config will set up new defaults automatically.
+**Release 1.6.40 or older:** these cannot update themselves. Go to [Releases](https://github.com/NLP-Suite/NLP-Suite/releases), download the latest zip, unzip it in place of your current folder and copy your `config` folder across. You only need to do this once.
 
 ## What's Bundled
 
@@ -79,7 +77,6 @@ The standalone build includes everything you need to run the NLP Suite:
 - Sample newspaper articles: 5 book reviews from major publications for corpus analysis
 - TIPS documentation (150+ files explaining algorithms and features)
 - Sample visualizations (charts, heatmaps) showing output formats
-- GIS settings and configuration templates
 
 **Enhancement files:**
 - CoreNLP enhanced dependencies — parsing enhancement files for SVO extraction and linguistic analysis
@@ -101,13 +98,12 @@ These defaults let you start testing right away without configuration.
 **API keys:**
 - `Google-geocode-API_config.csv` — Google Geocoding API key (if you use the GIS tools)
 - `Google-Maps-API_config.csv` — Google Maps API key (if you use Google Maps visualization)
-- `Pytesseract.csv` — Tesseract OCR settings (if you use PDF text extraction)
 
 **External software:**
 - `NLP_setup_external_software_config.csv` — paths to optional external tools (Stanford CoreNLP, MALLET, etc.)
 
 The config folder is your personal settings hub — it persists across updates, so your preferences are preserved.
 
-No separate installation of Python, Anaconda, Java, or WordNet is required.
+No separate installation of Python, Anaconda, Java, or WordNet is required (a Java runtime is bundled; WordNet data downloads automatically on first use).
 
 See the [Install page](https://github.com/NLP-Suite/NLP-Suite/wiki/Install-the-NLP-Suite#whats-included) for details on what is and is not included.

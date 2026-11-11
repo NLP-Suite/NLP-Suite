@@ -87,7 +87,7 @@ def run():
     if package_display_area_value == "":
         mb.showwarning(
             title="No setup for NLP package and language",
-            message="The default NLP package and language has not been setup.\n\nPlease, click on the Setup NLP button and try again.",
+            message="The default NLP package and language has not been setup.\n\nPlease, use the Setup dropdown menu at the bottom of this GUI, select 'Setup NLP package (parsers & annotators) and corpus language' and try again.",
         )
         return
 
@@ -532,7 +532,7 @@ def check_csv_file_headers(csv_file):
     elif "Location" not in headers and "Word" not in headers and "NER" not in headers:
         mb.showwarning(
             title="Warning",
-            message="The selected input csv file does not contain the word 'Location' in its headers.\n\nThe GIS algorithms expect in input either\n   1. txt file(s) from which to extract locations (via Stanford CoreNLP NER annotator) to be geocoded and mapped;\n   2. a csv file\n      a. with a column of locations (with header 'Location') to be geocoded and mapped;\n      b. a csv file with a column of locations (with header 'Location'; the header 'Word' from the CoreNLP NER annotator will be converted automatically to 'Location')';\n      c. already geocoded and to be mapped (this file will also contain latitudes and longitudes, with headers 'Latitude' and 'Longitude').\n\nPlease, select the appropriate input csv file and try again. Or simply run the complete pipeline, going from text to maps, with txt file(s) in input.",
+            message="The selected input csv file does not contain the word 'Location' in its headers.\n\nThe GIS algorithms expect in input either\n   1. txt file(s) from which to extract locations (via the NER annotator of the selected NLP package: Stanza, BERT, spaCy or Stanford CoreNLP) to be geocoded and mapped;\n   2. a csv file\n      a. with a column of locations (with header 'Location') to be geocoded and mapped;\n      b. a csv file with a column of locations (with header 'Location'; the header 'Word' from the CoreNLP NER annotator will be converted automatically to 'Location')';\n      c. already geocoded and to be mapped (this file will also contain latitudes and longitudes, with headers 'Latitude' and 'Longitude').\n\nPlease, select the appropriate input csv file and try again. Or simply run the complete pipeline, going from text to maps, with txt file(s) in input.",
         )
         geocoder_var.set("Nominatim")
         csv_file_var.set("")

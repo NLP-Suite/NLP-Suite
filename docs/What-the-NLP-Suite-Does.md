@@ -17,8 +17,8 @@ The NLP Suite provides an **easy-to-use one-stop shop for many Natural Language 
 
 The NLP Suite offers a comprehensive range of sentiment and emotion analysis tools:
 
-* **Neural network approaches:** BERT (English and Multilingual models), Stanford CoreNLP, Stanza, spaCy (TextBlob)
-* **Dictionary-based approaches:** VADER, SentiWordNet, ANEW (sentiment/arousal/dominance), hedonometer, NRC Emotion Wheel (8-emotion analysis with Plutchik wheel visualization)
+* **Neural network approaches:** BERT (English and Multilingual models), Stanford CoreNLP, Stanza
+* **Dictionary-based approaches:** spaCy (TextBlob), VADER, SentiWordNet, ANEW (sentiment/arousal/dominance), hedonometer, NRC Emotion Wheel (8-emotion analysis with Plutchik wheel visualization)
 * **Shape of stories** — compute and visualize how sentiments fluctuate across documents using hierarchical clustering, SVD, and NMF; also track sentiment fluctuations across actors (people, organizations) and/or locations in your corpus
 
 ## Knowledge Bases & Word Aggregation

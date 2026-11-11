@@ -16,11 +16,11 @@
 
 | Problem | Solution |
 |---------|----------|
-| **"NLP_Suite cannot be opened because it is from an unidentified developer"** | Use the **NLP Suite Mac Setup** app (included in the download) to remove the quarantine. Click **Remove Quarantine from Executable** and **Remove Quarantine from Folder**, then click **Open NLP Suite**. |
-| **"NLP_Suite is damaged and can't be opened"** | Use the Mac Setup app to remove quarantine. If that doesn't work, open Terminal and run: `xattr -cr /path/to/NLP_Suite` (drag the NLP_Suite file into Terminal to get the path). |
-| **"NLP_Suite cannot be opened because Apple cannot check it for malicious software"** | Same fix — use the Mac Setup app to remove quarantine. |
-| **Mac Setup app itself is blocked** | Right-click **NLP Suite Mac Setup** in Finder → **Open** → click **Open** in the dialog. The Setup app only needs to be unblocked once. |
-| **App crashes on launch with no error** | Open Terminal, navigate to the NLP_Suite folder, and run `./NLP_Suite` to see the error output. |
+| **"NLP_Suite cannot be opened because it is from an unidentified developer"** | Start the NLP Suite with **Launch NLP Suite (Mac).command** (included in the download); it removes the quarantine. The first time, right-click it → **Open** → **Open**. |
+| **"NLP_Suite is damaged and can't be opened"** or **"code signature not valid"** | You started the `NLP_Suite` file directly. Use **Launch NLP Suite (Mac).command** instead. If that doesn't work, open Terminal and run: `xattr -cr /path/to/NLP_Suite` (drag the extracted NLP_Suite folder into Terminal to get the path). |
+| **"NLP_Suite cannot be opened because Apple cannot check it for malicious software"** | Same fix — start it with **Launch NLP Suite (Mac).command**. |
+| **The launcher itself is blocked** | Right-click **Launch NLP Suite (Mac).command** in Finder → **Open** → click **Open** in the dialog. This is only needed once. |
+| **App crashes on launch with no error** | Open Terminal, drag **Launch NLP Suite (Mac).command** into it and press Enter to see the error output. |
 
 ### Both Platforms
 
@@ -34,6 +34,14 @@
 | **"No module named X" error** | This should not happen with the standalone build. If it does, [report the issue](https://github.com/NLP-Suite/NLP-Suite/issues) with the full error message. |
 | **Output files are empty** | Check that your input files are valid (UTF-8 encoded txt or csv). Check the output folder — files may have been written to a subdirectory. |
 
+### Updating
+
+| Problem | Solution |
+|---------|----------|
+| **"The pygit2 library is not available"** when closing | You have release 1.6.40 or older, which cannot update itself. Download the latest zip from [Releases](https://github.com/NLP-Suite/NLP-Suite/releases), unzip it in place of your current folder and copy your `config` folder across. |
+| **The update says it cannot write to the folder** | Move the NLP Suite folder out of Program Files (e.g., to Desktop or `C:\NLP_Suite`) and try again. |
+| **The update warns about OneDrive** | Move the NLP Suite folder out of OneDrive; a syncing folder can lock files during the update. |
+
 ---
 
 ## Running from Source (developer setup)
@@ -43,7 +51,7 @@ If you are running the NLP Suite from source code rather than the standalone bui
 ### Verify your environment
 
 ```bash
-# Check Python version (3.10+ required)
+# Check Python version (the NLP Suite is built and tested on 3.10)
 python --version
 
 # Check that key packages are installed
@@ -56,10 +64,10 @@ python -c "import plotly; print(plotly.__version__)"
 
 | Problem | Solution |
 |---------|----------|
-| **ModuleNotFoundError** | Install the missing package: `pip install <package-name>`. See the [install page](https://github.com/NLP-Suite/NLP-Suite/wiki/Install-the-NLP-Suite) for the full list. |
+| **ModuleNotFoundError** | From the repository folder, in your `NLP` environment: `pip install -r requirements.txt`. |
 | **NLTK resource not found** | Run `python -c "import nltk; nltk.download('wordnet'); nltk.download('punkt'); nltk.download('averaged_perceptron_tagger')"` |
 | **Tkinter not found** | On Linux: `sudo apt install python3-tk`. On macOS with Homebrew Python: `brew install python-tk`. Anaconda includes tkinter by default. |
-| **Stanford CoreNLP connection refused** | CoreNLP requires Java 8+ and must be running as a server. Consider using **Stanza** instead (pure Python, no Java). |
+| **Stanford CoreNLP connection refused** | CoreNLP requires Java (from source: install a Java 17 runtime, e.g. [Temurin](https://adoptium.net); the standalone build bundles one). Consider using **Stanza** instead (pure Python, no Java). |
 
 ---
 

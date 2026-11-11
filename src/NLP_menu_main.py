@@ -1180,12 +1180,6 @@ reminders_util.checkReminder(
 )
 routine_options = reminders_util.getReminders_list(scriptName)
 
-if sys.platform == "darwin":
-    reminders_util.checkReminder(
-        scriptName, reminders_util.title_options_TensorFlow, reminders_util.message_TensorFlow, True
-    )
-    routine_options = reminders_util.getReminders_list(scriptName)
-
 
 # Auto-generate default config files on first run so the user can test immediately
 def ensure_default_configs():
@@ -1268,7 +1262,7 @@ def ensure_default_configs():
         )
         for item in created:
             msg += "  • " + item + "\n"
-        msg += "\nYou can change these options at any time using the SETUP buttons above."
+        msg += "\nYou can change these options at any time using the Set up buttons in the Setup panel."
         mb.showinfo("Default configuration created", msg)
         return True
     return False
@@ -1294,53 +1288,12 @@ if missing_external_software != "":
     )
     routine_options = reminders_util.getReminders_list(scriptName)
 
-if (
-    not setup_IO_OK_checkbox_var.get()
-    or not setup_parsers_annotators_OK_checkbox_var.get()
-    or not setup_external_software_OK_checkbox_var.get()
-):
-    answer = tk.messagebox.askyesno(
+if not setup_IO_OK_checkbox_var.get() or not setup_parsers_annotators_OK_checkbox_var.get():
+    mb.showwarning(
         "Warning",
-        "Some (or all) of the required three setup options:\n"
-        "\n\nSetup default I/O options...\nSetup default NLP parsers and annotators...\nSetup external software"
-        "\n\ndisplayed in the three buttons at the top of this GUI are not completed (the checkbox to the left of the incomplete setup button is not ticked off)."
-        "\n\nYou should click on the appropriate Setup button and complete the required setup."
-        "\n\nDo you want to watch the video on how to setup the NLP Suite options?",
+        "'Input & output' or 'Parser & language' in the Setup panel says 'Needs setup'."
+        "\n\nPlease, click on its 'Set up' button and complete the setup, or the tools will not run."
+        "\n\n'External software' is optional: set it up only for the tools that need it.",
     )
-    if answer:
-        GUI_util.videos_dropdown_field.set("Setup the NLP Suite")
-        # GUI_util.watch_video(videos_lookup, scriptName)
-
-if sys.platform == "darwin":
-    import platform
-
-    if platform.machine() != "x86_64":
-        # When running as a PyInstaller frozen app, sys.executable is the bundle
-        # binary, not a Python interpreter, so pip cannot be invoked. The bundled
-        # python-env already includes TensorFlow with Apple Silicon support, so
-        # no check is needed. Only warn when running from source (development mode).
-        if not getattr(sys, "frozen", False):
-            import subprocess
-
-            try:
-                output = subprocess.check_output(
-                    [sys.executable, "-m", "pip", "freeze"], stderr=subprocess.DEVNULL
-                ).decode("utf-8")
-            except Exception:
-                output = ""
-            has_tensorflow = any(
-                pkg in output for pkg in ("tensorflow-metal", "tensorflow-macos", "tensorflow==", "tensorflow ")
-            )
-            if not has_tensorflow:
-                mb.showwarning(
-                    title="Warning",
-                    message="Your Mac uses an Apple Silicon chip (M1/M2/M3).\n\n"
-                    "Some algorithms that rely on TensorFlow (e.g. BERT) may not work correctly "
-                    "without a TensorFlow build that supports Apple Silicon.\n\n"
-                    "If you plan to use those algorithms, install TensorFlow for Apple Silicon:\n\n"
-                    "    pip install tensorflow tensorflow-metal\n\n"
-                    "You do NOT need to reinstall Anaconda — the bundled python-env already "
-                    "supports Apple Silicon.",
-                )
 
 GUI_util.window.mainloop()

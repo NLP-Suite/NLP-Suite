@@ -167,9 +167,9 @@ def display_available_options():
             if not os.path.exists(resources_path):
                 mb.showwarning(
                     title="Warning",
-                    message="Stanza does not seem to be installed in your machine. The file-path\n\n"
+                    message="The Stanza language models could not be downloaded. The file-path\n\n"
                     + resources_path
-                    + "\n\ncould not be found.\n\nPlease, open terminal, type conda activate NLP (Enter) and then type pip install stanza (Enter) and try again.",
+                    + "\n\ncould not be found.\n\nStanza is part of the NLP Suite, but its language models are downloaded the first time they are used. Please, make sure you are connected to the internet and try again.",
                 )
                 return
     memory_var.set(int(memory))
@@ -674,8 +674,8 @@ def changed_NLP_package(*args):
             title="Stanford CoreNLP not installed",
             message="Stanford CoreNLP requires Java and the CoreNLP engine, which are NOT installed on "
             "this machine. The NLP Suite does not bundle them — like Google Earth or Gephi, you "
-            "install them once.\n\nInstall Java and Stanford CoreNLP from  Setup ▸ Download / "
-            "install external software , then select Stanford CoreNLP here again.\n\nThe package "
+            "install them once.\n\nInstall Stanford CoreNLP (and Java, if missing) from  Setup ▸ Setup "
+            "external software , then select Stanford CoreNLP here again.\n\nThe package "
             "has been reset to Stanza, which needs no Java and runs the parser, POS, lemmas, NER "
             "and SVO. (Gender, dialogue/quotes and normalized dates are the only CoreNLP-only "
             "features.)",
@@ -904,7 +904,7 @@ if error:
         "Warning", "Do you want to watch the video on how to setup NLP package and language options?"
     )
     if answer:
-        GUI_util.videos_dropdown_field.set("Setup NLP package & language options")
+        GUI_util.videos_dropdown_field.set("Setup NLP package & language options 1")
         # GUI_util.watch_video(videos_lookup, scriptName)
 
 # package_display_area_value_upon_entry = get_str_package_display_area_value()

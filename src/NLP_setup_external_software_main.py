@@ -538,17 +538,16 @@ software_dir, software_url, missing_external_software, error_found = IO_librarie
 )
 if missing_external_software == "":
     missing_software_var.set("All external software has been installed")
-    mb.showwarning(title="Warning", message="All external software has been installed.")
     error = False
 else:
     # must be displayed at the end after the whole GUI has been laid
     error = True
     temp_missing_external_software = missing_external_software.replace("\n\n", ", ")[:-2]
     missing_software_var.set(temp_missing_external_software)
-    if not os.path.isfile(config_filename):
+    if not os.path.isfile(os.path.join(GUI_IO_util.configPath, config_filename)):
         mb.showwarning(
-            title="External software installation error",
-            message="The following external software needs to be downloaded and/or installed or some of the algorithms that require the software listed below will not run.\n\n"
+            title="External software installation",
+            message="The following external software is not set up. All of it is optional: the default parser (Stanza) and the default maps (Python folium) need none of it. Only the algorithms that use the software listed below will not run.\n\n"
             + str(missing_external_software)
             + "\nDOWNLOAD means to open the sotware website to get a copy of the software on your machine (you must be connected to the internet);"
             "\nINSTALL means to select the folder where you downloaded the software so that the NLP Suite knows where to find it."
