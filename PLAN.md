@@ -20,6 +20,7 @@ What's open, what to close, what to fix next. How to fix an issue is in [CLAUDE.
 10. [Dead code (scan of 10 Nov 2026)](#10-dead-code-scan-of-10-nov-2026)
 11. [UI overhaul: findings (10 Nov 2026)](#11-ui-overhaul-findings-10-nov-2026)
 12. [The GitHub wiki (scan of 10 Nov 2026)](#12-the-github-wiki-scan-of-10-nov-2026)
+13. [Security alerts and the Python 3.11 release (scan of 11 Nov 2026)](#13-security-alerts-and-the-python-311-release-scan-of-11-nov-2026)
 
 ---
 
@@ -75,7 +76,7 @@ Not in 1.6.42:
 2. **Retest and close the recent issues that releases may have fixed** (§3, "Retest" rows).
 3. **Fix the open recent bugs** (§3, "Bug" rows), one branch and test each, per CLAUDE.md.
 4. **Triage the 2021–2024 backlog** (§4). Proposal: bulk-close the stale ones with a comment inviting a reopen.
-5. **1.6.43:** PR #1682, §8.3, §9.3 if it missed 1.6.42, and §9.2's behaviour changes as Roberto decides them.
+5. **1.6.43:** PR #1682, §8.3, §9.3 if it missed 1.6.42, and §9.2's behaviour changes as Roberto decides them. **Proposed instead (§13.3):** make 1.6.43 the Python 3.11 / Pillow 13 security release and move these to 1.6.44.
 6. **Performance** in §8.10's order; **tech debt** in §5's order.
 7. **Add the missing regression tests**: an empty-DataFrame test and a multi-column chart test for `charts_util` (§5.6).
 
@@ -214,7 +215,7 @@ Coverage is 508 test functions in 52 files [3]. Gaps:
 - **pygit2** is no longer a requirement (1.6.41): the source-checkout updater uses the `git` program. Don't re-add it.
 - **`lib/release_manifest.tsv`** is written by the build's last step before zipping (1.6.41). The self-updater relies on it to tell the user's files from the release's: any step that adds files to `dist/` must come before it.
 - **A release may delete files.** The self-updater installs the new release as a whole folder and carries over only `config/`, `reminders/` and files the user added (not in the old manifest); a release file the new release drops is left in `<folder>_previous` and goes with it. A dropped file the user had edited stays in that backup, which is then kept (`user_files` in `NLP_setup_self_update_util.py`).
-- **Pillow** is pinned to 10.4.0 (12.x breaks the bundled Tcl/Tk 8.6). PR #1688 tests Python 3.11 + Pillow 13 for the security advisory; its own release (§1.1).
+- **Pillow** is pinned to 10.4.0 (12.x breaks the bundled Tcl/Tk 8.6). PR #1688 tests Python 3.11 + Pillow 13 for the security advisory; its own release (§1.1). What else rides along: §13.
 - **CI Python:** 3.10 for tests and installers. SRL stays on its own 3.8 env.
 - **Mac runners:** `macos-15` since 2 Nov 2026 (`macos-14` retired). No Intel Mac build.
 - **`src/` is Ruff-formatted** (v1.6.40). PRs opened before that need a rebase, not a hand merge.
@@ -573,3 +574,63 @@ About 50 em dashes on user-facing pages. The design notes in `docs/` have more (
 2. **Make `docs/` the source.** One PR: rename the `docs/` pages to the exact wiki names (so publishing is a plain copy), add `NLP-Suite-Architecture.md` from the wiki, fix 12.3 and the em dashes, merge the Download page into the install page (12.1), fix the `README.md` links (12.2).
 3. **Publish to the wiki** by hand for 1.6.42: clone `NLP-Suite.wiki`, copy `docs/` over, delete the 12.1 pages, update `_Sidebar` (Install External Software in, Watch YouTube Videos in or out). The wiki is live once pushed, so Roberto looks first.
 4. Later: a release step (or workflow on `current-stable`) that copies `docs/` to the wiki, so the two cannot drift again. Add it to §6.
+
+## 13. Security alerts and the Python 3.11 release (scan of 11 Nov 2026)
+
+Dependabot alerts on `current-stable`, read 11 Nov 2026 with `gh api repos/NLP-Suite/NLP-Suite/dependabot/alerts`. Versions below were checked with `uv pip compile requirements.txt requirements-windows.txt` (and the Mac platform) against PyPI on the same day; nothing was built or run.
+
+### 13.1 What is open: 178 alerts
+
+| Manifest | Pillow | transformers | stanza | protobuf | Closed by |
+|---|---|---|---|---|---|
+| `requirements.txt` (what the build installs) | 52 (4 critical) | 18 (6 high) | — | — | Pillow: #1688. transformers: §13.2 |
+| `src/requirements.txt` | 51 | — | 1 | 2 | Deleting the file (#1706) |
+| `src/requirements_mac.txt` | 50 | — | 1 | 3 | Deleting the file (#1706) |
+
+- **108 of the 178 are in the two stale `src/` files**, which no build reads. #1706 deletes both, so they close when that reaches `current-stable` (Dependabot reads the default branch, not `roberto`). The stanza and protobuf alerts are only there: the root file leaves both unpinned, and today they resolve to stanza 1.15.0 and protobuf 7.36.2, above every fixed version.
+- **Pillow 13.0.0 fixes all 52 in the root file**, and it needs Python 3.11 (no 3.10 wheels). That is #1688.
+- **transformers 4.41.2 is the other 18**, and Pillow does not touch them. 14 are fixed by 4.53 (ReDoS, three untrusted-pickle loaders); 4 need 5.x: two remote-code-execution paths (fixed in 5.3 and 5.5), a `save_pretrained` path traversal (5.10) and the `Trainer` (5.0). transformers 5 also needs Python 3.11, so it can only move with #1688.
+- **Not seen by Dependabot:** the SRL env (`setup_SRL.py`: `transformer-srl==2.4.6`, torch 1.7, allennlp, spaCy 2, Python 3.8). It is old and has known advisories of its own, but it is opt-in, local, and has no newer release to move to. Leave it; say so if anyone asks.
+
+Practical exposure is low across the board (the Suite opens the user's own files and downloads fixed models from Hugging Face), but the critical Pillow ones are in JPEG and TIFF decoding, which any image input reaches.
+
+### 13.2 What blocks transformers: `bert-extractive-summarizer`
+
+The pin exists because `bert-extractive-summarizer` 0.10.1 (its last release, 2021) imports `TransfoXLModel` at load time (`summarizer/bert.py:12`), and transformers removed it in 4.52. So `import summarizer` fails on anything that fixes the alerts, and `BERT_util.py:50` imports it at module level, so every BERT GUI would fail to open, not only the summary.
+
+It has **one caller**: `doc_summary_BERT`, `BERT_util.py:215`, `Summarizer()` then `bert_model(fullText, min_length=60)`. (It also builds the model inside the per-document loop, so it reloads bert-large-uncased once per file.)
+
+**Fix (small, one PR, before the bump):** replace it with a function in `BERT_util` that does what the package does by default: split sentences, drop those under 60 characters, embed each with `bert-large-uncased` (mean of the second-to-last hidden layer), k-means with k = ceil(0.2 × sentences), keep the sentence nearest each centroid, in document order. transformers and scikit-learn are already requirements, so nothing new is added. Build the model once, outside the loop. Test the selection step (embeddings in, chosen sentence indices out) with synthetic vectors. Then drop `bert-extractive-summarizer` from `requirements.txt`. This works on today's 4.41.2 too, so it can land in any release before the bump.
+
+The other transformers users look safe on 5.x from their imports: `BERT_util` (`AutoTokenizer`, `AutoModelForTokenClassification`, `pipeline`), `WSI_util` (`BertModel`, `BertTokenizer`), `sentence-transformers`, `bertopic`. **fastcoref 2.1.6 is the risk**: it subclasses `BertPreTrainedModel` and imports `transformers.activations.ACT2FN`. The imports still exist in 5.x, but it is unmaintained since 2023 and needs a real coreference run.
+
+Resolution check: with Pillow 13.0.0 and `transformers>=5.10` on Python 3.11, both Windows and Mac resolve (transformers 5.22.2, tokenizers 0.23.3, sentence-transformers 6.3.0, fastcoref 2.1.6, bertopic 0.17.4).
+
+### 13.3 Proposed release: 1.6.43
+
+The Python bump means users download a new bundled Python (the whole env is rebuilt), so if something breaks it should be clear it was the bump. Proposal: 1.6.43 is this release and nothing else; #1682 and §8.3 (now in §1.4 item 5) move to 1.6.44. Roberto's call.
+
+Prerequisites, in order:
+1. #1705 and #1706 are merged (1.6.42 plan). #1706 deletes `src/requirements*.txt` and the STEP1–3 scripts, which also settles two of #1688's open review points: its `src/requirements.txt` hunk goes away, and nothing left creates a `python=3.8` env.
+2. The summarizer PR (§13.2), on its own.
+3. Rebase #1688 onto `roberto` after both (its `requirements.txt` hunk sits next to #1705's lines; its `src/requirements.txt` hunk becomes a modify/delete conflict: drop it).
+
+What #1688 then carries, beyond the 3.10 → 3.11 workflow and Pillow change it already has:
+
+| Change | File | Why |
+|---|---|---|
+| `transformers>=5.10` (was `==4.41.2`; rewrite the comment) | `requirements.txt` | Closes the other 18. If fastcoref fails on 5.x: `transformers>=4.53,<5` closes 14 and leaves the 4, and still needs §13.2 |
+| `stanza>=1.12.2` (was unpinned) | `requirements.txt` | No-op today (resolves 1.15.0), but stops a cached or constrained resolve from going back below the pickle-RCE fix |
+| `target-version = "py311"`, `"pythonVersion": "3.11"` | `pyproject.toml`, `pyrightconfig.json` | #1688 left them at 3.10; nothing else open touches them now |
+| "Python 3.8"/"3.10" comment | `NLP_Suite.spec` | Already §9.2 #15 |
+| Pillow bullet; "CI Python" bullet → 3.11 | PLAN §6 | Settled decisions |
+| Security line: "Pillow 13 and transformers 5 fix N advisories; the app now runs on Python 3.11" | `CHANGELOG.md` | User-facing |
+
+Checks before tagging, added to #1688's own list (installer build on both OSes, welcome screen and logo, `gui_smoke.py` on 3.11, Google Earth icon preview, one heavy pipeline, SRL still runs):
+- BERT: NER, document summary (the §13.2 replacement), word embeddings, sentiment, WSI. Each downloads its model on first use, so test on a clean Hugging Face cache once.
+- Coreference with the BERT (fastcoref) engine, end to end.
+- BERTopic topic modeling.
+- The self-updater from 1.6.42 → 1.6.43: the first update that replaces the bundled Python itself.
+- After the promotion to `current-stable`: re-read the Dependabot list; expect 0 open.
+
+Not needed: protobuf (transitive, resolves to 7.36.2), or a `.github/dependabot.yml` (alerts work without one; version-update PRs would fight the deliberate pins).
