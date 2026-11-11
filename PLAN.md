@@ -2,7 +2,7 @@
 
 What's open, what to close, what to fix next. How to fix an issue is in [CLAUDE.md](CLAUDE.md#fixing-an-issue). What has shipped is in [CHANGELOG.md](CHANGELOG.md), not here.
 
-**Last updated:** 10 Nov 2026, getting ready for 1.6.42 (v1.6.41 released 10 Nov).
+**Last updated:** 11 Nov 2026, getting ready for 1.6.42 (v1.6.41 released 10 Nov).
 
 **State on GitHub (10 Nov 2026):** 9 open PRs (§2). The issue lists are proposals for Roberto: nothing in them has been closed or commented on.
 
@@ -21,6 +21,7 @@ What's open, what to close, what to fix next. How to fix an issue is in [CLAUDE.
 11. [UI overhaul: findings (10 Nov 2026)](#11-ui-overhaul-findings-10-nov-2026)
 12. [The GitHub wiki (scan of 10 Nov 2026)](#12-the-github-wiki-scan-of-10-nov-2026)
 13. [Security alerts and the Python 3.11 release (scan of 11 Nov 2026)](#13-security-alerts-and-the-python-311-release-scan-of-11-nov-2026)
+14. [Bundle size (scan of 11 Nov 2026)](#14-bundle-size-scan-of-11-nov-2026)
 
 ---
 
@@ -634,3 +635,56 @@ Checks before tagging, added to #1688's own list (installer build on both OSes, 
 - After the promotion to `current-stable`: re-read the Dependabot list; expect 0 open.
 
 Not needed: protobuf (transitive, resolves to 7.36.2), or a `.github/dependabot.yml` (alerts work without one; version-update PRs would fight the deliberate pins).
+
+## 14. Bundle size (scan of 11 Nov 2026)
+
+**Where it stands:** the v1.6.41 zips are **1,331 MB** (`NLP-Suite-mac-arm64.zip`) and **1,539 MB** (`NLP-Suite-windows-x64.zip`). The self-updater downloads the whole zip on every update, so size is paid again at each release, not just at first install. The Suite's own files are small: `src/` 12 MB, `lib/` 66 MB, `TIPS/` 73 MB, uncompressed. Almost all the size is Python packages.
+
+**How it was found:** `gh release view` for the asset sizes; reading `NLP_Suite.spec`, `build-installers.yml` and `run_script_util.py`; a `grep` of `src/*.py` for an `import`/`from` of each package in `requirements*.txt`, then for any mention of the ones with no import. **Not measured:** per-package sizes inside the zip. The figures below that say "estimate" need one release zip unpacked and `du` run on `_internal/` and `python-env/.../site-packages` by package (not possible on Cora's machine; do it on the machine that runs the pre-tag build).
+
+### 14.1 The scientific stack ships twice
+
+The build makes a PyInstaller app, then adds a full portable Python (`python-env/`, python-build-standalone) with all of `requirements*.txt` installed. Frozen, the PyInstaller executable runs only the menu: `run_script_util._find_python()` sends every tool to `python-env/python`, and `_script_dir()` to the loose `src/*.py`. But `NLP_Suite.spec` still hidden-imports pandas, numpy, scipy, sklearn, stanza, spacy, gensim, transformers, sentence_transformers, matplotlib, plotly, seaborn, folium, geopandas, shapely, lxml and others, and `collect_data_files` copies all of stanza's and spaCy's package files into `_internal/`. None of that copy is used by a tool. Size of `_internal/`: not measured (estimate: hundreds of MB).
+
+**Fix, two options:**
+1. **Trim the spec (recommended first).** Hidden imports and datas only for what `NLP_menu_main` reaches: tkinter, customtkinter/darkdetect, PIL, and the local modules it imports (`GUI_util`, `GUI_IO_util`, `config_util`, `run_script_util`, `IO_libraries_util`, reminders, the self-updater…). Drop `_stanza_datas`, `_spacy_datas` and the third-party list. The `_local_modules` list goes too: tools load from `src/` through `python-env`, not from the frozen archive. Before cutting, trace what the menu imports at module level (the §8 import trace method), since `GUI_util` and `IO_libraries_util` may pull in pandas.
+2. **No PyInstaller at all.** A small launcher (`NLP_Suite.exe` / Mac binary or script) that runs `python-env/python src/NLP_menu_main.py`. Removes `_internal/` entirely, but changes the Mac `codesign` step, the `.command` launcher, the Windows DLL copy step, and what `get_java_executable()` and the updater take as the app dir (`sys.executable`'s folder). Larger; only if option 1 leaves too much.
+
+### 14.2 TensorFlow is installed and nothing uses it
+
+No file in `src/` imports `tensorflow`. It appears only as a name in the `install_all_Python_packages` lists (`BERT_util.py:26`, `WSI_util.py:19`), in `TensorFlow_semantic_analysis.py` (dead, §10.1), in the Apple Silicon `pip freeze` warning (`NLP_menu_main.py:1318–1345`, §8.8), the M1 reminder text (`reminders_util.py:48`) and a comment in `spaCy_util.py:16`. `transformers`, `sentence-transformers`, `bertopic` and `fastcoref` run on torch.
+
+**Fix:** drop `tensorflow`, `tensorflow-hub`, `tf-keras` from `requirements.txt` (and `h5py` if nothing else needs it: no `src/` import), and `tensorflow`, `tensorflow_hub`, `tensorflow_intel` from the spec. Same PR: remove `"tensorflow"` from the two install lists (otherwise a source run asks to install it), the menu's TensorFlow check, `message_TensorFlow`, and `tensorflow` from the build's import check (`build-installers.yml`, the `"$PYTHON" -c "import ..."` line). Size saved: not measured (estimate: the largest single package in `python-env`, several hundred MB on Windows). Check that `transformers.pipeline(...)` in `BERT_util` doesn't fall back to TF anywhere (it picks torch when TF is absent).
+
+### 14.3 Requirements nothing imports
+
+Each was checked by `grep` over `src/`. Small one by one; they shorten the build and the hidden-import list more than the zip.
+
+| Package | Used by |
+|---|---|
+| `geopandas`, `shapely` | Only `GIS_heatMapIntegration.py`, `GIS_heatMapintegration_ver2.py` (dead, §10.1) |
+| `SPARQLWrapper` | Only `knowledge_graphs_DBpedia_util_SPARQL.py` (dead, §10.1) |
+| `gmaps`, `googlemaps` | Only the two dead heatmap files (`GIS_Google_Maps_util` writes the JS itself) |
+| `pywsd` | Nothing; `nominalization_main` says it no longer relies on it |
+| `mpld3`, `geojson`, `ipywidgets`, `editdistance`, `numexpr`, `xlrd`, `pexpect`, `geocoder` (the package) | Nothing |
+| `IPython` | Only a commented-out line in `topic_modeling_main.py` |
+| `contextualSpellCheck` | Only the `BERT_util` install list; never loaded. Remove from both together |
+| `pafy`, `python-vlc` (`requirements-mac.txt`) | Already §10.1 (`videos_util`) |
+| `umap-learn`, `hdbscan` | Not imported, but BERTopic depends on them: redundant, harmless; keep or drop |
+
+`kaleido` stays (Plotly `write_image`), `spacytextblob` stays (loaded by name in `nlp.add_pipe`), `sacremoses`/`sentencepiece` stay (tokenizers for `BERT_util` models). Before dropping any, check `xlrd` against the `.xls` reading in `corpus_profiler_util` (pandas needs it for old `.xls`; keep if that path should work).
+
+### 14.4 Data files (small)
+
+- **TIPS PDFs, 73 MB, 176 files.** Largest: Universal dependencies 3.9 MB, Google Earth Pro 3.8, BERT Sentiment 3.0. `gs -sDEVICE=pdfwrite -dPDFSETTINGS=/ebook` usually halves image-heavy PDFs. Tens of MB at most; check a few by eye after.
+- `lib/namesGender` (34 MB of CSV) compresses well in the zip already; leave it.
+- §10.1's deletions and a §10.3 `vulture` pass are cleanup, not size.
+
+### 14.5 When, and the checks
+
+Not 1.6.42 (low-risk release). 14.1 and 14.2 change what the build ships, as the Python 3.11 rebuild (§13.3) does: put them in 1.6.44, or in 1.6.43 only if Roberto wants one "new environment" release instead of two. Roberto's call. One PR each, 14.2 before 14.1 so a TF regression can't hide behind the spec change.
+
+Checks (CI build and a machine with the zips; not Cora's):
+- Unzip the current release first and record `_internal/` and the top 20 `site-packages` folders by size, to put real numbers in this section.
+- After each PR: zip size on both OSes; the menu opens from the zip on Windows and on a Mac; `gui_smoke.py`; one tool from each family run from the zip (BERT NER and sentiment, BERTopic, coreference with fastcoref, a CoreNLP parse via the bundled JRE, GIS map, wordclouds, an Excel chart).
+- 14.1: the self-updater 1.6.(n−1) → n still finds its manifest and keeps user files.
