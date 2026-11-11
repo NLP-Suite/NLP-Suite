@@ -1,6 +1,6 @@
 # CLAUDE.md — NLP Suite
 
-How to work in this repo. Open work, known bugs and tech debt live in **[PLAN.md](PLAN.md)**; keep both files current.
+How to work in this repo. What to do before the next tag and the future-work list live in **[PLAN.md](PLAN.md)**; the findings behind them (bugs, tech debt, scans) in **[docs/future-work.md](docs/future-work.md)**. Keep all three files current.
 
 ## What it is
 
@@ -39,7 +39,7 @@ A Tkinter-GUI toolkit for text analysis in the social sciences and humanities. A
 3. Fix it. Pull testable logic out of GUI callbacks into a `_util` function.
 4. Run `pytest tests/`. After any GUI edit, also run `tests/gui_smoke.py`, and after a layout change, `tests/gui_layout_gate.py`.
 5. One branch per issue, `fix/<issue-number>-<slug>`, PR against `roberto`. Reference the issue in the PR body (`Fixes #N`) so GitHub closes it on merge.
-6. Update PLAN.md (move the item to Done) and add a user-facing line to CHANGELOG.md.
+6. Add a user-facing line to CHANGELOG.md in the same PR (a merged PR with no CHANGELOG line is how #1705 nearly shipped unannounced), then remove the item from PLAN.md and docs/future-work.md.
 
 ## Testing
 
