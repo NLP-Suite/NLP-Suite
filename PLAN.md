@@ -198,6 +198,7 @@ Largest reliability lever. Convert to `except Exception`, and on user-facing pat
 Coverage is 508 test functions in 52 files [3]. Gaps:
 - No **empty-DataFrame** regression test for the chart/statistics pipeline (only `test_emotion_arc_html.py` covers an empty frame).
 - No **multi-column chart** regression test for `charts_util` (the v1.6.4 "by Document" grouped-bar fix has no test).
+- Done 11 Nov 2026 (branch `fix/known-test-failures`): the "2 known failures" in local runs were the test environment, not the code. pdfminer.six 20260107 ships its cmaps as `.json.gz` (the test only looked for `.pickle.gz`), and lxml 6 / libxml2 2.14 raise on an undefined external entity instead of expanding it (the test now skips, as it already meant to). Local pytest: 643 pass, 0 fail.
 
 ### 5.7 Hygiene
 
