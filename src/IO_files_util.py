@@ -62,6 +62,8 @@ def make_directory(newDirectory, silent=True):
                 return newDirectory
         shutil.rmtree(newDirectory)
     try:
+        # the parent may not exist yet (the default output folder, NLP_output, is not shipped)
+        os.makedirs(Path(newDirectory).parent.absolute(), exist_ok=True)
         os.chmod(Path(newDirectory).parent.absolute(), 0o755)
         os.mkdir(newDirectory, 0o755)
     except Exception as e:
@@ -109,6 +111,8 @@ def make_output_subdirectory(inputFilename, inputDir, outputDir, label, silent=T
     try:
         # chmod() changes the mode of path to the passed numeric mode
         if outputSubDir != "":
+            # the output folder may not exist yet (the default one, NLP_output, is not shipped)
+            os.makedirs(Path(outputSubDir).parent.absolute(), exist_ok=True)
             os.chmod(Path(outputSubDir).parent.absolute(), 0o755)
             os.mkdir(outputSubDir, 0o755)
     except Exception as e:
