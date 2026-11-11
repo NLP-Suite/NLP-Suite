@@ -728,18 +728,19 @@ def get_date_options(config_filename, config_input_output_numeric_options):
     config_input_output_alphabetic_options, missing_IO, config_file_exists = read_config_file(
         config_filename, config_input_output_numeric_options
     )
+    # define variable with default values
+    filename_embeds_date_var = 0
+    date_format_var = "mm/dd/yyyy"  # default
+    items_separator_var = "_"  # default
+    date_position_var = 2  # default
     if len(config_input_output_alphabetic_options) > 0:
         index = 0
-        # define variable with default values
-        filename_embeds_date_var = 0
-        date_format_var = "mm/dd/yyyy"  # default
-        items_separator_var = "_"  # default
-        date_position_var = 2  # default
         while index < 2:  # check date options for input file and input dir
             # date options saved: date format, date characters separator, date position in filename
-            # =4 when date options are available (path + sort order + 3 date options), otherwise =1
-            # @@@RF
-            if config_input_output_alphabetic_options[index][4] != "":  # check date format field
+            # a saved row has 6 fields (label, path, sort order, separator, date format, date position);
+            #   the template rows built when there is no config file have 5, the last an int 0, and no date
+            row = config_input_output_alphabetic_options[index]
+            if len(row) > 5 and row[4] != "":  # check date format field
                 filename_embeds_date_var = 1
                 date_format_var = config_input_output_alphabetic_options[index][4]
                 items_separator_var = config_input_output_alphabetic_options[index][3]
