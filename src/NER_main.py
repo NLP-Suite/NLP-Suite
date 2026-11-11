@@ -112,7 +112,7 @@ def run():
     if package_display_area_value == "":
         mb.showwarning(
             title="No setup for NLP package and language",
-            message="The default NLP package and language has not been setup.\n\nPlease, click on the Setup NLP button and try again.",
+            message="The default NLP package and language has not been setup.\n\nPlease, use the Setup dropdown menu at the bottom of this GUI, select 'Setup NLP package (parsers & annotators) and corpus language' and try again.",
         )
         return
 

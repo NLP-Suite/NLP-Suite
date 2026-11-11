@@ -17,22 +17,6 @@ if (
 
 import collections
 from collections import Counter
-import os
-import re
-import string
-import tkinter as tk
-import tkinter.messagebox as mb
-
-from nltk.stem.porter import PorterStemmer
-import stanza
-
-import IO_internet_util
-
-# report a failed model download in a dialog: the bare except used to swallow the real error and
-# only ask the internet-check question, never retrying, so the reason reached the terminal alone
-IO_internet_util.download_with_warning(
-    "statistics_txt_util.py (stanza.download(en))", lambda: stanza.download("en"), "the Stanza English language model"
-)
 
 # from nltk import tokenize
 # from nltk import word_tokenize
@@ -45,12 +29,17 @@ IO_internet_util.download_with_warning(
 # from nltk.tree import Tree
 # from nltk.draw import TreeView
 # from PIL import Image
-
 # Sentence Complexity
 import csv
+import os
+import re
+import string
+import tkinter as tk
+import tkinter.messagebox as mb
 
 import nltk
 from nltk.draw import TreeView
+from nltk.stem.porter import PorterStemmer
 from nltk.tree import Tree
 
 # from gensim.utils import lemmatize
@@ -60,6 +49,9 @@ import pandas as pd
 # import textstat
 # import subprocess
 import spacy
+import stanza
+
+import IO_internet_util
 
 # For objectivity/subjectivity
 import sentence_complexity_node_util as Node
@@ -601,6 +593,8 @@ def compute_sentence_length(inputFilename, inputDir, outputDir, configFileName, 
         # singleton (which carries 'tokenize, lemma' -- the lemma pass roughly doubles the work for a word
         # count). Falls back to that shared pipeline if a tokenize-only one can't be built. On a large corpus
         # this is minutes, not the derive-from-CoNLL ~seconds -- inherent to a fresh neural parse.
+        if not IO_internet_util.ensure_stanza_model("statistics_txt_util.py", lang="en", window=GUI_util.window):
+            return
         try:
             import stanza
 

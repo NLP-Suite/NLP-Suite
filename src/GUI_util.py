@@ -2021,7 +2021,6 @@ def display_setup_hover_over(y_multiplier_integer):
     setup_menu_lb = tk.OptionMenu(
         window,
         setup_menu,
-        "Setup preferences",
         "Setup NLP package (parsers & annotators) and corpus language",
         "Setup external software",
     )
@@ -2093,8 +2092,6 @@ def setup_parsers_annotators(y_multiplier_integer, scriptName):
         limit_sentence_length_var,
     ) = display_setup_hover_over(y_multiplier_integer)
 
-    if setup_menu.get() == "Setup preferences":
-        mb.showwarning(title="Warning", message='The "Setup preferences" option is not available yet.\n\nSorry!')
     if setup_menu.get() == "Setup NLP package (parsers & annotators) and corpus language":
         run_script_util.run_script("NLP_setup_package_language_main.py")
         # this will display the correct hover-over info after the python call, in case options were changed
@@ -2701,9 +2698,9 @@ def GUI_bottom(
     if noLicenceError == True:
         mb.showwarning(
             title="Fatal error",
-            message="The licence agreement file 'LICENSE-NLP-1.0.txt' could not be found in the 'lib' subdirectory of your main NLP Suite directory\n"
+            message="The licence agreement file 'LICENSE-NLP-Suite-1.0.txt' could not be found in the 'lib' subdirectory of your main NLP Suite directory\n"
             + GUI_IO_util.NLPPath
-            + "\n\nPlease, make sure to copy this file in the 'lib' subdirectory.\n\nThe NLP Suite will now exit.",
+            + "\n\nYour copy of the NLP Suite is incomplete. Please, download the NLP Suite again from https://github.com/NLP-Suite/NLP-Suite/releases.\n\nThe NLP Suite will now exit.",
         )
         sys.exit()
 

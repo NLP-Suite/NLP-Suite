@@ -28,21 +28,23 @@ import stanza
 
 import IO_internet_util
 
+
 # should make the Stanza pipeline parametrized by lang selected by user
 # @@@
-# The download and the pipeline are built together, and BOTH report failure in a dialog. Previously the
-# download caught its exception only to show the internet-check question without ever retrying, and the
-# pipeline below was built with no try at all: answering Yes therefore led straight to an unhandled
-# ConnectionError, printed to a terminal the user never sees, and the process exited silently.
-stanzaPipeLine = None
-if IO_internet_util.download_with_warning(
-    "Stanza_functions_util.py (stanza.download(en))", lambda: stanza.download("en"), "the Stanza English language model"
-):
-    try:
-        stanzaPipeLine = stanza.Pipeline(lang="en", processors="tokenize, lemma")
-    except Exception as e:
-        # the model can be missing or corrupt even when the download call itself returned
-        IO_internet_util.report_download_failure("Stanza_functions_util.py", e, "the Stanza English language model")
+# The model is downloaded (only if it is not on disk yet) and the pipeline built the FIRST TIME
+# stanzaPipeLine is used, not when this module is imported. Doing both at import made every GUI that
+# imports this module wait about 18 seconds (9-11 s for stanza.download to re-check a model that was
+# already there, 8.7 s to build the pipeline) before its window appeared, whatever the user then ran.
+# A failure of either step is shown in a dialog and raised (see IO_internet_util.LazyModel).
+def _build_stanza_pipeline():
+    if not IO_internet_util.ensure_stanza_model("Stanza_functions_util.py", lang="en", window=GUI_util.window):
+        return None  # the download failure has been shown; LazyModel raises
+    return stanza.Pipeline(lang="en", processors="tokenize, lemma")
+
+
+stanzaPipeLine = IO_internet_util.LazyModel(
+    _build_stanza_pipeline, "Stanza_functions_util.py", "the Stanza English language model"
+)
 
 # in INPUT the function takes a document or sentence or even word as string
 #   e.g., "Robert went to Italy on vacation"

@@ -52,12 +52,12 @@ def _xxe_document(secret_path):
     uri = "file:///" + str(secret_path).replace("\\", "/")
     return (
         '<?xml version="1.0"?>\n'
-        '<!DOCTYPE cp:coreProperties [ <!ENTITY xxe SYSTEM "%s"> ]>\n'
+        f'<!DOCTYPE cp:coreProperties [ <!ENTITY xxe SYSTEM "{uri}"> ]>\n'
         '<cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/'
         'core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/">'
         "<dc:creator>&xxe;</dc:creator>"
-        "</cp:coreProperties>" % uri
-    ).encode("utf-8")
+        "</cp:coreProperties>"
+    ).encode()
 
 
 class TestTheHardenedParser:
@@ -74,10 +74,15 @@ class TestTheHardenedParser:
         """Not a test of our code - a demonstration that the default is unsafe on this very lxml,
         so the hardening is load-bearing rather than decorative. Skipped if a future lxml makes the
         default safe, which is itself the news."""
-        doc = etree.fromstring(_xxe_document(secret))
-        leaked = "TOP-SECRET-CONTENTS" in etree.tostring(doc, encoding="unicode")
+        try:
+            doc = etree.fromstring(_xxe_document(secret))
+        except etree.XMLSyntaxError:
+            # lxml 6 / libxml2 2.14 refuse the entity outright ("Entity 'xxe' not defined").
+            leaked = False
+        else:
+            leaked = "TOP-SECRET-CONTENTS" in etree.tostring(doc, encoding="unicode")
         if not leaked:
-            pytest.skip("this lxml (%s) no longer expands external entities by default" % etree.__version__)
+            pytest.skip(f"this lxml ({etree.__version__}) no longer expands external entities by default")
         assert leaked
 
     def test_ordinary_xml_still_parses_normally(self, io_files):

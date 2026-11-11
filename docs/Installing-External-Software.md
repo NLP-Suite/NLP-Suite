@@ -8,8 +8,7 @@ The standalone NLP Suite build bundles most of what you need. The tools listed b
 
 | Tool | When needed | Alternative already included | Download |
 |------|------------|------------------------------|----------|
-| **Stanford CoreNLP** | Only if you select CoreNLP as your NLP package for parsing, NER, or sentiment analysis | **Stanza** does the same tasks, is bundled, and requires no Java | [stanford.edu](https://stanfordnlp.github.io/CoreNLP/) |
-| **Java JDK** | Only if you use Stanford CoreNLP | Not needed if you use Stanza | [oracle.com](https://www.oracle.com/java/technologies/downloads/) |
+| **Stanford CoreNLP** | Only if you select CoreNLP as your NLP package for parsing, NER, or sentiment analysis | **Stanza** is bundled and covers parsing, NER and sentiment. A few annotators (gender, quote, normalized dates, OpenIE) need CoreNLP | [stanford.edu](https://stanfordnlp.github.io/CoreNLP/) |
 | **Google Earth Pro** | For KML map visualizations | **Folium** (bundled) creates interactive HTML maps automatically when Google Earth is not installed | [google.com/earth](https://www.google.com/earth/about/versions/#earth-pro) |
 | **Google Maps API key** | For Google Maps visualizations | **Folium** (bundled) is used automatically as a fallback | [developers.google.com](https://developers.google.com/maps/documentation/javascript/get-api-key) |
 | **Gephi** | For interactive network graph exploration | **vis.js** (bundled) produces interactive HTML network graphs | [gephi.org](https://gephi.org/users/download/) |
@@ -21,7 +20,8 @@ The following tools were previously required but are now bundled or replaced:
 
 | Tool | Status |
 |------|--------|
-| **WordNet** | Bundled via NLTK — no separate download needed |
+| **Java** | A Java runtime is bundled in the standalone build for the Stanford CoreNLP tools. Install Java yourself only when running from source |
+| **WordNet** | Downloaded automatically via NLTK the first time it is needed — no separate install |
 | **Anaconda / Python** | Bundled in the standalone build |
 | **Git** | Only needed for developer setup (running from source) |
 | **Microsoft C++ Redistributable** | Usually pre-installed on Windows 10/11. Install only if you get a DLL error (see [Troubleshooting](https://github.com/NLP-Suite/NLP-Suite/wiki/Troubleshooting)) |

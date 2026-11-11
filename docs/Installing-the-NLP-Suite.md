@@ -31,11 +31,10 @@ No GitHub account needed.
 | Extracted application | ~3.5 GB | On extraction |
 | Stanza English model | ~525 MB | First time you run a Stanza analysis |
 | spaCy English model | ~50 MB | First time you run a spaCy analysis |
-| NLTK data (wordnet, punkt, etc.) | Bundled | Already included in the installer |
+| NLTK data (wordnet, punkt, etc.) | A few MB | Downloaded automatically the first time a tool needs it |
 | BERT models (NER, similarity, topic modeling, WSI) | Up to ~3 GB | Only if you use BERT features, downloaded on first use of each |
 | MALLET (topic modeling) | ~50 MB | Only if you use MALLET; external download (see below) |
-| Stanford CoreNLP | ~550 MB | Only if you use CoreNLP instead of Stanza; requires Java |
-| Java JDK | ~300 MB | Only if you use Stanford CoreNLP |
+| Stanford CoreNLP | ~550 MB | Only if you use CoreNLP instead of Stanza; the Java runtime it needs is included |
 | Google Earth Pro | ~50 MB | Only if you use KML/Google Earth visualizations; Folium (included) is an alternative |
 
 ### 2. Extract
@@ -57,17 +56,12 @@ This only happens the first time.
 
 #### macOS
 
-The download includes **NLP Suite Mac Setup.app** — use it to launch the NLP Suite for the first time:
+1. Open the extracted folder and double-click **Launch NLP Suite (Mac).command**. It clears the macOS download quarantine and starts the NLP Suite.
+2. The first time, macOS may block the launcher ("cannot be opened because it is from an unidentified developer"). Right-click (or Control-click) **Launch NLP Suite (Mac).command** → **Open** → **Open**. After that, a normal double-click works.
 
-1. Double-click **NLP Suite Mac Setup**
-2. Click **Select NLP Suite Folder** and point it to the extracted `NLP_Suite` folder
-3. Click **Remove Quarantine from Executable** — this clears the macOS Gatekeeper block
-4. Click **Remove Quarantine from Folder** — allows all bundled files to run
-5. Click **Open NLP Suite**
+Do **not** double-click the `NLP_Suite` file itself: without the launcher it fails with a "code signature not valid" error.
 
-After the first launch, you can also run **NLP_Suite** directly by double-clicking it.
-
-> **Why is this needed?** macOS blocks unsigned applications downloaded from the internet (Gatekeeper). The Setup app removes this quarantine flag so the NLP Suite can run. This is a one-time step.
+> **Why is this needed?** macOS blocks unsigned applications downloaded from the internet (Gatekeeper). The launcher removes this quarantine flag so the NLP Suite can run.
 
 ### 4. First Run
 
@@ -82,6 +76,12 @@ On the very first launch, the NLP Suite automatically creates two default config
 
 You can change these at any time via the **I/O Configuration** options at the top of the main window.
 
+### 5. Updates
+
+From release 1.6.41, closing the NLP Suite offers to download and install a new release when one is out (about 1.5 GB, with a progress window). Your settings and your own files are kept; the previous version stays next to the new one as `NLP_Suite_previous` until the new one starts.
+
+For this to work, extract the NLP Suite to a folder you can write to (Desktop or `C:\NLP_Suite`, not Program Files) and not inside OneDrive. Releases 1.6.40 and older cannot update themselves: download the new zip, unzip it in place of your current folder and copy your `config` folder across.
+
 ---
 
 ## What's Included
@@ -89,7 +89,8 @@ You can change these at any time via the **I/O Configuration** options at the to
 The standalone distribution bundles everything the NLP Suite needs:
 
 - **Python runtime** and all Python packages (Stanza, spaCy, NLTK, BERT, Plotly, matplotlib, etc.)
-- **WordNet** lexical database (via NLTK — no separate download needed)
+- **A Java runtime** (for the optional Stanford CoreNLP tools)
+- **WordNet** lexical database (via NLTK; its data downloads automatically on first use)
 - **NRC Emotion Lexicon** for emotion analysis
 - **Sample data** for testing (`lib/sampleData/`)
 - **TIPS** documentation and reminders
@@ -98,8 +99,8 @@ The standalone distribution bundles everything the NLP Suite needs:
 
 | Tool | When needed | What to do |
 |------|------------|------------|
-| Stanford CoreNLP | Only if you select CoreNLP as your NLP package | [Download from Stanford](https://stanfordnlp.github.io/CoreNLP/) — but **Stanza** (included) does the same things without Java |
-| Java | Only if you use Stanford CoreNLP | [Download JDK](https://www.oracle.com/java/technologies/downloads/) |
+| Stanford CoreNLP | Only if you select CoreNLP as your NLP package, or use a CoreNLP-only annotator (gender, quote, normalized dates, OpenIE) | [Download from Stanford](https://stanfordnlp.github.io/CoreNLP/). Java is already included. **Stanza** (included) covers parsing, NER and sentiment without it |
+| MALLET | Only for MALLET topic modeling | Download from the Setup external software window — or use **Gensim** (included) |
 | Google Earth Pro | Only for KML/Google Earth map visualizations | [Download](https://www.google.com/earth/about/versions/#earth-pro) — or use **Folium** (included) as an alternative |
 | Google Maps API key | Only for Google Maps visualizations | [Get an API key](https://developers.google.com/maps/documentation/javascript/get-api-key) — or use **Folium** (included) |
 | Gephi | Only for network graph visualization | [Download](https://gephi.org/users/download/) |
@@ -114,7 +115,7 @@ If you want to modify the NLP Suite source code or contribute to development:
 
 ### Prerequisites
 
-- [Anaconda](https://www.anaconda.com/download) (Python 3.10+)
+- [Anaconda](https://www.anaconda.com/download) (the NLP Suite is built and tested on Python 3.10)
 - [Git](https://git-scm.com/downloads)
 
 ### Steps
@@ -128,27 +129,21 @@ cd NLP-Suite
 conda create -n NLP python=3.10 -y
 conda activate NLP
 
-# Install dependencies
-pip install pandas numpy scipy scikit-learn openpyxl xlrd
-pip install stanza spacy nltk gensim textblob textstat nrclex
-pip install langdetect langid autocorrect pyspellchecker fuzzywuzzy
-pip install transformers sentence-transformers
-pip install matplotlib plotly seaborn wordcloud mpld3 kaleido
-pip install folium geopy simplekml shapely geopandas
-pip install requests beautifulsoup4 lxml chardet tqdm psutil
-pip install pdfminer.six python-docx striprtf
-pip install Pillow SPARQLWrapper
+# Install dependencies (the file pins the versions the NLP Suite needs)
+pip install -r requirements.txt
+pip install -r requirements-windows.txt   # on a Mac: requirements-mac.txt
+python -m spacy download en_core_web_sm
 
 # Run the NLP Suite
-python NLP_Suite_main.py
+python src/NLP_menu_main.py
 ```
 
 ### Branch structure
 
 | Branch | Purpose |
 |--------|---------|
-| `roberto` | Active development — latest features |
-| `current-stable` | Stable release — mirrors `roberto` after testing |
+| `roberto` | Integration branch — all pull requests target it |
+| `current-stable` | What users get. A source checkout on this branch updates itself with Git when you close the NLP Suite |
 
 ---
 
@@ -156,9 +151,9 @@ python NLP_Suite_main.py
 
 | Problem | Solution |
 |---------|----------|
-| Windows: "Windows protected your PC" (SmartScreen) | Right-click **NLP_Suite.exe** → **Properties** → click **Unlock** (bottom right) → **OK** or **Apply**. (If that doesn't appear, try clicking **More info** → **Run anyway**) |
-| macOS: "cannot be opened because it is from an unidentified developer" | Use the **NLP Suite Mac Setup** app to remove quarantine, then click **Open NLP Suite** |
-| macOS: "NLP_Suite is damaged and can't be opened" | Use the Mac Setup app to remove quarantine. If that doesn't work, open Terminal and run: `xattr -cr /path/to/NLP_Suite` |
+| Windows: "Windows protected your PC" (SmartScreen) | Click **More info** → **Run anyway**. Or right-click **NLP_Suite.exe** → **Properties** → tick **Unblock** (bottom right) → **OK** |
+| macOS: "cannot be opened because it is from an unidentified developer" | Right-click **Launch NLP Suite (Mac).command** → **Open** → **Open** (first time only) |
+| macOS: "NLP_Suite is damaged and can't be opened" or "code signature not valid" | Start the NLP Suite with **Launch NLP Suite (Mac).command**, not the `NLP_Suite` file. If that doesn't work, open Terminal and run: `xattr -cr /path/to/NLP_Suite` (the extracted folder) |
 | First run: no config files found | Normal — the app creates them automatically. If it doesn't, check that your Documents folder is writable |
 | Stanza model download fails | Check your internet connection. Stanza downloads language models on first use (~525 MB for English) |
 

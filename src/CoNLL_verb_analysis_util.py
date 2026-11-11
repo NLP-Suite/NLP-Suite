@@ -168,7 +168,7 @@ def verb_voice_data_preparation(data):
         print("ERROR: INPUT MUST BE THE CoNLL TABLE CONTAINING THE SENTENCE ID. Program will exit.")
         mb.showinfo(
             "ERROR",
-            "INPUT MUST BE THE MERGED CoNLL TABLE CONTAINING THE SENTENCE ID. Please use the merge option when generating your CoNLL table in the StanfordCoreNLP.py routine. Program will exit.",
+            "INPUT MUST BE A CoNLL TABLE CONTAINING THE SENTENCE ID, as produced by the NLP Suite parsers (Stanza, spaCy or Stanford CoreNLP) in the 'Parsers & annotators' GUI.",
         )
         return
 

@@ -275,7 +275,7 @@ jobs:
           python -c "import sys; sys.path.insert(0, 'src'); import NLP_setup_self_update_util as u; n = u.write_manifest('dist/NLP_Suite'); print(n, 'files listed'); sys.exit(0 if n > 1000 else 1)"
 
       # GitHub's upload-artifact strips unix permission bits when uploading a folder, which left the
-      # Mac NLP_Suite launcher, python-env/bin/python3, and the Setup app as non-executable "documents".
+      # Mac NLP_Suite launcher, python-env/bin/python3, and the Launch .command as non-executable "documents".
       # Zipping on the native runner preserves exec bits and symlinks; the zip is uploaded as an opaque
       # file (its internals are untouched) and attached to the Release as-is.
       - name: Archive build - macOS (zip preserves exec permissions + symlinks)
@@ -303,7 +303,7 @@ jobs:
           path: ${{ matrix.artifact }}.zip
           retention-days: 30
 
-  # Create a GitHub Release with all three builds when triggered by a tag
+  # Create a GitHub Release with both builds when triggered by a tag
   release:
     needs: build
     if: startsWith(github.ref, 'refs/tags/')

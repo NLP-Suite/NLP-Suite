@@ -101,8 +101,10 @@ def run_script(script_name, *extra_args):
 
         mb.showerror(
             title="Python not found",
-            message="Could not find a Python interpreter on this system.\n\n"
-            "Please install Python 3.10+ and make sure it is on your PATH.",
+            message="Could not find the Python interpreter of the NLP Suite.\n\n"
+            "The downloaded NLP Suite comes with its own Python (the 'python-env' folder): if that folder is "
+            "missing, please download the NLP Suite again.\n\n"
+            "If you run the NLP Suite from source code, install Python 3.10 and make sure it is on your PATH.",
         )
         return 1
 

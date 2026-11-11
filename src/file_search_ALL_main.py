@@ -129,7 +129,7 @@ open_word_sense_search_GUI_button = tk.Button(
     window,
     text="Search word(s) for different word senses (Open GUI)",
     width=GUI_IO_util.widget_width_medium,
-    command=lambda: run_script_util.run_script("word2vec_main.py"),
+    command=lambda: run_script_util.run_script("semantic_analysis_main.py"),
 )
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(

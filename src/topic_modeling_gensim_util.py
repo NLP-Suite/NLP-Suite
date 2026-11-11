@@ -24,7 +24,6 @@ if (
 from _thread import start_new_thread
 import os
 from pprint import pprint
-from sys import platform
 import tkinter.messagebox as mb
 
 # Gensim
@@ -77,24 +76,11 @@ from nltk.corpus import stopwords
 try:
     spacy.load("en_core_web_sm")
 except:
-    if platform == "darwin":
-        msg = "\n\nAt terminal, type sudo python -m spacy download en_core_web_sm"
-    if platform == "win32":
-        msg = (
-            "\n\nClick on left-hand start icon in task bar"
-            + "\n  Scroll down to Anaconda"
-            + "\n  Click on the dropdown arrow to display available options"
-            + "\n  Right click on Anaconda Prompt"
-            + "\n  Click on More"
-            + "\n  Click on Run as Administrator"
-            + '\n  At the command prompt, Enter "conda activate NLP" (if NLP is your environment)'
-            + '\n  Then enter: "python -m spacy download en_core_web_sm" and Return'
-        )
-    msg = msg + "\n\nThis imports the package."
     mb.showerror(
         title="Library error",
-        message="The Gensim tool could not find the English language spacy library. This needs to be installed. At command promp type:\npython -m spacy download en_core_web_sm\n\nYOU MAY HAVE TO RUN THE COMMAND AS ADMINISTRATOR.\n\nHOW DO YOU DO THAT?"
-        + msg,
+        message="The Gensim tool could not find the English language model of spaCy (en_core_web_sm).\n\n"
+        "The model is part of the downloaded NLP Suite: your copy may be incomplete; please, download the NLP Suite again.\n\n"
+        "If you run the NLP Suite from source code, activate your Python environment and type:\npython -m spacy download en_core_web_sm",
     )
 
     # mb.showerror(title='Library error', message='The Gensim Topic modeling tool could not find the English language spacy library. This needs to be installed. At command promp type:\npython -m spacy download en_core_web_sm\n\nYOU MAY HAVE TO RUN THE COMMAND AS ADMINISTRATOR.\n\nHOW DO YOU DO THAT?'

@@ -127,12 +127,14 @@ class TestRealCMapNamesStillWork:
         cmap_dir = os.path.join(os.path.dirname(cmapdb.__file__), "cmap")
         if not os.path.isdir(cmap_dir):
             pytest.skip("no bundled cmap directory")
-        names = [f[: -len(".pickle.gz")] for f in os.listdir(cmap_dir) if f.endswith(".pickle.gz")]
+        # pdfminer.six shipped its cmaps as .pickle.gz until 2025 and as .json.gz from 20260107 on.
+        suffixes = (".pickle.gz", ".json.gz")
+        names = [f[: -len(sfx)] for f in os.listdir(cmap_dir) for sfx in suffixes if f.endswith(sfx)]
         assert names, "no bundled cmaps found to check against"
         rejected = [n for n in names if not io_files.is_safe_cmap_name(n)]
-        assert rejected == [], "the guard would break these real pdfs: %s" % rejected[:10]
+        assert rejected == [], f"the guard would break these real pdfs: {rejected[:10]}"
         # the unicode maps are looked up with a prefix
-        prefixed = [n for n in ("to-unicode-%s" % n for n in names) if not io_files.is_safe_cmap_name(n)]
+        prefixed = [n for n in (f"to-unicode-{n}" for n in names) if not io_files.is_safe_cmap_name(n)]
         assert prefixed == []
 
 
