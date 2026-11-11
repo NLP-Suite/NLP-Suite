@@ -4,7 +4,7 @@ What's open, what to close, what to fix next. How to fix an issue is in [CLAUDE.
 
 **Last updated:** 11 Nov 2026, getting ready for 1.6.42 (v1.6.41 released 10 Nov).
 
-**State on GitHub (10 Nov 2026):** 9 open PRs (§2). The issue lists are proposals for Roberto: nothing in them has been closed or commented on.
+**State on GitHub (11 Nov 2026):** 7 open PRs (§2). Merged into `roberto` for 1.6.42 on 11 Nov: #1704, #1705, #1713–#1716. The issue lists are proposals for Roberto: nothing in them has been closed or commented on.
 
 ## Contents
 
@@ -42,20 +42,21 @@ In merge order:
 
 | # | What | PR | State | Before merging |
 |---|---|---|---|---|
-| 1 | Stanza model checked only when missing, pipeline built on first use (§8.1) | #1704 | Mergeable, CI green | Its PLAN.md hunk still uses the old numbers (§9.1, §9.2 for what is now §8.1, §8.2): renumber on the branch, or drop its PLAN.md change and move the measured results into §8.1 after the merge. Open Style analysis and RUN it once by hand |
-| 2 | `gui_smoke.py` no longer hangs in a checkout with no `config/`; Wordclouds first-run crash (#1708) | branch `fix/1708-wordclouds-first-run` | PR open | `run_script_util` is stubbed, so no setup GUI opens; each GUI is built with your `config/`, an empty one and `lib/config_defaults` (`--config` picks one). Then run it to check #1705 |
-| 3 | Outdated copy and flows (§9.1) | #1705 | Mergeable, CI green; merges cleanly with #1704 | `tests/gui_smoke.py`; open the menu with an empty `config/` on Windows and on a Mac, and each Setup GUI; trigger the missing-module popup in a source run |
-| 4 | Dead files and the legacy setup scripts (§10.1) | — | Done on local branch `chore/remove-dead-files` (`e65ebcef`), not pushed; needs Roberto's yes | After #1705: both touch `README.txt` and `CLAUDE.md`. The spec changes, so the pre-tag build is its test |
-| 4b | Shape of Stories crashes at open with the default config (§11.3) | branch `fix/shape-of-stories-relative-config` | PR open | `config_util.read_config_file` resolves relative I/O paths against the NLP Suite folder; the `chdir` stays. Merges cleanly with #1705 (different lines of `config_util`). Still check on a fresh 1.6.41 zip |
+| 1 | Stanza model checked only when missing, pipeline built on first use (§8.1) | #1704 | Merged 11 Nov | Checked by hand 11 Nov on a Mac: Style analysis opens without the Stanza download; Vocabulary (Stanza lemmatizer) RUN on the sample articles wrote its 8 files. Not checked: first download on a machine with no model, Windows |
+| 2 | `gui_smoke.py` no longer hangs in a checkout with no `config/`; Wordclouds first-run crash (#1708) | #1712 | Merged 10 Nov | `gui_smoke.py` builds each GUI with your `config/`, an empty one and `lib/config_defaults` (`--config` picks one) |
+| 3 | Outdated copy and flows (§9.1) | #1705 | Merged 11 Nov | Checked 11 Nov on a Mac: `gui_smoke.py` 147 ok / 0 crashed (with #1704); the missing-module popup gives the new text; the menu with an empty `config/` hands off to the Welcome GUI without the "three setup options" question. **Windows not checked: §1.3** |
+| 4 | Dead files and the legacy setup scripts (§10.1) | #1706 | Open; conflicts with `roberto` now that #1705 is in; needs Roberto's yes | After #1705: both touch `README.txt` and `CLAUDE.md`. The spec changes, so the pre-tag build is its test |
+| 4b | Shape of Stories crashes at open with the default config (§11.3) | #1711 | Merged 10 Nov | Still check on a fresh 1.6.41 zip |
 | 4c | Sample corpus crashes at open on a first run (no `config/`): `get_date_options` read field 5 of the 5-field template rows | #1714 | Merged 11 Nov | Found by `gui_smoke.py` [empty] on 11 Nov; already on `roberto`, not from #1704. Fix reads only 6-field saved rows; no shared structure changes |
 | 4d | First RUN on a fresh zip fails: default output `NLP_output` is never created, and `make_output_subdirectory` / `make_directory` chmod the parent then `os.mkdir` | #1716 | Merged 11 Nov | Found 11 Nov in the #1704 hand check. In every zip since 1.6.41 (`d090a146`). Fix: `os.makedirs(parent, exist_ok=True)` first. 124 call sites, behaviour changes only when the parent is missing |
-| 5 | HW 4 leftover: GIS "(NER tag: …)" log line | #1715 | PR open | `location_NER_tag` picks the column once, for the log line and the geocoder alike. Log text only; geocoding unchanged |
+| 5 | HW 4 leftover: GIS "(NER tag: …)" log line | #1715 | Merged 11 Nov | `location_NER_tag` picks the column once, for the log line and the geocoder alike. Log text only; geocoding unchanged |
 | 6 | §9.3 smaller copy | — | Optional | Only if ready before the freeze: strings, plus the `Word2Vec_main.py` case fix. Otherwise 1.6.43 |
 
 Not in 1.6.42:
 - PR #1682 (spaCy CoNLL ID/HEAD): correct, but it changes the CoNLL table, a shared structure (§2). 1.6.43.
 - §8.3 (pandas and requests out of `GUI_util`'s import chain): it rewrites how every GUI reads its config, in `config_util` and `reminders_util`, which #1705 also edits. 1.6.43.
 - §9.2's behaviour changes (decisions for Roberto); only its deletions (#1, #14, #15) are in, via §10.1.
+- **First run from source, with no `config/` (found 11 Nov, already on `roberto`; the zip ships `lib/config_defaults`, so students do not see it):** `config_util.read_NLP_package_language_config` shows its "config file … could not be found" warning on every call (52 calls in 28 files), so Style analysis and Wordclouds show it 5 times at open and the Parser & language setup GUI itself 3 times. Then `GUI_util` (~2096) opens that setup GUI with the blocking `run_script_util.run_script`, so the tool's window, including the last warning's OK button, looks frozen until the setup GUI (often hidden behind it) is closed. Fix: warn once per process and never inside the setup GUI; open it with `run_script_detached` or say in the warning that a window is opening. 1.6.43.
 - PR #1688 (Python 3.11 + Pillow 13, its own release once the updater has proven itself), PR #1683 (needs changes, §2), backlog triage (§4), the bulk of tech debt (§5).
 
 ### 1.2 The updater: known limits (open)
@@ -70,8 +71,9 @@ Not in 1.6.42:
 
 1. The usual checks (§6), plus: `lib/release_manifest.tsv` is in both zips; the app icon still resolves after the icons moved (§10.1); none of the §10.1 files is in the zips.
 2. **Right after the zips are up, update a real 1.6.41 install** on Windows and on a Mac: close it, accept, check that config and user files survive and that `NLP_Suite_previous` is gone after the next start. Read `%TEMP%\NLP_Suite_update.log` (Mac: the log named in the message). This is the first full-size run; the 9 Nov test used a 26 MB stand-in release on localhost.
-3. Not yet tested by hand: a source checkout on `current-stable` updating with git; opening and closing a GUI offline (no popups expected).
-4. Ask students who report update problems to send that log to coralynn.yang@emory.edu.
+3. **#1705 on Windows** (not done 11 Nov): open the menu with an empty `config/` and each Setup GUI; the start-up popups #1705 changed were mostly Windows text.
+4. Not yet tested by hand: a source checkout on `current-stable` updating with git; opening and closing a GUI offline (no popups expected).
+5. Ask students who report update problems to send that log to coralynn.yang@emory.edu.
 
 ### 1.4 After 1.6.42
 
@@ -85,14 +87,13 @@ Not in 1.6.42:
 
 ## 2. Open pull requests
 
-Reviewed 9 Nov 2026 (#1699, #1701, #1702 shipped in 1.6.41; #1679 and #1656 were re-applied there and closed); #1704 and #1705 checked 10 Nov. The older PRs conflict only because v1.6.40 reformatted all of `src/` (PR #1687).
+Reviewed 9 Nov 2026 (#1699, #1701, #1702 shipped in 1.6.41; #1679 and #1656 were re-applied there and closed); #1704 and #1705 merged 11 Nov (§1.1). The older PRs conflict only because v1.6.40 reformatted all of `src/` (PR #1687).
 
 "Tests" = the PR's own new tests, run on Windows in the NLP env on 9 Nov.
 
 | PR | Opened | What | Merge | Tests | 1.6.42? | Review |
 |---|---|---|---|---|---|---|
-| #1704 | 11-09 | Stanza model downloaded only when missing; pipeline built on first use (§8.1) | Clean; CI green | 15 new; pytest 613 pass, the 2 known failures; gui_smoke 49 ok | Yes, first | Not opened and RUN by hand; no first-download, Mac or zip test. Its PLAN.md hunk uses the old section numbers (§1.1) |
-| #1705 | 11-10 | Outdated copy and flows: docs, popups, reminders (§9.1), 49 files | Clean; CI green; clean with #1704 | `test_install_messages.py`; pytest 2 known failures | Yes, after #1704 | `gui_smoke.py` not run (hangs without `config/`), no GUI opened, Mac paths not run: §1.1 row 3 |
+| #1706 | 11-10 | Dead files and the legacy setup scripts (§10.1) | Conflict with `roberto` since #1705 (`README.txt`, `CLAUDE.md`) | — | Yes, if Roberto agrees | Rebase on `roberto`; the pre-tag build is its test |
 | #1682 | 10-16 | spaCy CoNLL ID/HEAD sentence-level and 1-based | Conflict: ruff only, mechanical | 2 pass | No: 1.6.43 (shared structure) | Correct: Stanza and CoreNLP already write 1-based, sentence-level, root 0, and no reader compensates for spaCy's old values. Shared structure, so not in a release about the updater. spaCy tables already on disk stay 0-based: say "re-parse" in the CHANGELOG |
 | #1683 | 10-16 | Gender dictionary looks up only PERSON tokens | Conflict: ruff only | 5 pass | No | **Needs changes:** hardcodes `Stanford_CoreNLP_util.CoreNLP_annotate` whatever parser is configured (so the option now needs Java); returns `''` with no message when no NER csv comes back; once "Will" is a PERSON anywhere, every "will" is tagged |
 | #1688 | 10-26 | Python 3.11 build so Pillow can go to 13.0.0 | Conflict: 2 adjacent lines | CI only | No (§1.1) | Decide. Whole pinned stack must rebuild on 3.11. STEP2 scripts still create `python=3.8` envs (`setup_Windows/STEP2-install_NLP-Suite.ps1:12`, `setup_Mac/STEP2-install_NLP-Suite.command:35`) and `pyproject.toml`/`pyrightconfig.json` say py310; the PR touches none of them |
