@@ -80,22 +80,36 @@ import TIPS_util
 # PIL being the commmon module for both software_names, you need to check for PIL and trap PIL to tell the user to install pillow
 
 
-def which_shell():
-    """
-    Checks for the default shell, and returns the shell variant for Windows, macOS, and major Linux operating systems.
-    :rtype: str - The type of shell. (e.g., "bash", "zsh", etc.)
-    """
-    shell = os.path.split(os.environ["SHELL"])[-1]
-    if shell != "zsh":
-        error_msg = (
-            "You are running shell "
-            + str(shell)
-            + "\n\nSince the release of macOS 10.15 (Catalina) on October 7, 2019, the default macOS shell has been switched from bash to zsh. The NLP Suite has been optimized for zsh not bash. The algorithm will exit.\n\nPlease, read carefully the TIPS_NLP_Anaconda NLP environment pip.pdf on how to change shell to zsh."
+def missing_modules_message(calling_script, missing_modules):
+    """The text shown when a source checkout lacks Python modules (the zip build bundles them all)."""
+    return (
+        "FATAL ERROR. Please, read carefully. The NLP Suite will exit.\n\nThe script '"
+        + calling_script
+        + "' needs to import the following modules:\n\n"
+        + ", ".join(missing_modules)
+        + "\n\nYou are running the NLP Suite from source code. In command prompt/terminal, activate your Python"
+        " environment (conda activate NLP), go to the NLP Suite folder and type"
+        "\n\npip install -r requirements.txt"
+        "\n\nThen start the NLP Suite again."
+        "\n\nIf you do not work on the code, use the download from"
+        " https://github.com/NLP-Suite/NLP-Suite/releases instead: it needs no Python installation."
+    )
+
+
+def nltk_download_message(resource, frozen):
+    """The text shown while a missing NLTK resource is downloaded. Only a source checkout can use pip/conda."""
+    msg = (
+        "The NLTK resource "
+        + resource
+        + " is missing.\n\nDownloading it now (only needed once; you must be connected to the internet)."
+        " Please, be patient..."
+    )
+    if not frozen:
+        msg += (
+            "\n\nIf the download fails, in command prompt/terminal activate your Python environment"
+            " (conda activate NLP) and type\npython -m nltk.downloader " + resource
         )
-        answer = tk.messagebox.askyesno("MacOS shell error", error_msg + "\n\nDo you want to open the TIPS file now?")
-        if answer:
-            TIPS_util.open_TIPS("TIPS_NLP_Anaconda NLP environment pip.pdf")
-    return shell
+    return msg
 
 
 # return false if missing modules
@@ -134,65 +148,8 @@ def install_all_Python_packages(window, calling_script, modules_to_try):
                 missingModules = ["pillow" if x == "PIL" else x for x in missingModules]
     if missingModules:
         errorFound = True
-        if platform == "darwin":
-            shell = which_shell()
-            if shell != "zsh":
-                return False
-        # root = tk.Tk()
-        # root.withdraw()
         window.withdraw()
-        if len(missingModules) == 0:
-            msg = ""
-        elif len(missingModules) == 1:
-            msg = missingModules[0]
-        elif len(missingModules) > 1:
-            msg = "each of the listed modules"
-
-        message = (
-            "FATAL ERROR. Please, read carefully. The NLP Suite will exit.\n\nThe script '"
-            + calling_script
-            + "' needs to import the following modules:\n\n"
-            + ", ".join(missingModules)
-            + "\n\nPlease, in command prompt/terminal, type\n\nNLP\n\nif you have run STEP3-NLP environment. Otherwise type"
-            + "\n\nconda activate NLP\n\nEither command will activate the right NLP environment (NLP case sensitive) where to install the module.\nIF IN TERMINAL YOU SEE THE WORD (base) YOU ARE NOT IN THE NLP ENVIRONMENT.\n\nIn the right NLP environment, type"
-            + "\n\npip install "
-            + str(msg)
-            + "\n\nto install the module, close the NLP Suite, and try again."
-        )
-
-        answer = tk.messagebox.askyesno(
-            "Module import error",
-            message
-            + "\n\nDo you want to open the TIPS file 'TIPS_NLP_Anaconda NLP environment pip.pdf' to learn about Anaconda environments and the installation of python modules via pip?",
-        )
-        if answer:
-            TIPS_util.open_TIPS("TIPS_NLP_Anaconda NLP environment pip.pdf")
-
-        if "stanfordnlp" or "stanza" in missingModules:
-            # sys.version_info is the Python version
-            if (sys.version_info[0] < 3) or (sys.version_info[0] == 3 and sys.version_info[1] < 6):
-                if "stanza" in missingModules:
-                    mb.showwarning(
-                        title="Python version error",
-                        message="The module 'stanza' requires a Python version 3.6 or higher. You are currently running version "
-                        + sys.version_info[0]
-                        + "."
-                        + sys.version_info[0]
-                        + ".\n\nTo install Python with Anaconda, in command prompt/terminal type 'Conda install Python=3.7'.",
-                    )
-            # https://stackoverflow.com/questions/56239310/could-not-find-a-version-that-satisfies-the-requirement-torch-1-0-0
-            # for more recent torch and torchvision, see https://pytorch.org/get-started/previous-versions/
-            # for most recent torch and torchvision, see https://pytorch.org/get-started/locally/
-            # if 'stanfordnlp' in missingModules:
-            #     mb.showwarning(title='Warning',
-            #                     message = "To install 'stanfordnlp' you will need to FIRST install 'torch' and 'torchvision' by typing:\n\nconda install pytorch torchvision cudatoolkit -c pytorch\n\nAFTER the successful installation of 'torch' and 'torchvision', you will need to install 'stanfordnlp' and 'stanford.download('en')'. At your command prompt/terminal, type:\n\npython\n\nThen at the >>> type:\n\nimport stanfordnlp\n\nWhen done type:\n\nstanfordnlp.download('en')\n\nWhen done type:\n\nexit().\n\nYOU MUST BE CONNECTED TO THE INTERNET TO INSTALL MODULES!\n\nYOU MUST ALSO BE IN THE NLP ENVIRONMENT!")
-            # pip install torch===1.7.1 torchvision===0.8.2 -f https://download.pytorch.org/whl/torch_stable.html
-            if "stanza" in missingModules:
-                mb.showwarning(
-                    title="Warning",
-                    message="stanza requires 'torch' and 'torchvision.' If these two packages are not installed in your machine, in command prompt/terminal, type:\\conda activate NLP, then type: by typing:\n\nconda install pytorch torchvision cudatoolkit -c pytorch\n\nMAKE SURE TO INCLUDE THE HTTPS COMPONENT AFTER -f OR YOU WILL GET THE ERROR: -f option requires 1 argument.\n\nAFTER the successful installation of 'torch' and 'torchvision', you will need to install 'stanza' and 'stanza.download('en')'. At your command prompt/terminal or terminal, type:\\conda activate NLP, then type:\n\npip install stanza.\n\nThe current release of the NLP Suite will automatically download the English language model of stanza when you run stanza the first time. You can also install and doownload the language model in command prompt/terminal. Type:\n\npython\n\nThen at the >>> type:\n\nimport stanza\n\nWhen done type:\n\nstanza.download('en')\n\nWhen done type:\n\nexit().\n\nYOU MUST BE CONNECTED TO THE INTERNET TO INSTALL MODULES!\n\nYOU MUST ALSO BE IN THE NLP ENVIRONMENT!",
-                )
-        # install(e.name)
+        mb.showerror(title="Module import error", message=missing_modules_message(calling_script, missingModules))
     return not errorFound
 
 
@@ -231,14 +188,7 @@ def import_nltk_resource(window, resource_path, resource):
         except:
             nltk.data.find(resource_path + ".zip")
     except LookupError:
-        msg = (
-            "The NLTK resource "
-            + resource
-            + " is missing.\n\nStarting to download NLTK..."
-            + "\nIf downloading fails, please, open terminal/command line and type\nNLP\nif you have run STEP3-NLP environment. Otherwise type"
-            + "\nconda activate NLP\nEither command will activate the right NLP environment (NLP case sensitive) where to install the NLTK modules.\nIF IN TERMINAL YOU SEE THE WORD (base) YOU ARE NOT IN THE NLP ENVIRONMENT.\nIn the right NLP environment, type"
-            + "\npython -m nltk.downloader all\n\nPlease, be patient... When done, close the NLP Suite, and try again."
-        )
+        msg = nltk_download_message(resource, getattr(sys, "frozen", False))
 
         IO_user_interface_util.timed_alert(window, 2000, "Downloading NLTK resource", msg, False)
         print(msg)
@@ -301,19 +251,6 @@ def get_java_version(system_output):
     return java_version
 
 
-def check_windows_64_bits():
-    errorFound = False
-    if "PROCESSOR_ARCHITEW6432" in os.environ:
-        mb.showwraning(
-            title="Fatal error",
-            message="You are not running a Windows 64-bits machine as required by Stanford CoreNLP.\n\nThis will cause an error running Stanford CoreNLP: Could not create the Java Virtual Machine.",
-        )
-        errorFound = True
-    if not os.environ["PROCESSOR_ARCHITECTURE"].endswith("64"):
-        errorFound = True
-    return errorFound
-
-
 # return errorFound, error_code, system_output
 def check_java_installation(script):
     java_version = 0
@@ -324,12 +261,6 @@ def check_java_installation(script):
     message = ""
     error_code = 1  # should be 0 if Java is installed
     system_output = ""  # This is what you see when you run "java -version" in your command line
-
-    # unnecessary
-    # if platform == 'win32':
-    #     Java_errorFound = check_windows_64_bits()
-    #     if Java_errorFound:
-    #         return Java_errorFound, error_code, system_output
 
     try:
         # if you are testing new Java install/uninstall ...
@@ -343,7 +274,7 @@ def check_java_installation(script):
     except:
         error_code = 1
 
-    url = "https://www.oracle.com/java/technologies/downloads/archive/"
+    url = "https://adoptium.net/temurin/releases/?version=17"
     title = "Java error"
 
     if error_code != 0:
@@ -359,15 +290,22 @@ def check_java_installation(script):
             message = message + "\n\nJAVA MAY NOT BE CORRECTLY INSTALLED IN YOUR MACHINE.\n\n"
         else:
             message = message + "\n\nJAVA IS NOT INSTALLED IN YOUR MACHINE.\n\n"
-        message = (
-            message
-            + script
-            + " is a Java script that requires the freeware Java (by Oracle) installed on our machine.\n\n"
-            "THE PROGRAM WILL EXIT."
-            "\n\nTo download Java from the Oracle website, you will need to sign in in your Oracle account (you must create a FREE Oracle account if you do not have one)."
-            "\n\nSelect the most current Java SE version then download the JDK suited for your machine (Mac/Windows) and finally run the downloaded executable."
-            "\n\nDO YOU WANT TO OPEN THE JAVA DOWNLOAD WEBSITE AND INSTALL JAVA NOW? (You must be connected to the internet)"
-        )
+        if getattr(sys, "frozen", False):
+            message = (
+                message
+                + script
+                + " needs Java. The NLP Suite comes with its own Java (the 'jre' folder inside the NLP Suite folder),"
+                " but it could not be started: the folder may be missing or damaged."
+                "\n\nPlease, download the NLP Suite again from https://github.com/NLP-Suite/NLP-Suite/releases."
+                "\n\nAlternatively, you can install Java yourself."
+                "\n\nDO YOU WANT TO OPEN THE JAVA DOWNLOAD WEBSITE NOW? (You must be connected to the internet)"
+            )
+        else:
+            message = (
+                message + script + " needs the freeware Java installed on your machine."
+                "\n\nDownload the Java 17 installer suited for your machine (Mac/Windows) and run it. No account is needed."
+                "\n\nDO YOU WANT TO OPEN THE JAVA DOWNLOAD WEBSITE AND INSTALL JAVA NOW? (You must be connected to the internet)"
+            )
         Java_errorFound = True
 
     if Java_errorFound:
@@ -700,7 +638,7 @@ def open_url(
     scriptName="",
 ):
     # check internet connection
-    if not IO_internet_util.check_internet_availability_warning("Check on GitHub the NLP Suite newest release version"):
+    if not IO_internet_util.check_internet_availability_warning("Open the " + str(website_name) + " website"):
         return False
     # check if a reminder needs to be displayed
     if reminder_title != "":
@@ -1044,7 +982,7 @@ def display_download_installation_messages(
         Mac_Applications_label = " directory (NOT Mac Applications!) "
         if software_name == "Gephi":
             software_extension = ".dmg"  # Mac executable file
-            file_name = "the file. The default Gephi download file is for MacOs with an Intel chip; if you have an M1 or M2 chip download the Mac OS (Silicon) file"
+            file_name = "the Mac OS (Silicon) file"
             Mac_Applications_label = " Mac Applications directory "
         elif software_name == "Google Earth Pro":
             software_extension = ".dmg"  # Mac executable file
@@ -1058,7 +996,7 @@ def display_download_installation_messages(
             file_name = "mallet-2.0.8.tar-gz"
         elif software_name == "Stanford CoreNLP":
             software_extension = ".zip"  # both Mac & Windows
-            file_name = "the latest available zip file (e.g., Download CoreNLP 4.5.2)"
+            file_name = "the latest available CoreNLP zip file"
         elif software_name == "WordNet":
             software_extension = ".tar.gz"
             file_name = "WordNet-3.0.tar.gz"
@@ -1079,7 +1017,7 @@ def display_download_installation_messages(
             file_name = "mallet-2.0.8.zip"
         elif software_name == "Stanford CoreNLP":
             software_extension = ".zip"  # both Mac & Windows
-            file_name = "the latest available zip file (e.g., Download CoreNLP 4.5.2)"
+            file_name = "the latest available CoreNLP zip file"
         elif software_name == "WordNet":
             software_extension = ".exe"
             file_name = "WordNet-2.1.exe"
@@ -1134,7 +1072,7 @@ def display_download_installation_messages(
             "LIST OF PROGRAMS TO BE DOWNLOADED/INSTALLED:\n\n"
             + missing_software
             + '\n\nPlease, use the "Software DOWNLOAD" dropdown menu to download and install the software in the list or some functionality will be lost for some of the scripts '
-            "(e.g., you cannot do any textual analysis of any kind without Stanford CoreNLP or produce any geographic maps without Google Earth Pro). "
+            "(all of these programs are optional: the NLP Suite parses texts with Stanza and draws maps with Python folium without any of them; Stanford CoreNLP, Gephi, Google Earth Pro and MALLET are needed only by the tools that use them). "
             "The algorithms that use any of these programs will remind you that you need to install them if you want to run the algorithm. "
             '\n\nIf you have already downloaded the software, but not installed it, click on the "Software install" button to select the directory where you saved it on your machine in order to install it; '
             "you will only have to do this once (the selected installation directory will be saved in NLP_setup_external_software_config.csv)."
@@ -1251,10 +1189,7 @@ def display_download_installation_messages(
                         download_message = ""
                         return software_dir, title, opening_message, download_message, installation_message
                     else:
-                        download_message = (
-                            "To download Java from the Oracle website, you will need to sign in your Oracle account (you must create a FREE Oracle account if you do not have one).\n\n"
-                            "Select the most current Java SE version then download the JDK suited for your machine (Mac/Windows) and finally run the downloaded executable."
-                        )
+                        download_message = "Download the Java 17 installer suited for your machine (Mac/Windows) and run the downloaded file. No account is needed."
                 else:
                     download_message = after_website_opens_message + after_download_message
 
@@ -1489,15 +1424,15 @@ def external_software_download(calling_script, software_name, existing_software_
     # DOWNLOAD JAVA for CoreNLP, Gephi, MALLET
 
     ### should go in def display...
-    if software_name == "Stanford CoreNLP" or software_name == "Gephi" or software_name == "MALLET":
-        # since Stanford CoreNLP, Gephi, and MALLET need Java, check for Java installation
+    if software_name == "Stanford CoreNLP" or software_name == "MALLET":
+        # Stanford CoreNLP and MALLET need Java (Gephi ships its own), check for Java installation
         Java_errorFound, error_code, system_output, java_version = check_java_installation(software_name)
         # url = 'https://www.oracle.com/java/technologies/downloads/archive/'
         # Java_errorFound=True # for testing
         if Java_errorFound:
             Java_required = (
                 software_name
-                + " requires the freeware Java (by Oracle) installed on our machine.\n\nDon't forget to download and install Java JDK."
+                + " needs Java, and Java could not be started on your machine.\n\nThe downloaded NLP Suite comes with its own Java; if you run the NLP Suite from source code, install Java 17 (https://adoptium.net)."
             )
             mb.showwarning(title="Warning", message=Java_required)
             # open_url('Java', url, ask_to_open = True, message_title = 'Java', message = Java_required)

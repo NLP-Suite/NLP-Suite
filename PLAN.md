@@ -47,6 +47,7 @@ In merge order:
 | 3 | Outdated copy and flows (§9.1) | #1705 | Mergeable, CI green; merges cleanly with #1704 | `tests/gui_smoke.py`; open the menu with an empty `config/` on Windows and on a Mac, and each Setup GUI; trigger the missing-module popup in a source run |
 | 4 | Dead files and the legacy setup scripts (§10.1) | — | Done on local branch `chore/remove-dead-files` (`e65ebcef`), not pushed; needs Roberto's yes | After #1705: both touch `README.txt` and `CLAUDE.md`. The spec changes, so the pre-tag build is its test |
 | 4b | Shape of Stories crashes at open with the default config (§11.3) | branch `fix/shape-of-stories-relative-config` | PR open | `config_util.read_config_file` resolves relative I/O paths against the NLP Suite folder; the `chdir` stays. Merges cleanly with #1705 (different lines of `config_util`). Still check on a fresh 1.6.41 zip |
+| 4c | Sample corpus crashes at open on a first run (no `config/`): `get_date_options` read field 5 of the 5-field template rows | #1714 | Merged 11 Nov | Found by `gui_smoke.py` [empty] on 11 Nov; already on `roberto`, not from #1704. Fix reads only 6-field saved rows; no shared structure changes |
 | 4d | First RUN on a fresh zip fails: default output `NLP_output` is never created, and `make_output_subdirectory` / `make_directory` chmod the parent then `os.mkdir` | branch `fix/output-dir-first-run` | PR open | Found 11 Nov in the #1704 hand check. In every zip since 1.6.41 (`d090a146`). Fix: `os.makedirs(parent, exist_ok=True)` first. 124 call sites, behaviour changes only when the parent is missing |
 | 5 | HW 4 leftover: GIS "(NER tag: …)" log line | — | Not started | `GIS_geocode_util.py` ~704 prints the date when there is one; the tag used is `item[2]` |
 | 6 | §9.3 smaller copy | — | Optional | Only if ready before the freeze: strings, plus the `Word2Vec_main.py` case fix. Otherwise 1.6.43 |
@@ -201,6 +202,7 @@ Largest reliability lever. Convert to `except Exception`, and on user-facing pat
 Coverage is 508 test functions in 52 files [3]. Gaps:
 - No **empty-DataFrame** regression test for the chart/statistics pipeline (only `test_emotion_arc_html.py` covers an empty frame).
 - No **multi-column chart** regression test for `charts_util` (the v1.6.4 "by Document" grouped-bar fix has no test).
+- Done 11 Nov 2026 (branch `fix/known-test-failures`): the "2 known failures" in local runs were the test environment, not the code. pdfminer.six 20260107 ships its cmaps as `.json.gz` (the test only looked for `.pickle.gz`), and lxml 6 / libxml2 2.14 raise on an undefined external entity instead of expanding it (the test now skips, as it already meant to). Local pytest: 643 pass, 0 fail.
 
 ### 5.7 Hygiene
 
@@ -247,7 +249,7 @@ Evaluated 9 Nov 2026 on `current-stable` @ `43cbca1c` (v1.6.40), Windows 11, NLP
 
 | # | Finding | Measured cost | Who pays | Fix size |
 |---|---|---|---|---|
-| 1 | Stanza model re-checked (and a pipeline built) every time a GUI opens | 9–11 s per check, 8.7 s for the pipeline | 18 of 55 GUIs | Small |
+| 1 | Stanza model re-checked (and a pipeline built) every time a GUI opens. **Fixed by PR #1704 (§8.1)** | 9–11 s per check, 8.7 s for the pipeline | 18 of 55 GUIs | Small |
 | 2 | Heavy libraries imported when the GUI opens, not at RUN | 10–40 s | 32 of 55 GUIs | Medium, file by file |
 | 3 | Every GUI starts with 4.6 s of `GUI_util` imports (pandas, requests) | 4.6 s vs 0.9 s for a bare Tk window | Every GUI, every open | Small |
 | 4 | "Started/Finished running" alerts and reminders block until their countdown ends | 1–12 s each | Every RUN | Small (a decision first) |
@@ -272,11 +274,13 @@ With the model already on disk, each call still takes **9.1–10.7 s**: Stanza f
 
 18 of the 55 GUIs import at least one of these modules when they open. Style analysis, Semantic analysis and Syntactic analysis (ALL) import three of them, so they run the check three times.
 
-**Fix.**
-1. One helper, e.g. `Stanza_functions_util.ensure_stanza_model(lang)`: return at once if the model folder exists; otherwise download with the existing `IO_internet_util.download_with_warning`. Call it from the four places.
-2. Build the pipeline on first use, not at import: replace the module-level `stanzaPipeLine` with a cached `get_stanza_pipeline()`. `stanzaPipeLine` is referenced 156 times in 28 files, so this is a mechanical change that needs a test for the helper and a `tests/gui_smoke.py` run.
+**Fixed 9 Nov 2026 by PR #1704 (branch `claude/codebase-performance-eval-09cb55`).**
+1. `IO_internet_util.ensure_stanza_model(...)` downloads only when no unpacked tokenizer model is on disk (`stanza_model_present`: `<resources>/<lang>/tokenize/*.pt` under Stanza's own `stanza.resources.common.DEFAULT_MODEL_DIR`, a per-version cache folder since Stanza 1.10; the first version of this fix looked in the old `~/stanza_resources` and so never found the model). It is called when a tool RUNs (Stanza_annotate, coref, sentence length, wordclouds, the shared pipeline), not at import; the download runs in a background thread behind a window that stays up and shows the MB downloaded (`run_with_progress`). Stanza 1.14 fetches through `huggingface_hub` into the Hugging Face cache and copies each file over only when complete, so the counter watches that cache folder first (`huggingface_stanza_cache_dir`, `downloaded_mb`); the download runs inside `xet_off()`, which sets `huggingface_hub.constants.HF_HUB_DISABLE_XET` for its duration, because Xet stalled at 0 bytes on a Mac while plain HTTP finished. Issue #1703. `Stanza_util`'s bare `except: pass` around the download is gone, so a failed first download is reported.
+2. `stanzaPipeLine` is now an `IO_internet_util.LazyModel`: it builds the pipeline the first time it is called and passes the call through, so none of its 156 uses in 28 files changed. A failed build shows the existing download-failure dialog and raises.
 
-Expected saving: 10–30 s per open for those 18 GUIs. Offline, it also removes the download-failure dialogs at open.
+Measured after the fix, same machine: `import Stanza_functions_util` 33.0 → **18.5 s**, `import statistics_txt_util` 38.5 → **21.3 s**, `import wordclouds_util` 14.2 s. What remains is library import time (§8.2). The first `stanzaPipeLine(...)` call took 7.0 s, later calls 0.01 s. Checks: 15 new tests in `tests/test_IO_internet_util.py`; `pytest tests/` 613 passed, the same 2 failures as on `roberto`; `tests/gui_smoke.py` 49 ok, 0 crashed, 6 skipped (the usual stub-limited ones).
+
+**Not checked:** a GUI opened and RUN by hand; a machine with no Stanza model (first download); macOS; the zip build. A model folder with a tokenizer but another file missing is trusted at open; `stanza.Pipeline` fetches the missing file when the pipeline is built.
 
 ### 8.2 Heavy libraries are imported when the GUI opens
 

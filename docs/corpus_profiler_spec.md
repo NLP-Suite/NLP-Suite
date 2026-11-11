@@ -1,8 +1,8 @@
-# Corpus Profiler — Specification (draft for review)
+# Corpus Profiler — Specification (implemented)
 
 **Script:** `corpus_profiler_main.py` (GUI + `run()`) · `corpus_profiler_util.py` (orchestration + report)
 **Output:** `<outputDir>/NLP_corpus_profile.html` — the **one** file auto-opened; everything else stays in subfolders.
-**Replaces:** `whats_in_your_corpus_main.py` (retire + repoint the menu once this is ready).
+**Replaced:** `whats_in_your_corpus_main.py` (retired).
 
 ---
 

@@ -451,7 +451,7 @@ def compute_csv_column_statistics_groupBy(
                 + str(groupByField)
                 + "\n\nERROR RAISED: "
                 + str(e)
-                + "\n\nIn terminal/command line and in the NLP environment, try pip install scipy --upgrade and pip install numpy --upgrade",
+                + "\n\nPlease, check that the selected fields contain valid values. If the problem persists, report it to the NLP Suite developers.",
                 False,
                 "",
                 True,

@@ -2970,7 +2970,7 @@ def _interp_entities(files):
         findings.append(
             _EMPH + "Gender, dialogue/quotes and normalized dates were NOT extracted: these "
             "require Stanford CoreNLP and Java, which are not installed on this machine. "
-            "Install both from  Setup ▸ Download / install external software  (Java, then "
+            "Install both from  Setup ▸ Setup external software  (Java, then "
             "Stanford CoreNLP); the profiler will then extract them automatically on the next "
             "run — no need to change the NLP package. (People, organizations and locations are "
             "still extracted, under Counts, with your configured parser.)"

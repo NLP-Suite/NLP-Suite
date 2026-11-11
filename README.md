@@ -29,7 +29,7 @@ The NLP Suite offers 50+ GUIs covering:
 ## Key Features
 
 - **No programming needed** — everything is accessed through graphical user interfaces with ? help buttons and hover-over tooltips
-- **Self-contained** — the standalone build bundles Python, Stanza, spaCy, NLTK, WordNet, BERT, and 50+ other packages
+- **Self-contained** — the standalone build bundles Python, a Java runtime, Stanza, spaCy, NLTK, transformers (BERT), and 50+ other packages; language models download the first time you use them
 - **150+ TIPS files** — extensive documentation accessible from every GUI
 - **Sample data included** — start testing immediately on first launch
 

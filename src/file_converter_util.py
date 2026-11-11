@@ -554,7 +554,7 @@ def pdf_to_docx_converter(
     if not is_pypdf_available():
         mb.showwarning(
             title="Missing module pypdf",
-            message='The "Document converter (pdf --> docx)" option needs the Python module pypdf to extract the images embedded in a pdf file.\n\npypdf is NOT installed in your NLP environment.\n\nIn command prompt/terminal, type\n\nconda activate NLP\n\nthen type\n\npip install pypdf\n\nclose the NLP Suite and try again.\n\nIn the meantime you can use the "Document converter (pdf --> txt) (via pdfminer)" option, which needs no extra module but does NOT keep the images.',
+            message='The "Document converter (pdf --> docx)" option needs the Python module pypdf to extract the images embedded in a pdf file.\n\npypdf could not be loaded. It is part of the downloaded NLP Suite: if you see this message there, please report it to the NLP Suite developers. If you run the NLP Suite from source code, type\n\npip install -r requirements.txt\n\nIn the meantime you can use the "Document converter (pdf --> txt) (via pdfminer)" option, which needs no extra module but does NOT keep the images.',
         )
         return
 
@@ -891,11 +891,15 @@ def get_OCR_missing_requirements():
     try:
         import pytesseract  # noqa: F401
     except ImportError:
-        missing.append("the Python module pytesseract   (in the NLP environment, type: pip install pytesseract)")
+        missing.append(
+            "the Python module pytesseract   (not included in the downloaded NLP Suite; from source code, type: pip install pytesseract)"
+        )
     try:
         import pdf2image  # noqa: F401
     except ImportError:
-        missing.append("the Python module pdf2image   (in the NLP environment, type: pip install pdf2image)")
+        missing.append(
+            "the Python module pdf2image   (not included in the downloaded NLP Suite; from source code, type: pip install pdf2image)"
+        )
     if get_tesseract_path() is None:
         if sys.platform == "darwin":
             missing.append("the Tesseract OCR software   (in terminal, type: brew install tesseract)")

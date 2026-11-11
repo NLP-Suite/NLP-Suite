@@ -1146,13 +1146,6 @@ if err_msg != "":
         + " could not be found in the sub-directory 'config' of your main NLP Suite folder.\n\nPlease, setup the default Input/Output (I/O) options then click on the CLOSE button to save your options.",
     )
 
-if missing_IO:
-    answer = tk.messagebox.askyesno(
-        "Warning", "Do you want to watch the video on how to setup Input/Output (I/O) options?"
-    )
-    if answer:
-        GUI_util.videos_dropdown_field.set("Setup Input/Output (I/O) options")
-        # GUI_util.watch_video(videos_lookup, scriptName)
 
 # reminders are based on the script name
 reminders_util.checkReminder(scriptName, reminders_util.title_options_IO_setup, reminders_util.message_IO_setup, True)

@@ -456,11 +456,11 @@ def verb_data_preparation_auxiliary(data):
         return data_2
     except:
         print(
-            "ERROR: INPUT MUST BE THE MERGED CoNLL TABLE CONTAINING THE SENTENCE ID. Please use the merge option when generating your CoNLL table in the StanfordCoreNLP.py routine. Program will exit."
+            "ERROR: INPUT MUST BE A CoNLL TABLE CONTAINING THE SENTENCE ID, as produced by the NLP Suite parsers (Stanza, spaCy or Stanford CoreNLP) in the 'Parsers & annotators' GUI. The NLP Suite will exit."
         )
         mb.showinfo(
             "ERROR",
-            "INPUT MUST BE THE MERGED CoNLL TABLE CONTAINING THE SENTENCE ID. Please use the merge option when generating your CoNLL table in the StanfordCoreNLP.py routine. Program will exit.",
+            "INPUT MUST BE A CoNLL TABLE CONTAINING THE SENTENCE ID, as produced by the NLP Suite parsers (Stanza, spaCy or Stanford CoreNLP) in the 'Parsers & annotators' GUI. The NLP Suite will exit.",
         )
         sys.exit(0)
 
