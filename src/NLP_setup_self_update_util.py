@@ -617,17 +617,26 @@ def launch_swap_script(script, sys_platform=None):
     cwd = os.path.dirname(script)  # never inside the NLP Suite folder, which Windows would then lock
     devnull = subprocess.DEVNULL
     if sys_platform == "win32":
-        flags = getattr(subprocess, "DETACHED_PROCESS", 0) | getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0)
+        # NOT DETACHED_PROCESS: Windows PowerShell started without a console exits at once, with code 0,
+        # without running the script (found in a real update run). CREATE_NO_WINDOW gives it a hidden console.
+        # Breaking away from the job, when allowed, keeps the script alive if this process's job is closed.
+        flags = getattr(subprocess, "CREATE_NO_WINDOW", 0) | getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0)
         command = ["powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass", "-WindowStyle", "Hidden"]
-        subprocess.Popen(
-            [*command, "-File", script],
-            cwd=cwd,
-            creationflags=flags,
-            close_fds=True,
-            stdin=devnull,
-            stdout=devnull,
-            stderr=devnull,
-        )
+        for extra in (getattr(subprocess, "CREATE_BREAKAWAY_FROM_JOB", 0), 0):
+            try:
+                subprocess.Popen(
+                    [*command, "-File", script],
+                    cwd=cwd,
+                    creationflags=flags | extra,
+                    close_fds=True,
+                    stdin=devnull,
+                    stdout=devnull,
+                    stderr=devnull,
+                )
+                break
+            except OSError:  # the job does not allow breakaway: start it inside the job
+                if not extra:
+                    raise
     else:
         subprocess.Popen(
             ["/bin/sh", script], cwd=cwd, start_new_session=True, stdin=devnull, stdout=devnull, stderr=devnull

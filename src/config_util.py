@@ -428,6 +428,18 @@ def get_input_file_directory(config_filename):
     return config_file_exists, input_filename, input_dir, input_dir_last_item, new_config_filename
 
 
+def resolve_relative_config_paths(config_input_output_alphabetic_options, base_dir):
+    """Make the relative paths in I/O config rows (header already removed) absolute, under base_dir.
+
+    The default config shipped in lib/config_defaults stores relative paths. Importing IO_files_util
+    changes the current folder to src/, so a relative path must not be left to the current folder.
+    """
+    for row in config_input_output_alphabetic_options:
+        if len(row) > 1 and row[1] and not os.path.isabs(row[1]):
+            row[1] = os.path.normpath(os.path.join(base_dir, row[1]))
+    return config_input_output_alphabetic_options
+
+
 def read_config_file(config_filename, config_input_output_numeric_options):
     config_input_output_alphabetic_options = []
     configFilePath = os.path.join(GUI_IO_util.configPath, config_filename)
@@ -484,6 +496,7 @@ def read_config_file(config_filename, config_input_output_numeric_options):
             #   and the program bombs in GUI_util
             # read_config_file(config_filename, config_input_output_numeric_options)
         csv_file.close()
+        resolve_relative_config_paths(config_input_output_alphabetic_options, GUI_IO_util.NLPPath)
     else:
         config_file_exists = False
         config_input_output_alphabetic_options = list()
