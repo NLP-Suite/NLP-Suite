@@ -31,10 +31,7 @@ pyspellchecker
 fuzzywuzzy[speedup]
 sacremoses
 sentencepiece
-editdistance
 wn
-pywsd
-contextualSpellCheck
 spacytextblob
 spacy-langdetect
 
@@ -66,19 +63,12 @@ matplotlib
 plotly
 seaborn
 wordcloud
-mpld3
 kaleido
 
 # GIS / Maps
 folium
 geopy
 simplekml
-shapely
-geopandas
-geocoder
-googlemaps
-geojson
-gmaps
 
 # Web / parsing
 # FLOORS, not pins: these are unpinned so a fresh install gets the current release, but a floor
@@ -123,14 +113,15 @@ stanfordcorenlp
 # crashes loading the welcome-screen images (Evan's testing) - the app won't open without this pin.
 Pillow==10.4.0
 
-# Knowledge graphs
-SPARQLWrapper
-
 # GUI
 tkcolorpicker
 # the NLP_menu_main setup panel and tool browser (the other GUIs are plain tkinter)
 customtkinter==6.0.0
 
-# Jupyter widgets (used by pyLDAvis visualizations)
+# IPython: topic_modeling_gensim_util calls pyLDAvis.display, which imports it
 ipython
-ipywidgets
+
+# Not installed, because nothing in src/ imports them (docs/future-work.md 2.3): geopandas, shapely, gmaps,
+# googlemaps, geojson and geocoder (only the unused GIS_heatMap* files; GIS_Google_Maps_util writes its own JS),
+# SPARQLWrapper (only the unused knowledge_graphs_DBpedia_util_SPARQL), pywsd, mpld3, ipywidgets, and
+# contextualSpellCheck (listed in BERT_util's install check, never loaded) with its editdistance.
