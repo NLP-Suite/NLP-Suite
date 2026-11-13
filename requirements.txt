@@ -15,7 +15,6 @@ scikit-learn>=1.2
 openpyxl
 xlrd
 numexpr
-h5py
 
 # NLP
 stanza
@@ -39,14 +38,13 @@ contextualSpellCheck
 spacytextblob
 spacy-langdetect
 
-# Transformers / deep learning
+# Transformers / deep learning (all on torch)
 # transformers pinned <5: transformers 5.x breaks bert-extractive-summarizer 0.10.1 (Evan's testing).
 transformers==4.41.2
 sentence-transformers
-tensorflow
-tensorflow-hub
-tf-keras
 bert-extractive-summarizer
+# TensorFlow (tensorflow, tensorflow-hub, tf-keras, h5py) is not installed: nothing imports it. transformers,
+# sentence-transformers, BERTopic and fastcoref run on torch.
 
 # Coreference resolution (neural engine for the Coreference GUI)
 # fastcoref -> the 'BERT' option (SpanBERT/LingMess); its model self-downloads on first use.

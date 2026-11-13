@@ -16,7 +16,6 @@ if (
             "argparse",
             "tkinter",
             "spacy",
-            "tensorflow",
             "numpy",
             "random",
             "pickle",
