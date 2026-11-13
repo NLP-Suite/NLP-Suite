@@ -13,7 +13,6 @@ A Tkinter-GUI toolkit for text analysis in the social sciences and humanities. A
 | `TIPS/`, `TIPS docx/` | PDF help files shown by each GUI's TIPS menu, and their editable `.docx` sources |
 | `tests/` | pytest suite plus standalone GUI checks |
 | `docs/` | Wiki pages and design notes |
-| `setup_Windows/`, `setup_Mac/` | Legacy Anaconda install scripts (STEP1-3), not shipped in the zip; only `setup_Windows/NLP_Suite.ico` is used (by the spec) |
 | `NLP_Suite.spec` | PyInstaller build (`dist/`, `build/` are output) |
 | `CHANGELOG.md` | Release notes; the top section becomes the GitHub release text |
 

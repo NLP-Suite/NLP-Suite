@@ -24,7 +24,7 @@ SRC_DIR = os.path.join(PROJECT_ROOT, 'src')
 if sys.platform == 'darwin':
     APP_ICON = os.path.join(PROJECT_ROOT, 'lib', 'images', 'NLP_Suite.icns')
 else:
-    APP_ICON = os.path.join(PROJECT_ROOT, 'setup_Windows', 'NLP_Suite.ico')
+    APP_ICON = os.path.join(PROJECT_ROOT, 'lib', 'images', 'NLP_Suite.ico')
 
 # ── Local hidden imports ────────────────────────────────────────────────────
 # All .py files in src/ that might be imported dynamically at runtime.
