@@ -86,6 +86,9 @@ a = Analysis(
         'seaborn', 'wordcloud', 'folium', 'geopy', 'simplekml', 'kaleido',
         'pdfminer', 'pypdf', 'docx', 'striprtf', 'pycorenlp', 'stanfordcorenlp',
         'IPython', 'jedi', 'parso', 'ipywidgets', 'h5py',
+        # optional pandas back ends, installed in the build env by umap (numba) and fastcoref's datasets (pyarrow):
+        # 245 MB of the first CI build's _internal/ on the Mac. pandas works without them
+        'pyarrow', 'numba', 'llvmlite',
         'gmaps', 'contextualSpellCheck', 'pygit2',
         # SRL (transformer_srl/allennlp) runs ONLY in a separate Python 3.8 subprocess env, never in
         # this bundle. src/SRL_worker.py ships as a data script and imports them lazily at run
