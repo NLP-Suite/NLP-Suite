@@ -16,11 +16,6 @@ for _stream in (sys.stdout, sys.stderr):
 #     sys.exit(0)
 import tkinter as tk
 
-# this will renew the SSL certificate indefinitely
-# pip install pyOpenSSL
-# pip install requests[security]
-import requests
-
 import IO_libraries_util
 
 # Load early so the pandas on_bad_lines kwarg works on every pandas version across the whole
@@ -418,6 +413,10 @@ def get_local_release_version():
 
 # also called from exit_window in NLP_setup_update_util
 def get_GitHub_release_version(silent=True):
+    # requests is imported here, not at the top: importing it costs about 1.3 s, paid by every window at open
+    # (docs/future-work.md 6.3)
+    import requests
+
     # A non-essential check that runs every time a window opens or closes: offline it must stay quiet.
     # It used to ask "Internet is not available... bypass the check?" each time, so an offline student
     # clicked through up to four popups per window. The 0.0.0 shown top-left already says "couldn't check".
