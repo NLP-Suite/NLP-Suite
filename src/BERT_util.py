@@ -23,7 +23,6 @@ if (
             "contextualSpellCheck",
             "sentencepiece",
             "sentence_transformers",
-            "tensorflow",
         ],
     )
     == False

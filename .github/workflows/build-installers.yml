@@ -118,7 +118,7 @@ jobs:
           # spacy download installs the model wheel matching the installed spaCy version.
           "$PYTHON" -m spacy download en_core_web_sm
           # Verify (including that the spaCy English model actually loads)
-          "$PYTHON" -c "import pandas, requests, numpy, matplotlib, scipy, sklearn, stanza, spacy, nltk, plotly, seaborn, folium, gensim, wordcloud, transformers, sentence_transformers, tensorflow, bertopic, PIL; spacy.load('en_core_web_sm'); print('All critical packages + en_core_web_sm OK')"
+          "$PYTHON" -c "import pandas, requests, numpy, matplotlib, scipy, sklearn, stanza, spacy, nltk, plotly, seaborn, folium, gensim, wordcloud, transformers, sentence_transformers, bertopic, PIL; spacy.load('en_core_web_sm'); print('All critical packages + en_core_web_sm OK')"
           echo "Bundled portable Python environment"
 
       - name: Bundle Java runtime (JRE) for Stanford CoreNLP tools
