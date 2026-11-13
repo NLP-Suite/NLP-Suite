@@ -10,7 +10,6 @@ import tkinter.messagebox as mb
 import webbrowser
 
 from psutil import virtual_memory
-import requests
 
 import GUI_IO_util
 
@@ -407,9 +406,13 @@ WordNet_download = "https://wordnet.princeton.edu/download/current-version"  # M
 
 # the function checks that if Stanford CoreNLP version matches with the latest downloadable version
 def check_CoreNLPVersion(CoreNLPdir, calling_script="", silent=False):
-    # get latest downloadable version
+    # requests is imported where it is used: at the top, every window paid about 1.3 s for it at open
+    import requests
+
+    # get latest downloadable version. It runs at the start of every CoreNLP run: without a timeout a stalled
+    # connection froze the GUI indefinitely (docs/future-work.md 6.6)
     try:
-        response = requests.get("https://api.github.com/repos/stanfordnlp/CoreNLP/releases/latest")
+        response = requests.get("https://api.github.com/repos/stanfordnlp/CoreNLP/releases/latest", timeout=5)
     except:
         # no internet
         return
@@ -687,7 +690,14 @@ def open_url(
         if answer == False:
             return False
 
-    status_code = requests.get(url).status_code
+    import requests
+
+    # a timeout, so that a stalled connection cannot freeze the GUI (docs/future-work.md 6.6)
+    try:
+        status_code = requests.get(url, timeout=10).status_code
+    except requests.RequestException as e:
+        print("Could not reach " + url + ": " + str(e))
+        status_code = None
     if status_code != 200:
         mb.showwarning(
             title="Warning",
