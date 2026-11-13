@@ -50,6 +50,24 @@ jobs:
           fi
           echo "OK: release_version.txt matches the tag."
 
+      # The release job pastes the TOP CHANGELOG.md section (without its heading) into the release page
+      # as "What's new". If the top is still an "## Unreleased" section, the page shows it under the wrong
+      # version, and a second section below it (there were two "Unreleased" sections on the 1.6.43 and
+      # 1.6.44 branches) is left out without any sign. Check the heading here, before the long build.
+      - name: Verify the top CHANGELOG.md section is this release
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: bash
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          TOP="$(grep -m1 '^## ' CHANGELOG.md | tr -d '\r')"
+          echo "tag=${GITHUB_REF_NAME} | top CHANGELOG heading: '${TOP}'"
+          # "## v1.6.43" alone or followed by text ("## v1.6.43: a smaller download"), but not "## v1.6.430"
+          if ! printf '%s\n' "${TOP}" | grep -Eq "^## v${TAG_VERSION//./\\.}([^0-9.]|$)"; then
+            echo "::error::The top CHANGELOG.md heading is '${TOP}', but the tag is '${GITHUB_REF_NAME}'. Merge this release's sections into one, headed '## ${GITHUB_REF_NAME}', commit it, delete and re-create the tag on that commit. Otherwise the release page shows the wrong notes."
+            exit 1
+          fi
+          echo "OK: the top CHANGELOG.md section is ${GITHUB_REF_NAME}."
+
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
@@ -177,20 +195,23 @@ jobs:
           )
           # DLLs that sklearn specifically loads from its own .libs folder
           $sklearnDlls = @("msvcp140.dll", "vcomp140.dll", "vcruntime140.dll", "vcruntime140_1.dll")
-          $searchPaths = @("C:\Windows\System32", "C:\Windows\SysWOW64")
+          # System32 ONLY. On 64-bit Windows, SysWOW64 holds the 32-bit DLLs; one copied into this 64-bit
+          # env would fail to load on users' machines. A missing DLL or a failed copy stops the build
+          # (all 16 were found on the v1.6.41 build), instead of printing a warning nobody reads.
+          $ErrorActionPreference = 'Stop'
+          $missing = @()
           function Copy-Dll($dll, $dest) {
-            foreach ($sp in $searchPaths) {
-              $src = Join-Path $sp $dll
-              if (Test-Path $src) {
-                Copy-Item $src $dest -Force -ErrorAction SilentlyContinue
-                Write-Host "Copied $dll -> $dest"
-                return
-              }
-            }
-            Write-Host "WARNING: $dll not found in System32/SysWOW64"
+            $src = Join-Path "C:\Windows\System32" $dll
+            if (-not (Test-Path $src)) { $script:missing += $dll; return }
+            Copy-Item $src $dest -Force
+            Write-Host "Copied $dll -> $dest"
           }
           foreach ($d in $rootDlls)    { Copy-Dll $d $envDir }
           foreach ($d in $sklearnDlls) { Copy-Dll $d $sklearnLibs }
+          if ($missing.Count -gt 0) {
+            Write-Host "::error::VC++ runtime DLLs not found in C:\Windows\System32: $($missing -join ', ')"
+            exit 1
+          }
 
       - name: Copy data directories to dist (all platforms)
         shell: python
@@ -234,14 +255,20 @@ jobs:
         run: |
           $pythonDir = Split-Path (Get-Command python).Source
           $dist = "dist/NLP_Suite"
-          # Copy any missing DLLs that PyInstaller warns about
+          # Copy any missing DLLs that PyInstaller warns about. A DLL not found, or a failed copy, stops
+          # the build (all three were found on the v1.6.41 build).
           $dlls = @("tk86t.dll", "tcl86t.dll", "sqlite3.dll")
+          $missing = @()
           foreach ($dll in $dlls) {
+            # SilentlyContinue here only skips unreadable folders during the search
             $found = Get-ChildItem $pythonDir -Recurse -Filter $dll -ErrorAction SilentlyContinue | Select-Object -First 1
-            if ($found) {
-              Copy-Item $found.FullName $dist -ErrorAction SilentlyContinue
-              Write-Host "Copied $dll"
-            }
+            if (-not $found) { $missing += $dll; continue }
+            Copy-Item $found.FullName $dist -ErrorAction Stop
+            Write-Host "Copied $dll"
+          }
+          if ($missing.Count -gt 0) {
+            Write-Host "::error::Not found under ${pythonDir}: $($missing -join ', ')"
+            exit 1
           }
 
       - name: Sign Mac executable
@@ -295,6 +322,24 @@ jobs:
         run: |
           Compress-Archive -Path "dist/NLP_Suite" -DestinationPath "${{ matrix.artifact }}.zip" -Force
           Write-Host "Created ${{ matrix.artifact }}.zip"
+
+      # GitHub refuses a release file of 2 GiB or more. Without this check both builds pass and the
+      # release job fails at the very end with an upload error that does not name the cause. v1.6.41's
+      # zips were 1.61 GB (Windows) and 1.40 GB (Mac). Warn from 1.8 GiB so there is time to act.
+      - name: Check the zip fits GitHub's 2 GiB release limit
+        shell: bash
+        run: |
+          ZIP="${{ matrix.artifact }}.zip"
+          SIZE=$(wc -c < "$ZIP" | tr -d ' ')
+          LIMIT=2147483648      # 2 GiB
+          WARN=1932735283       # 1.8 GiB
+          echo "$ZIP: $SIZE bytes ($((SIZE / 1048576)) MiB); limit $((LIMIT / 1048576)) MiB"
+          if [ "$SIZE" -ge "$LIMIT" ]; then
+            echo "::error::$ZIP is $((SIZE / 1048576)) MiB; GitHub does not accept a release file of 2048 MiB or more. Shrink the build (docs/future-work.md section 2) before tagging."
+            exit 1
+          elif [ "$SIZE" -ge "$WARN" ]; then
+            echo "::warning::$ZIP is $((SIZE / 1048576)) MiB, close to GitHub's 2048 MiB release-file limit."
+          fi
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
