@@ -39,8 +39,11 @@ spacytextblob
 spacy-langdetect
 
 # Transformers / deep learning (all on torch)
-# transformers pinned <5: transformers 5.x breaks bert-extractive-summarizer 0.10.1 (Evan's testing).
-transformers==4.41.2
+# transformers pinned <4.52: bert-extractive-summarizer 0.10.1 imports TransfoXLModel, which 4.52 removed, and
+# BERT_util imports the summarizer at module level (every BERT GUI would fail to open). 4.51.3 is the newest that
+# keeps it, and fixes 7 of the 18 advisories open against 4.41.2 (fixed in 4.48, 4.50, 4.51). The rest need
+# 4.53 or 5.x, after the summarizer is replaced (docs/future-work.md 3.2).
+transformers==4.51.3
 sentence-transformers
 bert-extractive-summarizer
 # TensorFlow (tensorflow, tensorflow-hub, tf-keras, h5py) is not installed: nothing imports it. transformers,
