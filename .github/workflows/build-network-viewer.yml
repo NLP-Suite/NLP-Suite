@@ -23,12 +23,12 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           ref: roberto
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -42,7 +42,7 @@ jobs:
         run: python -m PyInstaller NetworkGraphViewer.spec --noconfirm
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.artifact }}
           path: dist/NetworkGraphViewer/
@@ -57,7 +57,7 @@ jobs:
 
     steps:
       - name: Download all artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
 
       - name: Zip artifacts
         run: |
@@ -65,7 +65,7 @@ jobs:
           cd NetworkGraphViewer-mac-arm64 && zip -r ../NetworkGraphViewer-mac-arm64.zip . && cd ..
 
       - name: Create release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3   # v3: Node 24 (v1 ran on Node 16, v2 on Node 20)
         with:
           files: |
             NetworkGraphViewer-windows-x64.zip

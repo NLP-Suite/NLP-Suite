@@ -36,7 +36,7 @@ jobs:
       # anything sitting on roberto shipped to external users on the next tag, with no promotion step.
       # The release job below already checks out the tag, so the two now agree.
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       # A v* tag MUST ship a matching lib/release_version.txt. The app's exit-time check compares the
       # INSTALLED file against the copy on current-stable, so when the two drift the check silently lies:
@@ -76,7 +76,7 @@ jobs:
           echo "OK: the top CHANGELOG.md section is ${GITHUB_REF_NAME}."
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -427,7 +427,7 @@ jobs:
           fi
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.artifact }}
           path: ${{ matrix.artifact }}.zip
@@ -447,10 +447,10 @@ jobs:
       # which would delete the downloaded artifacts if it ran afterwards. It also gives the
       # release step access to docs/release_body_header.md and CHANGELOG.md.
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Download all artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
 
       # Assemble the release body: fixed download instructions (docs/release_body_header.md)
       # followed by the newest CHANGELOG.md section as the human-readable "What's new".
@@ -471,7 +471,7 @@ jobs:
       # download-artifact@v4 places each into a directory named after the artifact, so attach
       # those zips directly - do NOT re-zip (re-zipping on Linux would strip the Mac exec bits).
       - name: Create Release
-        uses: softprops/action-gh-release@v2   # v1 ran on Node 16, which GitHub no longer supports
+        uses: softprops/action-gh-release@v3   # v3: Node 24 (v1 ran on Node 16, v2 on Node 20)
         with:
           name: ${{ github.ref_name }} (${{ steps.notes.outputs.date }})
           body_path: RELEASE_BODY.md
