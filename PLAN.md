@@ -9,7 +9,7 @@ What to do before tagging the next release, and what comes after it. The finding
 1.6.42 is the first release that students' copies install by themselves (1.6.41 → 1.6.42), so the updater gets its first real, full-size run. Its scope is closed: what is merged into `roberto` (#1704, #1705, #1711, #1712, #1714, #1715, #1716) is what ships. CHANGELOG's Unreleased section covers all of it.
 
 1. **#1705 on Windows.** Open the menu with an empty `config/`, and open each Setup GUI. Most of the start-up popups #1705 changed were Windows text, and it has only been checked on a Mac.
-2. **#1704 where it was not checked:** the first Stanza download on a machine with no model, and Windows.
+2. **#1704 on Windows:** the first Stanza download on a machine with no model. On a Mac it crashed the release candidate of 17 Nov (#1725, fixed); rerun it there on the rebuilt candidate.
 3. **Build the release candidate and do the usual checks** ([future-work §14](docs/future-work.md#14-requirements-release-checks-and-settled-decisions)): unzip both artifacts, confirm `Launch NLP Suite (Mac).command` and the Windows entry point, confirm the app imports, and confirm `lib/release_manifest.tsv` is in both zips.
 4. **First run on the release-candidate zip, with no `config/`:** Shape of Stories opens (#1711), Sample corpus opens (#1714), and the first RUN creates `NLP_output` (#1716).
 5. **Release:** retitle CHANGELOG's Unreleased section to v1.6.42; Roberto promotes `roberto` → `current-stable` and sets `lib/release_version.txt` to 1.6.42, which must equal the tag; then the tag.
