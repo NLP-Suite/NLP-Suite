@@ -47,6 +47,7 @@ A Tkinter-GUI toolkit for text analysis in the social sciences and humanities. A
 - `pytest tests/`: `tests/conftest.py` puts `MagicMock` stubs for `GUI_util`, `IO_libraries_util` and the heavy NLP libs into `sys.modules` before import, so production code needs no changes. Stdlib stays real. `tests/_real_pandas.py` gives a test real pandas when it needs it.
 - `python tests/gui_smoke.py`: imports every `src/*_main.py` in a subprocess under fake Tk to catch construction crashes, plus GOLDEN widget-label checks that catch a silently dropped row. GUIs in `KNOWN_SKIP` must be checked by launching.
 - `python tests/gui_layout_gate.py`: builds each GUI under real Tk and fails on widgets that overflow the window or overlap. It measures this machine's Windows fonts only; Mac needs a person to look.
+- `python tests/bundle_gate.py`: checks a built, unzipped zip with the bundle's own Python: every third-party import in `src/` (also inside functions), every `*_main.py` built under real Tk with windows hidden and launches recorded, and the frozen menu (run, and its archive against what the menu can reach). `snapshot` the last release and the candidate, then `compare`; it fails on anything the candidate lost. Run it before tagging, and on any change to `NLP_Suite.spec` or the requirements.
 - The two GUI checks need the Anaconda NLP env with `Library/bin` on PATH.
 - CI (`.github/workflows/tests.yml`): pytest on Ubuntu, Python 3.10, on push/PR to `roberto`.
 
