@@ -42,6 +42,7 @@ import IO_csv_util
 # from tenacity import retry_unless_exception_type
 import IO_files_util
 import IO_internet_util
+import NLP_package_languages_util
 import IO_user_interface_util
 import parsers_annotators_visualization_util
 import Stanford_CoreNLP_clause_util
@@ -61,48 +62,8 @@ DEFAULT_MODEL_DIR = stanza.resources.common.DEFAULT_MODEL_DIR
 # language_list.append('English')
 # LIST OF LANGUAGES AVAILABLE IN STANZA
 def list_all_languages():
-    if not os.path.isfile(os.path.join(DEFAULT_MODEL_DIR, "resources.json")):
-        return []  # not downloaded yet: no internet on a new install (issue #1728)
-    with open(os.path.join(DEFAULT_MODEL_DIR, "resources.json")) as fin:
-        resources = json.load(fin)
-    # languages = [lang for lang in resources if 'alias' not in resources[lang]]
-    # languages = sorted(languages)
-    # Extracting language codes and corresponding names from resources.json
-    languages_from_resources = []
-    for key, value in resources.items():
-        if isinstance(value, dict) and "lang_name" in value:
-            language_name = value["lang_name"]
-            # reverse the names to have them in proper sort order
-            # should do the same for Greek, Hebrew, and other languages
-            # CHINESE
-            if "_Chinese" in language_name:
-                # reconstruct name from, e.g., Simplified_Chinese to Chinese_Simplified so that all Chinese are sorted together
-                language_name = value["lang_name"].split("_")[-1] + "_" + value["lang_name"].split("_")[0]
-            # Chinese_Traditional has very limited annotators; might as well remove it not to confuse the user
-            # FRENCH
-            if "_French" in language_name:
-                # reconstruct name from, so that all French are sorted together
-                language_name = value["lang_name"].split("_")[-1] + "_" + value["lang_name"].split("_")[0]
-            # GREEK
-            if "_Greek" in language_name:
-                # reconstruct name from, so that all Greek are sorted together
-                language_name = value["lang_name"].split("_")[-1] + "_" + value["lang_name"].split("_")[0]
-            # HEBREW
-            if "_Hebrew" in language_name:
-                # reconstruct name from, so that all Hebrew are sorted together
-                language_name = value["lang_name"].split("_")[-1] + "_" + value["lang_name"].split("_")[0]
-            # RUSSIAN
-            if "_Russian" in language_name:
-                # reconstruct name from, so that all Hebrew are sorted together
-                language_name = value["lang_name"].split("_")[-1] + "_" + value["lang_name"].split("_")[0]
-            # do not process Chinese_Traditional since it can handle very few annotators
-            if "Chinese_Traditional" not in language_name:
-                languages_from_resources.append(language_name)
-
-    languages_from_resources.sort()
-    # langs_full = sorted([dict(constants_util.languages)[x] for x in languages])
-    # print(langs_full)
-    return languages_from_resources
+    # lang_dict comes from resources.json, fetched at import when missing (issue #1728)
+    return NLP_package_languages_util.stanza_display_names(lang_dict.values())
 
 
 def open_Stanza_website(message, lang_list):
@@ -1982,72 +1943,9 @@ if not lang_dict:
     )
 
 # Available Stanza models for languages
-available_ud = [
-    "af",
-    "grc",
-    "ar",
-    "hy",
-    "eu",
-    "be",
-    "bg",
-    "ca",
-    "zh",  # has an alias called zh-hans
-    "zh-hans",  # has an alias called zh-hans
-    # "zh-hant", traditional_chinese has hardly any processes
-    "lzh",
-    "cop",
-    "hr",
-    "cs",
-    "da",
-    "nl",
-    "en",
-    "et",
-    "fi",
-    "fr",
-    "gl",
-    "de",
-    "got",
-    "el",
-    "he",
-    "hi",
-    "hu",
-    "id",
-    "ga",
-    "it",
-    "ja",
-    "ko",
-    "la",
-    "lv",
-    "lt",
-    "mt",
-    "mr",
-    "sme",
-    "no",
-    "nb",
-    "nn",
-    "cu",
-    "fro",
-    "orv",
-    "fa",
-    "pl",
-    "pt",
-    "ro",
-    "ru",
-    "gd",
-    "sr",
-    "sk",
-    "sl",
-    "es",
-    "sv",
-    "ta",
-    "te",
-    "tr",
-    "uk",
-    "ur",
-    "ug",
-    "vi",
-    "wo",
-]
+# The language lists are plain data in NLP_package_languages_util, so that the menu's language advisor can read
+# them without importing Stanza (issue #1731).
+from NLP_package_languages_util import available_NER, available_sentiment, available_ud  # noqa: E402, F401
 
 available_mwt = [
     "ar",
@@ -2072,7 +1970,6 @@ available_mwt = [
     "uk",
     "wo",
 ]
-available_sentiment = ["de", "en", "zh", "zh-hans"]
 
 # Languages with constituency parsing models in Stanza
 # https://stanfordnlp.github.io/stanza/constituency.html
@@ -2092,32 +1989,6 @@ available_constituency = [
     "zh-hans",
 ]
 
-available_NER = [
-    "af",
-    "ar",
-    "bg",
-    "zh",
-    "zh-hans",
-    "da",
-    "nl",
-    "en",
-    "fi",
-    "fr",
-    "de",
-    "hu",
-    "it",
-    "ja",
-    "my",
-    "nb",
-    "nn",
-    "fa",
-    "ru",
-    "es",
-    "sv",
-    "tr",
-    "uk",
-    "vi",
-]
 
 NER_dict = {
     "fr": ["LOC", "MISC", "ORG", "PER"],

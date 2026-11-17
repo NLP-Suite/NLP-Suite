@@ -36,6 +36,7 @@ import GUI_util
 import IO_csv_util
 import IO_files_util
 import IO_user_interface_util
+import NLP_package_languages_util
 import parsers_annotators_visualization_util
 import reminders_util
 
@@ -44,10 +45,7 @@ warnings.simplefilter(action="ignore", category=FutureWarning)
 
 # list available languages of spaCy
 def list_all_languages():
-    # listed at the bottom of this script
-    languages = sorted(spacy_available_lang)
-    langs_full = sorted([dict(constants_util.languages)[x] for x in languages])
-    return langs_full
+    return NLP_package_languages_util.spacy_language_names()
 
 
 def open_spaCy_website(message, lang_list):
@@ -757,32 +755,8 @@ def create_output_directory(inputFilename, inputDir, outputDir, annotator):
 # Python dictionary of language (values) and their acronyms (keys)
 lang_dict = dict(constants_util.languages)
 
-spacy_available_lang = [
-    "xx",  # mult-language has different rest of model name
-    "ca",
-    "zh",
-    "hr",
-    "da",
-    "nl",
-    "en",
-    "fi",
-    "fr",
-    "de",
-    "el",
-    "it",
-    "ja",
-    "ko",
-    "lt",
-    "mk",
-    "nb",
-    "pl",
-    "pt",
-    "ro",
-    "ru",
-    "es",
-    "sv",
-    "uk",
-]
+# Plain data in NLP_package_languages_util, so that the menu's language advisor can read it without spaCy (#1731).
+from NLP_package_languages_util import spacy_available_lang  # noqa: E402, F401
 
 NER_dict = [
     "PERSON",  # - People, including fictional.

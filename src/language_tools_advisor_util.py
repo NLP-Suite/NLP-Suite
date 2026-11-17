@@ -19,6 +19,7 @@ import os
 import webbrowser
 
 import constants_util
+import NLP_package_languages_util
 
 # CoreNLP parser languages -- keep in sync with NLP_setup_package_language_main.get_available_languages()
 _CORENLP_LANGUAGES = ["Arabic", "Chinese", "English", "German", "Hungarian", "Italian", "Spanish"]
@@ -33,49 +34,48 @@ def _name_to_code():
 
 
 def _stanza_languages():
-    try:
-        import Stanza_util
+    """(Stanza's language names, problem): the problem says why the list could not be read, or is ''.
 
-        return list(Stanza_util.list_all_languages() or [])
-    except Exception:
-        return []
+    The list is in Stanza's resources.json, which only Stanza knows where to find; the menu runs this module
+    in the bundled python-env for that (issue #1731). It used to be read inside the frozen menu, which has no
+    Stanza, and the error was swallowed: every language came out as unsupported."""
+    try:
+        import IO_internet_util
+
+        names, _codes = IO_internet_util.stanza_languages()
+    except Exception as e:
+        return [], "Stanza could not be loaded (" + type(e).__name__ + ": " + str(e) + ")"
+    if not names:
+        return [], "Stanza's list of languages could not be downloaded (check the internet connection)"
+    return NLP_package_languages_util.stanza_display_names(names.values()), ""
 
 
 def _spacy_languages():
-    try:
-        import spaCy_util
-
-        return list(spaCy_util.list_all_languages() or [])
-    except Exception:
-        return []
+    return NLP_package_languages_util.spacy_language_names()
 
 
 def _stanza_has(code, attr):
-    """Is `code` in Stanza_util.<attr> (available_ud / available_NER / available_sentiment)?"""
-    try:
-        import Stanza_util
-
-        return code in (getattr(Stanza_util, attr, []) or [])
-    except Exception:
-        return False
+    """Is `code` in Stanza's <attr> list (available_ud / available_NER / available_sentiment)?"""
+    return code in getattr(NLP_package_languages_util, attr)
 
 
 def assess_language(language):
     """Return an ordered list of (section, [(capability, available_bool, note)]) for `language`."""
     lang = str(language or "").strip()
     code = _name_to_code().get(lang.lower(), "")
-    stanza_langs = _stanza_languages()
+    stanza_langs, stanza_problem = _stanza_languages()
     spacy_langs = _spacy_languages()
-
-    in_corenlp = lang in _CORENLP_LANGUAGES
-    in_stanza = lang in stanza_langs
-    in_spacy = lang in spacy_langs
-    is_english = lang.lower() == "english"
 
     # per-capability Stanza support (by code); spaCy ships parser + NER for its listed languages
     st_ud = _stanza_has(code, "available_ud")
     st_ner = _stanza_has(code, "available_NER")
     st_senti = _stanza_has(code, "available_sentiment")
+
+    in_corenlp = lang in _CORENLP_LANGUAGES
+    # without Stanza's own list, a language with a Stanza parser, NER or sentiment model is still a Stanza language
+    in_stanza = lang in stanza_langs or st_ud or st_ner or st_senti
+    in_spacy = lang in spacy_langs
+    is_english = lang.lower() == "english"
 
     def _pkgs(*flags_names):
         got = [n for f, n in flags_names if f]
@@ -218,7 +218,9 @@ def assess_language(language):
         )
     )
 
-    return sections, dict(code=code, in_corenlp=in_corenlp, in_stanza=in_stanza, in_spacy=in_spacy)
+    return sections, dict(
+        code=code, in_corenlp=in_corenlp, in_stanza=in_stanza, in_spacy=in_spacy, stanza_problem=stanza_problem
+    )
 
 
 def _row(cap, ok, note):
@@ -230,7 +232,7 @@ def _row(cap, ok, note):
 
 def build_report(language, outputDir):
     """Write the HTML advisor report for `language` into outputDir; return the file path."""
-    sections, _info = assess_language(language)
+    sections, info = assess_language(language)
     lang_disp = _html.escape(str(language or "(not set)"))
     parts = [
         "<!DOCTYPE html><html><head><meta charset='utf-8'>",
@@ -253,6 +255,12 @@ def build_report(language, outputDir):
         "(Stanford CoreNLP, Stanza, spaCy). Change your corpus language in "
         "<b>Setup ▸ NLP package &amp; language</b>.</p>",
     ]
+    if info["stanza_problem"]:
+        parts.append(
+            "<p class='note'>%s. Stanza is shown only for its parser, NER and sentiment models, which the NLP "
+            "Suite lists itself; open this report again once Stanza's list is available.</p>"
+            % _html.escape(info["stanza_problem"])
+        )
     for title, rows in sections:
         parts.append("<h2>%s</h2><table>" % _html.escape(title))
         parts.extend(_row(c, ok, note) for c, ok, note in rows)
@@ -295,13 +303,31 @@ def run(outputDir="", language=""):
     try:
         path = build_report(language, outputDir)
     except Exception as e:
-        print("language_tools_advisor: could not build the report (%s)" % e)
+        _error("The report of the tools available for your language could not be written.\n\n" + _detail(e))
         return ""
+    url = "file:///" + os.path.abspath(path).replace("\\", "/")
     try:
-        os.startfile(os.path.abspath(path))  # Windows
-    except Exception:
-        try:
-            webbrowser.open("file:///" + os.path.abspath(path).replace("\\", "/"))
-        except Exception:
-            pass
+        opened = webbrowser.open(url)
+    except Exception:  # reported just below, with the file to open by hand
+        opened = False
+    if not opened:
+        _error("The report was written, but no web browser could be opened. Open this file yourself:\n\n" + path)
     return path
+
+
+def _detail(e):
+    return type(e).__name__ + ": " + str(e)
+
+
+def _error(message):
+    import tkinter.messagebox as mb
+
+    mb.showerror(title="Which tools work with my corpus language?", message=message)
+
+
+if __name__ == "__main__":
+    # The menu runs this in the bundled python-env (run_script_util.run_script_detached), where Stanza loads
+    # (issue #1731). Argument: the output folder.
+    import sys
+
+    run(outputDir=sys.argv[1] if len(sys.argv) > 1 else "")
