@@ -1818,9 +1818,14 @@ def check_NER(first_time=False):
     NER_available = True
     if package_var.get() == "Stanza":
         short_lang_list, long_lang_list = Stanza_util.get_language_list([language])
-        short_lang = short_lang_list[0]
-        long_lang = long_lang_list[0]
-        NER_available = Stanza_util.check_Stanza_annotator_availability(["NER"], short_lang, long_lang, silent=True)
+        if short_lang_list:
+            NER_available = Stanza_util.check_Stanza_annotator_availability(
+                ["NER"], short_lang_list[0], long_lang_list[0], silent=True
+            )
+        else:
+            # a language Stanza does not have, or its language list could not be downloaded (a new install
+            # without internet): the window used to crash as it opened. RUN says which (Stanza_annotate).
+            NER_available = False
     # in spaCy all annotators ara always available
     # if package_var.get() == 'spaCy':
     #     import spaCy_util

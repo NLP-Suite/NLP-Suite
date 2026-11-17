@@ -40,7 +40,6 @@ import config_util
 import constants_util
 import GUI_IO_util
 import IO_files_util
-import language_tools_advisor_util
 import NLP_menu_tools_util
 import NLP_setup_self_update_util
 import reminders_util
@@ -704,7 +703,8 @@ ctk.CTkButton(
 _outline_button(
     start_frame,
     "Which tools work with my corpus language?",
-    lambda: language_tools_advisor_util.run(outputDir=GUI_util.output_dir_path.get()),
+    # in the bundled python-env, where Stanza loads; the frozen menu has no Stanza (issue #1731)
+    lambda: run_script_util.run_script_detached("language_tools_advisor_util.py", GUI_util.output_dir_path.get()),
 ).pack(fill="x")
 
 # --- Tool browser (right) -----------------------------------------------------------------------------------
