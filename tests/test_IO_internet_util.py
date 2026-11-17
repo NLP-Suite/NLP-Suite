@@ -253,6 +253,56 @@ class TestRunWithProgress:
         raise AssertionError("the error was swallowed")
 
 
+class _FakeTk:
+    """Stands in for tkinter's Toplevel and Label, recording each call on the progress window in order."""
+
+    def __init__(self, events):
+        self.events = events
+        outer = self
+
+        class _Widget:
+            def __init__(self, *a, **k):
+                pass
+
+            def __getattr__(self, name):
+                return lambda *a, **k: outer.events.append(name)
+
+        class _Toplevel(_Widget):
+            def __init__(self, *a, **k):
+                outer.events.append("Toplevel")
+
+        self.Toplevel = _Toplevel
+        self.Label = _Widget
+
+
+class TestProgressWindowOnMac:
+    """Issue #1725: on a Mac, raising the progress window while the Hugging Face download was opening its
+    connections crashed the whole process (NSInvalidArgumentException in Tk's raise)."""
+
+    def _run(self, monkeypatch):
+        import tkinter
+
+        events = []
+        fake = _FakeTk(events)
+        monkeypatch.setattr(tkinter, "Toplevel", fake.Toplevel)
+        monkeypatch.setattr(tkinter, "Label", fake.Label)
+        net.run_with_progress(lambda: events.append("work starts"), window=object(), poll_seconds=0.01)
+        return events
+
+    def test_the_window_is_not_raised_or_given_focus(self, monkeypatch):
+        events = self._run(monkeypatch)
+        assert "lift" not in events and "focus_force" not in events
+
+    def test_the_download_starts_only_after_the_window_is_drawn(self, monkeypatch):
+        events = self._run(monkeypatch)
+        assert "update" in events and "work starts" in events
+        assert events.index("update") < events.index("work starts")
+
+    def test_the_window_still_blocks_a_second_run_and_closes(self, monkeypatch):
+        events = self._run(monkeypatch)
+        assert "grab_set" in events and events[-1] == "destroy"
+
+
 class TestDownloadMessage:
     def test_gives_the_real_size_and_says_it_stays_up(self):
         msg = net.stanza_download_message("en")

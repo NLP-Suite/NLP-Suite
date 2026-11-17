@@ -226,20 +226,22 @@ def run_with_progress(work, window=None, *, title="Please wait", message="", wat
             outcome["error"] = e
 
     thread = threading.Thread(target=target, daemon=True)
-    thread.start()
     box = status = None
     if window is not None:
         box = tk.Toplevel(window)
         box.title(title)
         box.resizable(False, False)
-        box.transient(window)
+        box.transient(window)  # stays in front of the tool's window
         box.protocol("WM_DELETE_WINDOW", lambda: None)  # it closes by itself when the work ends
         tk.Label(box, text=message, justify=tk.LEFT, wraplength=440, padx=20, pady=12).pack()
         status = tk.Label(box, text="", padx=20, pady=8)
         status.pack()
         box.grab_set()  # no second RUN while the first one waits for its model
-        box.lift()  # in front, not hidden behind another app's window
-        box.focus_force()
+        # No lift() or focus_force(), and the work starts only once the window is drawn: on a Mac, raising
+        # the window while the Hugging Face download opened its connections crashed the whole process
+        # (NSInvalidArgumentException in Tk's raise, issue #1725).
+        box.update()
+    thread.start()
     try:
         while thread.is_alive():
             if box is not None:
