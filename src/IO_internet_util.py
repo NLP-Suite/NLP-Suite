@@ -128,6 +128,34 @@ def stanza_resources_dir():
     return DEFAULT_MODEL_DIR
 
 
+def _fetch_stanza_resources_json(model_dir):
+    from stanza.resources.common import download_resources_json
+
+    download_resources_json(model_dir=model_dir)
+
+
+def stanza_languages(model_dir=None, fetch=None):
+    """({code: language name}, {language name: code}) from Stanza's resources.json.
+
+    On a new install the file is not there yet (the model itself is downloaded only when a tool runs), so it
+    is fetched first: about 0.5 MB, not a model. If it cannot be fetched or read, both are empty and the
+    caller carries on: Stanza_util used to close every GUI that imported it instead (issue #1728)."""
+    import json
+    import os
+
+    model_dir = model_dir or stanza_resources_dir()
+    path = os.path.join(model_dir, "resources.json")
+    try:
+        if not os.path.isfile(path):
+            (fetch or _fetch_stanza_resources_json)(model_dir)
+        with open(path, encoding="utf-8") as f:
+            resources = json.load(f)
+    except Exception:  # no internet, a blocked site, a damaged file: the caller tells the user
+        return {}, {}
+    names = {k: v["lang_name"] for k, v in resources.items() if isinstance(v, dict) and "lang_name" in v}
+    return names, {name: code for code, name in names.items()}
+
+
 def stanza_model_present(lang="en", resources_dir=None):
     """True when the Stanza model for `lang` is already unpacked on disk.
 

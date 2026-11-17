@@ -14,6 +14,8 @@ Checked on the 17 Nov release candidate (Mac, macOS 26.5.2): both zips hold the 
 2. **Update a real 1.6.41 install** on Windows and on a Mac: close it, accept the update, and check that config and user files survive and that `NLP_Suite_previous` is gone after the next start. Read `%TEMP%\NLP_Suite_update.log` (Mac: the log named in the message). This is the first full-size run; the 9 Nov test used a 26 MB stand-in release on localhost.
 3. **Not yet tested by hand:** a source checkout on `current-stable` updating with git; opening and closing a GUI offline (no popups expected).
 
+**Found after the tag (#1728):** on a new install, the 13 GUIs that import `Stanza_util` closed as they opened (Shape of Stories among them; HW 5 is due 6 Dec). Fixed on `roberto`; proposed to ship alone as 1.6.43, with bundle size moving to 1.6.44.
+
 Ask students who report update problems to send that log to coralynn.yang@emory.edu.
 
 ## Future work

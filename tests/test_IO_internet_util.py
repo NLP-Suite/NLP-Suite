@@ -142,6 +142,67 @@ class TestStanzaModelPresent:
         assert net.stanza_model_present("en") is True
 
 
+_RESOURCES = {
+    "en": {"lang_name": "English", "default_processors": {}},
+    "it": {"lang_name": "Italian"},
+    "english": {"alias": "en"},
+    "url": "https://example.org",
+}
+
+
+def _write_resources(folder):
+    import json
+
+    with open(os.path.join(folder, "resources.json"), "w") as f:
+        json.dump(_RESOURCES, f)
+
+
+def _no_internet(model_dir):
+    raise ConnectionError("getaddrinfo failed")
+
+
+class TestStanzaLanguages:
+    """Issue #1728: on a new install resources.json is not there yet, and Stanza_util used to close every
+    GUI that imported it (Shape of Stories, Style analysis, SVO, ...) instead of fetching it."""
+
+    def test_read_from_resources_json(self, tmp_path):
+        _write_resources(str(tmp_path))
+        names, codes = net.stanza_languages(str(tmp_path), fetch=_no_internet)
+        assert names == {"en": "English", "it": "Italian"}
+        assert codes == {"English": "en", "Italian": "it"}
+
+    def test_a_missing_file_is_fetched_first(self, tmp_path):
+        fetched = []
+
+        def fetch(model_dir):
+            fetched.append(model_dir)
+            _write_resources(model_dir)
+
+        names, _ = net.stanza_languages(str(tmp_path), fetch=fetch)
+        assert fetched == [str(tmp_path)] and names["en"] == "English"
+
+    def test_not_fetched_when_present(self, tmp_path):
+        _write_resources(str(tmp_path))
+        net.stanza_languages(str(tmp_path), fetch=_no_internet)  # _no_internet would raise if called
+
+    def test_no_internet_gives_empty_lists_not_an_exit(self, tmp_path):
+        assert net.stanza_languages(str(tmp_path), fetch=_no_internet) == ({}, {})
+
+    def test_a_damaged_file_gives_empty_lists(self, tmp_path):
+        (tmp_path / "resources.json").write_text("{not json")
+        assert net.stanza_languages(str(tmp_path), fetch=_no_internet) == ({}, {})
+
+
+class TestStanzaUtilDoesNotExitAtImport:
+    def test_no_sys_exit_at_module_level_for_resources_json(self):
+        # the module-level guard that closed the GUI; sys.exit() inside functions is not this check
+        path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "src", "Stanza_util.py")
+        with open(path, encoding="utf-8") as f:
+            tree = ast.parse(f.read())
+        top_level_ifs = [n for n in tree.body if isinstance(n, ast.If) and "resources_path" in ast.unparse(n.test)]
+        assert top_level_ifs == []
+
+
 class TestEnsureStanzaModel:
     def test_no_download_when_the_model_is_on_disk(self, tmp_path):
         calls = []

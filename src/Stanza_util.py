@@ -61,6 +61,8 @@ DEFAULT_MODEL_DIR = stanza.resources.common.DEFAULT_MODEL_DIR
 # language_list.append('English')
 # LIST OF LANGUAGES AVAILABLE IN STANZA
 def list_all_languages():
+    if not os.path.isfile(os.path.join(DEFAULT_MODEL_DIR, "resources.json")):
+        return []  # not downloaded yet: no internet on a new install (issue #1728)
     with open(os.path.join(DEFAULT_MODEL_DIR, "resources.json")) as fin:
         resources = json.load(fin)
     # languages = [lang for lang in resources if 'alias' not in resources[lang]]
@@ -1963,30 +1965,21 @@ def create_output_directory(inputFilename, inputDir, outputDir, annotator):
     return outputDir
 
 
-# Python dictionary of language (values) and their acronyms (keys)
-lang_dict = {}
-lang_dict_rev = {}
-# lang_dict_rev will use alias, instead of lang_name, as found in resources.json
-# e.g., stanza.download(Stanza_util.lang_dict_rev['en'])
-import stanza.resources.common
-
-EFAULT_MODEL_DIR = stanza.resources.common.DEFAULT_MODEL_DIR
-resources_path = os.path.join(DEFAULT_MODEL_DIR, "resources.json")
-if not os.path.exists(resources_path):
+# Python dictionary of language (values) and their acronyms (keys), and the reverse
+# e.g., stanza.download(Stanza_util.lang_dict_rev['English'])
+# On a new install resources.json is not there yet: stanza_languages fetches it (about 0.5 MB, not a model).
+# Without internet the GUI still opens, with no Stanza language list; it used to close instead (issue #1728).
+lang_dict, lang_dict_rev = IO_internet_util.stanza_languages(DEFAULT_MODEL_DIR)
+if not lang_dict:
     mb.showwarning(
-        title="Warning",
-        message="The Stanza language models could not be downloaded. The file-path\n\n"
-        + resources_path
-        + "\n\ncould not be found.\n\nStanza is part of the NLP Suite, but its language models are downloaded the first time they are used. Please, make sure you are connected to the internet and try again.",
+        title="Stanza language list not available",
+        message="The list of Stanza languages could not be downloaded to\n\n"
+        + DEFAULT_MODEL_DIR
+        + "\n\nThe NLP Suite downloads it, and the Stanza language models, the first time they are needed. "
+        "Please make sure you are connected to the internet and open this tool again.\n\n"
+        "A VPN, a proxy or an institutional firewall may block the download: the list comes from "
+        "raw.githubusercontent.com.",
     )
-    sys.exit()
-
-with open(os.path.join(DEFAULT_MODEL_DIR, "resources.json")) as fin:
-    resources = json.load(fin)
-for key, value in resources.items():
-    if isinstance(value, dict) and "lang_name" in value:
-        lang_dict[key] = value["lang_name"]
-        lang_dict_rev[value["lang_name"]] = key
 
 # Available Stanza models for languages
 available_ud = [
