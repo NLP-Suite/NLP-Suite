@@ -2,21 +2,19 @@
 
 What to do before tagging the next release, and what comes after it. The findings behind each future item (evidence, line numbers, proposed fixes) are in [docs/future-work.md](docs/future-work.md). How to fix an issue is in [CLAUDE.md](CLAUDE.md#fixing-an-issue). What has shipped is in [CHANGELOG.md](CHANGELOG.md).
 
-**Last updated:** 11 Nov 2026. v1.6.41 released 10 Nov; 1.6.42 to be tagged the week of 16 Nov.
+**Last updated:** 17 Nov 2026. v1.6.42 released 17 Nov. Releases are now Cora's (handed over by Roberto).
 
-## Before tagging 1.6.42
+## After the 1.6.42 tag
 
-1.6.42 is the first release that students' copies install by themselves (1.6.41 → 1.6.42), so the updater gets its first real, full-size run. Its scope is closed: what is merged into `roberto` (#1704, #1705, #1711, #1712, #1714, #1715, #1716) is what ships. CHANGELOG's Unreleased section covers all of it.
+1.6.42 is the first release that students' copies install by themselves (1.6.41 → 1.6.42), so the updater gets its first real, full-size run. It ships #1704, #1705, #1711, #1712, #1714, #1715, #1716 and #1726.
 
-1. **#1705 on Windows.** Open the menu with an empty `config/`, and open each Setup GUI. Most of the start-up popups #1705 changed were Windows text, and it has only been checked on a Mac.
-2. **#1704 on Windows:** the first Stanza download on a machine with no model. On a Mac it crashed the release candidate of 17 Nov (#1725, fixed); rerun it there on the rebuilt candidate.
-3. **Build the release candidate and do the usual checks** ([future-work §14](docs/future-work.md#14-requirements-release-checks-and-settled-decisions)): unzip both artifacts, confirm `Launch NLP Suite (Mac).command` and the Windows entry point, confirm the app imports, and confirm `lib/release_manifest.tsv` is in both zips.
-4. **First run on the release-candidate zip, with no `config/`:** Shape of Stories opens (#1711), Sample corpus opens (#1714), and the first RUN creates `NLP_output` (#1716).
-5. **Release:** retitle CHANGELOG's Unreleased section to v1.6.42; Roberto promotes `roberto` → `current-stable` and sets `lib/release_version.txt` to 1.6.42, which must equal the tag; then the tag.
-6. **Right after the zips are up, update a real 1.6.41 install** on Windows and on a Mac: close it, accept the update, and check that config and user files survive and that `NLP_Suite_previous` is gone after the next start. Read `%TEMP%\NLP_Suite_update.log` (Mac: the log named in the message). This is the first full-size run; the 9 Nov test used a 26 MB stand-in release on localhost.
-7. **Not yet tested by hand:** a source checkout on `current-stable` updating with git; opening and closing a GUI offline (no popups expected).
+Checked on the 17 Nov release candidate (Mac, macOS 26.5.2): both zips hold the entry point, `lib/release_manifest.tsv` and the default `config/`; the app opens; Shape of Stories, Sample corpus and Wordclouds open; the first RUN creates `NLP_output`; the first Stanza download works (it crashed the first candidate: #1725, fixed by #1726).
 
-After the tag, ask students who report update problems to send that log to coralynn.yang@emory.edu.
+1. **Not checked on Windows before the tag:** #1705's start-up popups (menu with an empty `config/`, each Setup GUI) and #1704's first Stanza download. Do both on the released Windows zip.
+2. **Update a real 1.6.41 install** on Windows and on a Mac: close it, accept the update, and check that config and user files survive and that `NLP_Suite_previous` is gone after the next start. Read `%TEMP%\NLP_Suite_update.log` (Mac: the log named in the message). This is the first full-size run; the 9 Nov test used a 26 MB stand-in release on localhost.
+3. **Not yet tested by hand:** a source checkout on `current-stable` updating with git; opening and closing a GUI offline (no popups expected).
+
+Ask students who report update problems to send that log to coralynn.yang@emory.edu.
 
 ## Future work
 
