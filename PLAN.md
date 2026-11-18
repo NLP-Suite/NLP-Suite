@@ -24,7 +24,7 @@ Details in [docs/future-work.md](docs/future-work.md); section numbers below ref
 
 **1.6.44 (planned): the HW 5 tools** (§4), issues #1718–#1724: Shape of Stories, NRC, SentiWordNet, spaCy sentiment, CoreNLP memory, vocabulary, language detection. QTM 446W's HW 5 is due Sun 6 Dec. #1722 and #1719 first.
 
-**1.6.45 (proposed): dead files and bundle size.** Both change what the build ships, so they go out together, after HW 5.
+**1.6.45 (proposed): dead files and bundle size.** Both change what the build ships, so they go out together, after HW 5. Most of it is already on `spike/1.6.43-bundle-size-rc` (13 Nov): TensorFlow and 14 unused requirements dropped, the spec trimmed to the menu, TIPS recompressed, the setup scripts deleted, transformers 4.51.3, and §6.3, §6.6 and §6.7; a CI build is 775 MB (Mac) and 863 MB (Windows). To ship it: rebase on `roberto` dropping `bea9d173` (#1733 merged the same copy), run `tests/bundle_gate.py` against 1.6.44, and rename the branch.
 - PR #1706 deletes the legacy setup scripts and unused files (§1.1). Rebase it on `roberto` first; it conflicts with #1705 in `README.txt` and `CLAUDE.md`. Deleting `src/requirements*.txt` also closes 108 of the 178 Dependabot alerts (§3.1).
 - Drop TensorFlow, which nothing imports (§2.2), then trim `NLP_Suite.spec` to what the menu needs (§2.1), and remove the requirements that nothing imports (§2.3).
 
@@ -40,4 +40,4 @@ Details in [docs/future-work.md](docs/future-work.md); section numbers below ref
 - The GitHub wiki: make `docs/` the source, then publish (§8).
 - UI overhaul (§7), as its own releases.
 - Tech debt in §12's order, and the missing chart regression tests (§12.6).
-- Stale remote branches (§13); deleting them is Roberto's call.
+- Stale remote branches (§13): delete Cora's merged ones; the others are Roberto's call.
