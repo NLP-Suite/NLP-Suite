@@ -1991,7 +1991,7 @@ def get_hover_over_info(package_display_area_value):
 
     hover_over_info = (
         "Select: "
-        "1. 'Setup NLP package and corpus language' to select NLP package (spaCy, CoreNLP, Stanza) and corpus language; "
+        "1. 'Setup NLP package (parsers & annotators) and corpus language' to select NLP package (spaCy, CoreNLP, Stanza) and corpus language; "
         + "  2. 'Setup external software' to download/install all external software.\n"
         + NLP_current_settings
     )
@@ -2653,7 +2653,7 @@ def GUI_bottom(
             False,
             90,
             GUI_IO_util.read_button_x_coordinate,
-            "Pressing the CLOSE button will trigger the automatic update of the NLP Suite pulling the latest release from GitHub. The new release will be displayed next time you open your local NLP Suite."
+            "When a new release of the NLP Suite is out, pressing the CLOSE button offers to download and install it. The new release is used the next time you open the NLP Suite."
             "\nYou must be connected to the internet for the auto update to work.",
         )
 

@@ -74,7 +74,7 @@ def save_agreement(*args):
             except:
                 mb.showwarning(
                     title="Permission error?",
-                    message="The command failed to create the Config directory.\n\nIf you look at your command line and you see a 'Permission error', it means that the folder where you installed your NLP Suite is Read only.\n\nYou can check whether that's the case by right clicking on the folder name, clicking on 'Properties'. Make sure that the 'Attributes' setting, the last one on the display window, is NOT set to 'Read only'. If so, click on the checkbox until the Read only is cleared, click on 'Apply' and then 'OK', exit the NLP Suite and try again.",
+                    message="The command failed to create the Config directory.\n\nIf you look at your command line and you see a 'Permission error', it means that the folder where you installed your NLP Suite is Read only.\n\nOn Windows, you can check whether that's the case by right clicking on the folder name, clicking on 'Properties'. Make sure that the 'Attributes' setting, the last one on the display window, is NOT set to 'Read only'. If so, click on the checkbox until the Read only is cleared, click on 'Apply' and then 'OK', exit the NLP Suite and try again.\n\nOn a Mac, select the folder in Finder, choose File > Get Info, and make sure that under 'Sharing & Permissions' you have 'Read & Write' access; then exit the NLP Suite and try again.",
                 )
                 return
         config_util.write_IO_config_file(

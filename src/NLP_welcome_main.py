@@ -313,7 +313,7 @@ def display_bottom_line_buttons():
     current_color_close = close_button.cget("foreground")  # not used since CLOSE is in black
 
     text_info_close = (
-        "Pressing the CLOSE button in any of the GUIs triggers the automatic update of the NLP Suite, pulling the latest release from GitHub.\nThe new release is displayed the next time you open your local NLP Suite."
+        "When a new release of the NLP Suite is out, pressing the CLOSE button in any of the GUIs offers to download and install it.\nThe new release is used the next time you open the NLP Suite."
         "\nYou must be connected to the internet for the auto update to work."
     )
     # widget label, i.e., words displayed in the widget

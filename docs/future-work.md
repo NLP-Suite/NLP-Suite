@@ -220,7 +220,6 @@ Deletions and behaviour changes. Each is ready to do once decided.
 | 14 | Dead files | `videos_util.py` (pafy/vlc, imported nowhere), `NLP_setup_download_jars.py`, `knowledge_graphs_DBpedia_util_SPARQL.py`, `nyt_api_call.py`, `html_annotator_extractor_util_NEW.py`, `TensorFlow_semantic_analysis.py`, `GIS_heatMapIntegration.py`, `GIS_heatMapintegration_ver2.py`, `post_build_fixup.py`, `wiki-draft-About.md`, `.github/workflows/build-family-viewer.yml` (its spec files are not in the repo) | **1.6.43, §1.1.** |
 | 15 | `NLP_Suite.spec` | Hidden imports for 8 modules that do not exist (`data_visualization_1_main`, `_2_main`, `whats_in_your_corpus_main`, `GIS_folium_map_util`, `SENNA_util`, `social_science_research_main`, `knowledge_graphs_DBpedia_YAGO_main`, `charts_matplotlib_seaborn_util`); a local build bundles the live `config/` (API keys); "Python 3.8" comment | Hidden imports and the comment: **1.6.43, §1.1**. The `config/` bundling changes what a build ships: with §2 |
 | 16 | Reminders | 50 titles are in `reminders.csv` twice, under a GUI and under `*`. Popups read only the `*` row, the dropdown toggles the GUI row, so switching a reminder off there does nothing. About 12 definitions in `reminders_util` are used nowhere (Java 64-bit `-d64`, "CoreNLP Server is shutting down", tkinter Mac bug, SVO/WordNet/MALLET/Google Earth "system requirements") | Delete the per-GUI duplicates and the unused definitions |
-| 17 | Release history button | Opens the wiki page `NLP-Suite-Release-History`; the update popup already links `CHANGELOG.md` | Point to CHANGELOG if the wiki page is no longer kept |
 | 18 | wordclouds | Menu offers Wordle (site gone) and Tagxedo (needs Silverlight); "Tagul" is now WordArt; Python WordCloud asks for internet though it needs none | Remove the two, rename the third, drop the check |
 | 19 | `MEMO_Development_Notes.md`, `docs/CustomTkinter-Migration-Plan.md` | June 2026 history (Python 3.8 build, Mac Intel CI, files since deleted); a plan that names `setup-app/` and says installers build from `roberto` | A "historical" banner on each, or delete |
 
@@ -229,11 +228,10 @@ Deletions and behaviour changes. Each is ready to do once decided.
 Low risk, left out of PR #1705 to keep it reviewable. Moved out of 1.6.42 on 11 Nov.
 
 - **CoreNLP-era wording where three or four packages now work:** `NER_main` 611, 634, 658, 990; `GIS_main` 1290, 1322, 1343; `coreference_main` 272, 364, 563, 592, 635; `narrative_analysis_ALL_main` 443, 459, 927; `corpus_profiler_main` 717 ("hundreds" of documents), 726; `parsers_annotators_main` 972 (a "*" option that does not exist); `shape_of_stories_main` 599–600, 996, 1061 and `sentiments_emotions_ALL_main` 247 (spaCy listed as neural); `sentiment_analysis_main` 1077–1083, 1123 (old script names, `nltk.downloader`); `language_tools_advisor_util` 186, 254, 263; `NLP_setup_external_software_main` 491, 499, 518.
-- **"Setup NLP package and corpus language"** (the item is "Setup NLP package (parsers & annotators) and corpus language"): `NER_main` 144, `NGrams_CoOccurrences_main` 1571, `Stanza_util` 202/731, `Stanford_CoreNLP_util` 177, `sentiment_analysis_main` (7 places), `semantic_aggregation_main` 1417, `IO_internet_util` 89, and the "NLP setup options" reminder built in 9 GUIs.
-- **"pulling the latest release from GitHub"** hover on CLOSE: `GUI_util` 2659, `NLP_welcome_main` 316, `NLP_setup_package_language_main` 775, `NLP_setup_external_software_main` 455.
-- **Names that do not exist:** `knowledge_graphs_main` 989 (TIPS name), 928–941 (YAGO and Wikipedia TIPS not offered); `file_classifier_NER_util` 40–46 and `file_find_non_related_documents_util` 43–49 (`concreteness_analysis.py`, then `sys.exit`); `sentiment_analysis_hedonometer_util` 59, `sentiment_analysis_VADER_util` 85 (wrong lib path and script name); `semantic_aggregation_main` 499 and `semantic_analysis_main` 1086 launch `Word2Vec_main.py` (the file is `word2vec_main.py`: fails on a case-sensitive disk).
-- **Windows-only advice also shown on a Mac:** `config_util` 130, 159, 250, 284, 665, 698; `license_GUI` 77; `GUI_IO_util` 22.
-- **Other:** `IO_libraries_util` Windows 64-bit Java branch; MALLET and Google Earth download links to check; `topic_modeling_mallet_util` "TEMPORARY FIX… environment variables" popups on every run (the code sets them itself); `file_manager_main` utf-8/ASCII checkboxes that only say "not available yet"; `file_merger_main` 326; `NLP_menu_main` 593–598, 1157 (readMe: "Java and Python tools", LGPL 2.1 though the licence file is GPL 3, CoreNLP 4.3.1); `docs/Supported-Systems-Languages.md` 38; `requirements-mac.txt` still lists pafy/python-vlc.
+- **"Setup NLP package and corpus language"** (the item is "Setup NLP package (parsers & annotators) and corpus language"): `Stanza_util` 202/731, `sentiment_analysis_main` (7 places), `semantic_aggregation_main` 1417, and the "NLP setup options" reminder built in 9 GUIs. (`NER_main`, `NGrams_CoOccurrences_main`, `Stanford_CoreNLP_util`, `IO_internet_util` and `GUI_util` fixed for 1.6.43.)
+- **Names that do not exist:** `knowledge_graphs_main` 989 (TIPS name), 928–941 (YAGO and Wikipedia TIPS not offered); `file_classifier_NER_util` 40–46 and `file_find_non_related_documents_util` 43–49 (`concreteness_analysis.py`, then `sys.exit`); `sentiment_analysis_hedonometer_util` 59, `sentiment_analysis_VADER_util` 85 (wrong lib path and script name). (`Word2Vec_main.py` fixed for 1.6.43; `tests/test_run_script_targets.py` now checks every launch.)
+- **Windows-only advice also shown on a Mac:** `config_util` 130, 159, 250, 284, 665, 698.
+- **Other:** `IO_libraries_util` Windows 64-bit Java branch; MALLET and Google Earth download links to check; `topic_modeling_mallet_util` "TEMPORARY FIX… environment variables" popups on every run (the code sets them itself); `file_manager_main` utf-8/ASCII checkboxes that only say "not available yet"; `file_merger_main` 326; `NLP_menu_main` 593–598 (CoreNLP 4.3.1 in the external-software help); `docs/Supported-Systems-Languages.md` 38; `requirements-mac.txt` still lists pafy/python-vlc.
 
 ### 5.3 First run from source: the config warning repeats and the window looks frozen
 
@@ -425,8 +423,8 @@ Each PR carries before/after screenshots from a gallery script. Add one to `test
 
 | Link | Where | Fix |
 |---|---|---|
-| `wiki/Install-the-NLP-Suite` (no such page) | `README.md:9` (the main "Download and install" link), `README.md:38`; `setup_Mac/readme_Mac_beta.md`, `setup_Windows/readme_Windows_beta.md` | `Installation-of-the-NLP-Suite`. The setup readmes go in §1.1 |
-| `wiki/NLP-Suite-Release-History` (no such page) | `README.md:42`, wiki `Home`, the Release history button (`GUI_IO_util.py:1135`) | Releases page or `CHANGELOG.md` (§5.1 #17) |
+| `wiki/Install-the-NLP-Suite` (no such page) | `setup_Mac/readme_Mac_beta.md`, `setup_Windows/readme_Windows_beta.md` (README.md fixed for 1.6.43) | The setup readmes go in §1.1 |
+| `wiki/NLP-Suite-Release-History` (no such page) | wiki `Home` (README.md and the Release history button point to `CHANGELOG.md` since 1.6.43) | `CHANGELOG.md` |
 | `Watch-YouTube-Videos` (no such page) | Wiki `_Sidebar` | Publish `docs/Watch-YouTube-Videos.md`, or drop the entry |
 
 #1705 is merged, so `README.md` is free to edit.
@@ -447,7 +445,7 @@ About 50 em dashes on user-facing pages. The design notes in `docs/` have more (
 
 ### 8.4 Proposed order
 
-1. **Make `docs/` the source.** One PR: rename the `docs/` pages to the exact wiki names (so publishing is a plain copy), add `NLP-Suite-Architecture.md` from the wiki, fix 12.3 and the em dashes, merge the Download page into the install page (12.1), fix the `README.md` links (12.2).
+1. **Make `docs/` the source.** One PR: rename the `docs/` pages to the exact wiki names (so publishing is a plain copy), add `NLP-Suite-Architecture.md` from the wiki, fix 12.3 and the em dashes, merge the Download page into the install page (12.1), fix the remaining 8.2 links.
 2. **Publish to the wiki** by hand: clone `NLP-Suite.wiki`, copy `docs/` over, delete the 8.1 pages, update `_Sidebar` (Install External Software in, Watch YouTube Videos in or out). The wiki is live once pushed, so Roberto looks first.
 3. Later: a release step (or workflow on `current-stable`) that copies `docs/` to the wiki, so the two cannot drift again. Add it to §14.
 

@@ -496,7 +496,7 @@ def open_GUI(*args):
         elif "CoNLL" in extra_GUIs_menu_var.get():
             run_script_util.run_script("CoNLL_table_analyzer_main.py")
         elif "Sense" in extra_GUIs_menu_var.get():
-            run_script_util.run_script("Word2Vec_main.py")
+            run_script_util.run_script("word2vec_main.py")
 
 
 extra_GUIs_menu_var.trace("w", open_GUI)

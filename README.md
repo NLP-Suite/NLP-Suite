@@ -6,7 +6,7 @@ The NLP Suite provides humanists and social scientists a wide range of computati
 
 ## Get Started
 
-**[Download and install the NLP Suite](https://github.com/NLP-Suite/NLP-Suite/wiki/Install-the-NLP-Suite)** — download a zip, extract, and double-click. No Python, Anaconda, or Java installation needed.
+**[Download and install the NLP Suite](https://github.com/NLP-Suite/NLP-Suite/wiki/Installation-of-the-NLP-Suite)** — download a zip, extract, and double-click. No Python, Anaconda, or Java installation needed.
 
 Available for:
 - **Windows** 10/11 (64-bit)
@@ -35,11 +35,11 @@ The NLP Suite offers 50+ GUIs covering:
 
 ## Resources
 
-- [Install the NLP Suite](https://github.com/NLP-Suite/NLP-Suite/wiki/Install-the-NLP-Suite)
+- [Install the NLP Suite](https://github.com/NLP-Suite/NLP-Suite/wiki/Installation-of-the-NLP-Suite)
 - [Supported Systems & Languages](https://github.com/NLP-Suite/NLP-Suite/wiki/Supported-Systems-Languages)
 - [NLP Suite Architecture](https://github.com/NLP-Suite/NLP-Suite/wiki/NLP-Suite-Architecture)
 - [Troubleshooting](https://github.com/NLP-Suite/NLP-Suite/wiki/Troubleshooting)
-- [Release History](https://github.com/NLP-Suite/NLP-Suite/wiki/NLP-Suite-Release-History)
+- [Release History](https://github.com/NLP-Suite/NLP-Suite/blob/current-stable/CHANGELOG.md)
 - [Report an issue](https://github.com/NLP-Suite/NLP-Suite/issues)
 
 ## Development
