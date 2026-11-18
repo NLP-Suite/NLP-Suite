@@ -543,15 +543,13 @@ Coverage is 683 test functions in 67 files [3]. Gaps:
 
 ## 13. Branches
 
-Remote branches besides `roberto`, `current-stable`:
+Head branches of merged PRs are deleted automatically (repo setting since 18 Nov 2026; the coralynnkc fork has it too). Remote branches besides `roberto`, `current-stable`:
 
 - `cora-batch-2` (30 Oct 2026): collaborator staging, holds a merge of #1699. Not in `roberto`.
 - `mac-font-pin` (22 Jul 2026): not in `roberto`, no open PR. Check whether it's still needed.
 - `dictionary` (Sep 2024), `taeeun` (Dec 2024): heads of stale PRs #1528 and #1525. Delete after those PRs are closed.
 - `remove_shortcut_prompt` (2021), `tony` (2023): no open PR. Delete candidates.
-- Cora's, merged and safe to delete: `fix/1725-stanza-download-mac-crash`, `fix/1728-stanza-resources-json`, `fix/1731-language-advisor`, `fix/release-history-links`, `test/bundle-gate`, `release/v1.6.42`.
 - Cora's, open work: `spike/1.6.43-bundle-size-rc` (§2, now 1.6.44), `chore/remove-dead-files` (#1706).
-- Cora's fork: `spike/1.6.44-hw5` was merged into `roberto` on 18 Nov; safe to delete, with the local and fork copies of `spike/1.6.43-bundle-size` once the `-rc` branch is the only one in use.
 
 Deleting someone else's remote branch is Roberto's call.
 
