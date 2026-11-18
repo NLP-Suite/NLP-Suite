@@ -16,14 +16,16 @@ Checked on the 17 Nov release candidate (Mac, macOS 26.5.2): both zips hold the 
 
 ## Before the 1.6.43 tag
 
-1.6.43 is everything QTM 446W's HW 5 (due Sun 6 Dec) needs, in one update: the Stanza GUIs that closed as they opened on a new install (#1728), the language advisor (#1731), the HW 5 tool fixes (#1718–#1724 and #1549, merged from `spike/1.6.44-hw5` on 18 Nov), and the links and copy of #1733. Nothing in it changes what the build ships (the one requirements change is a `scikit-learn>=1.2` floor that resolves to the same version). On `roberto` after the merge: `pytest tests/` 772 passed, `tests/gui_smoke.py` 0 crashed.
+1.6.43 is everything QTM 446W's HW 5 (due Sun 6 Dec) needs, in one update: the Stanza GUIs that closed as they opened on a new install (#1728), the language advisor (#1731), the HW 5 tool fixes (#1718–#1724 and #1549, merged from `spike/1.6.44-hw5` on 18 Nov), the links and copy of #1733, Shape of Stories opening without an "Input directory error", and `NLP_SILENT` covering the timed alerts. Nothing in it changes what the build ships (the one requirements change is a `scikit-learn>=1.2` floor that resolves to the same version). It is on `release/v1.6.43` (version bump and CHANGELOG heading included).
 
-1. Build the candidate (`build-installers.yml`, workflow_dispatch on `roberto`) and run `tests/bundle_gate.py` against 1.6.42.
-2. Rerun the HW 5 sweep (`qtm446/assignments/hw5/hw5_suite_run.py`, Cora's coursework) on the candidate. On 13 Nov it was run on a Mac in the source env only, on a 60-document sample; not on Windows, not on the zip's pinned versions (the fixes are for unpinned `nltk`, `nrclex`, `scikit-learn`: check what the build installs).
-3. From the Windows zip: one Shape of Stories run with Hierarchical Clustering ticked (the default).
-4. NRC and SentiWordNet on a fresh install, so the `punkt_tab` and `averaged_perceptron_tagger_eng` downloads happen there and not only in a dev env.
-5. The 1.6.42 checks above that are still open, on the 1.6.43 candidate instead if 1.6.42 was never checked.
-6. After the promotion to `current-stable`, check that #1718–#1724 and #1549 closed (the merge commit says `Fixes` for each); close any that did not.
+**Checked on 17 Nov (Mac):** `pytest tests/` 778 passed, and the CI-like run (pytest only, Python 3.10) 728; `gui_smoke.py` 0 crashed. A candidate built from `release/v1.6.43` before its last commit (run 44218077157, both OSes green) passed `bundle_gate.py` against 1.6.42, with the last commit's two files copied into its `src/`: 12 of the 13 GUIs that closed on a new install in 1.6.42 now open (`NLP_setup_IO_main` exits by design); no import or GUI lost. The HW 5 sweep passed on that candidate's own `python-env` (transformers 4.41.2, Stanza 1.15.1, torch 2.14.1: not the versions of the dev env, which has transformers 4.51.3): every sentiment algorithm, language detection, and Shape of Stories with BERT, spaCy and Stanza through HC, SVD, NMF and best k (60 documents). CoreNLP ran in the dev env only (the candidate's fresh `config/` has no CoreNLP folder).
+
+Not checked, before or after the tag:
+1. **Windows:** one Shape of Stories run from the Windows zip with Hierarchical Clustering ticked (the default); NRC and SentiWordNet.
+2. **A truly fresh install:** the sweep used a home folder that already had NLTK data, so the `punkt_tab` and `averaged_perceptron_tagger_eng` downloads did not run. Try NRC and SentiWordNet once with an empty `~/nltk_data`.
+3. **The tagged build itself:** it is built fresh from the tag; run `bundle_gate.py` on it against 1.6.42 (set `DO_NOT_TRACK=1`, see future-work §14).
+4. The 1.6.42 checks above that are still open.
+5. After the promotion to `current-stable`, check that #1718–#1724 and #1549 closed (the merge commit says `Fixes` for each); close any that did not.
 
 Ask students who report update problems to send the update log (item 2 above) to coralynn.yang@emory.edu.
 
