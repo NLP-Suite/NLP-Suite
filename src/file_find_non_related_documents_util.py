@@ -40,11 +40,11 @@ def load_soc_actors():
         print(
             "The file "
             + fName
-            + " could not be found. The routine expects a csv dictionary file 'social-actor-list.csv' in a directory 'lib' expected to be a subdirectory of the directory where the concreteness_analysis.py script is stored.\n\nPlease, check your lib directory and try again."
+            + " could not be found. The routine expects a csv dictionary file 'social-actor-list.csv' in the lib/wordLists folder of the NLP Suite.\n\nPlease, check your lib directory and try again."
         )
         mb.showerror(
             title="File not found",
-            message='The routine expects a csv dictionary file "social-actor-list.csv" in a directory "lib" expected to be a subdirectory of the directory where the concreteness_analysis.py script is stored.\n\nPlease, check your lib directory and try again',
+            message='The routine expects a csv dictionary file "social-actor-list.csv" in the lib/wordLists folder of the NLP Suite.\n\nPlease, check your lib directory and try again',
         )
         sys.exit()
     with open(fName, encoding="utf-8", errors="ignore") as fin:

@@ -618,9 +618,10 @@ sentiment_analysis_menu = tk.OptionMenu(
     "   BERT (English model)",
     "   BERT (Multilingual model)",
     "Neural network approaches:",
-    "   spaCy",
     "   Stanford CoreNLP",
     "   Stanza",
+    "Dictionary approach:",
+    "   spaCy",
     # the dictionary methods (ANEW, hedonometer, SentiWordNet, VADER) are in the Sentiment analysis GUI only:
     # Shape of Stories never computed them, and went on to read the txt folder as a csv (#1722)
 )
@@ -1010,7 +1011,7 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
         help_button_x_coordinate,
         y_multiplier_integer,
         "NLP Suite Help",
-        "Please, tick the checkbox 'Sentiment Analysis' if you wish to run the Sentiment Analysis algorithm.\n\nIf you do want to run the algorithm, using the dropdown menu, please select the type of Sentiment Analysis algorithm you wish to use (Stanford CoreNLP neural network approach recommended)."
+        "Please, tick the checkbox 'Sentiment Analysis' if you wish to run the Sentiment Analysis algorithm.\n\nIf you do want to run the algorithm, using the dropdown menu, please select the type of Sentiment Analysis algorithm you wish to use (BERT or another neural network approach recommended; spaCy uses the TextBlob dictionary)."
         + inputDirTXTMsg
         + outputDirMsg,
     )
@@ -1075,7 +1076,7 @@ readMe_message = (
     "In OUTPUT the algorithms will produce sentiment analysis scores (if the option is selected) and a number of visual plots (e.g., sentiment arcs). "
     "\n\nPlease, use the 'Select INPUT/OUTPUT configuration' button to select the appropriate options. "
     "Output files will be saved in a sub-directory called 'Shape of Stories' itself a subdirectory of the current default output directory; inside this 'Shape of Stories' subdirecory all files will be saved inside a further subdirectory with the name of the final part of the input directory.\n\n"
-    "Two different types of approaches to SENTIMENT ANALYSIS are used: 1. neural network and 2. dictionary-based approaches.\n\nNeural network approaches, albeit slower, are far more reliable. The NLP Suite provides four different neural network algorithms - BERT, spaCy, Stanford CoreNLP, Stanza - and four dictionary-based algorithms - ANEW, hedonometer, sentiWordNet, VADER. Shape of Stories uses only the neural network algorithms; the dictionary-based ones are in the Sentiment analysis GUI.\n\n"
+    "Two different types of approaches to SENTIMENT ANALYSIS are used: 1. neural network and 2. dictionary-based approaches.\n\nNeural network approaches, albeit slower, are far more reliable. The NLP Suite provides three neural network algorithms - BERT, Stanford CoreNLP, Stanza - and several dictionary-based ones - ANEW, hedonometer, NRC, SentiWordNet, spaCy (TextBlob), VADER. Shape of Stories offers the three neural network algorithms and spaCy; the other dictionary-based ones are in the Sentiment analysis GUI.\n\n"
     "Three different approaches to DATA REDUCTION are used: Hierarchical clustering (HC), Singular Value Decomposition (SVD), Non-Negative Matrix Factorization (NMF).\n\n"
     "During execution, the algorithm will ask the user to confirm three different PARAMETERS used by the data reduction algorithms: Window size, Sentiment Vector Size, Cluster (modes) size.\n\n"
     "   WINDOW SIZE: the number of sentences that will be averaged to obtain one point of the story arc.\n   Lower bound: At least one sentence must be take average to get the values in sentiment score vector.\n   Upper bound: minimum document length-1. Window size should be less than the minimum document length, i.e, number of sentences in the shortest document.\n"

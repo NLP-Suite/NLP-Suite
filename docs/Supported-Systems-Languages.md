@@ -35,4 +35,4 @@ Some dictionary-based algorithms are available only for English:
 
 ### Setting your language
 
-The NLP Suite language is configured in the **Setup NLP package and corpus language** dialog, accessible from the Setup menu at the bottom of most GUIs. The default is English with Stanza.
+The NLP Suite language is configured in the **Setup NLP package (parsers & annotators) and corpus language** dialog: click **Set up** next to **Parser & language** in the NLP Suite menu, or use the Setup menu at the bottom of most GUIs. The default is English with Stanza.
