@@ -68,7 +68,8 @@ def _warn_basic_nlp_failure(package, lang, e):
     mb.showwarning(
         title="Basic NLP",
         message="The basic NLP package '%s' (%s) could not tokenize/lemmatize/POS-tag the "
-        "text:\n\n%s\n\nCheck the Setup NLP package and language options." % (package, lang, e),
+        "text:\n\n%s\n\nCheck the Setup NLP package (parsers & annotators) and corpus language options."
+        % (package, lang, e),
     )
 
 

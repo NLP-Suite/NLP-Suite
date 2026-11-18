@@ -931,6 +931,8 @@ TIPS_options = (
     "Annotator",
     "Annotator DBpedia",
     "DBpedia ontology classes",
+    "Annotator YAGO",
+    "Annotator Wikipedia",
     "YAGO (schema.org) ontology classes",
     "YAGO (REDUCED schema.org) ontology classes",
     "The world of emotions and sentiments",
@@ -986,7 +988,7 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
         help_button_x_coordinate,
         y_multiplier_integer,
         "NLP Suite Help",
-        'Once you select DBpedia or YAGO, the "Ontology sub-class" widget will become available.\n\nSince the ontology class dropdown menu only includes the main classes in the DBpedia or YAGO ontology, enter in the "Ontology sub-class" widget more specific, comma-separated, sub-classes. You obtain these sub-classes from the TIPS_NLP_Annotator DBpedia ontology classes.pdf or TIPS_NLP_YAGO (schema.org).',
+        'Once you select DBpedia or YAGO, the "Ontology sub-class" widget will become available.\n\nSince the ontology class dropdown menu only includes the main classes in the DBpedia or YAGO ontology, enter in the "Ontology sub-class" widget more specific, comma-separated, sub-classes. You obtain these sub-classes from the TIPS files "DBpedia ontology classes" or "YAGO (schema.org) ontology classes".',
     )
     y_multiplier_integer = GUI_IO_util.place_help_button(
         window,

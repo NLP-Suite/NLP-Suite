@@ -27,20 +27,18 @@ Moved out of PLAN.md on 11 Nov 2026. The sections keep their scan dates; nothing
 
 **How it was found:** every `src/*.py` whose module name appears nowhere else in `src/`, `tests/`, `lib/`, the specs, the workflows or the setup scripts (`grep -w`), plus the §5.1 findings. A mention in a comment counts as a use, so the list is short of complete (`videos_util` was found only by reading). Not swept: dead functions and branches inside live modules (§12.7 counts 496 unused variables); `lib/` data files; TIPS pdfs no GUI names.
 
-### 1.1 Delete in 1.6.44, with the bundle size changes (needs Roberto's yes)
+### 1.1 Delete with PR #1706 (needs Roberto's yes)
 
-**Done in part on `spike/1.6.43-bundle-size-rc`** (13 Nov, not merged): it deletes the legacy setup scripts and `src/requirements*.txt` but no `src/*.py` module. PR #1706 does the rest; it conflicts with `roberto` since #1705 merged (both touch `README.txt` and `CLAUDE.md`): rebase it. It goes with §2 because both change what the build ships, and because deleting `src/requirements*.txt` closes 108 of the 178 Dependabot alerts (§3.1). Each file was checked: nothing imports it, launches it with `run_script`, or names it in a workflow; the spec names some of them only as hidden imports.
+`release/v1.6.44` already deletes `setup_Windows/`, `setup_Mac/` and `src/requirements*.txt`, moves the Windows icon to `lib/images/` and trims the spec (§2.1). What is left is PR #1706's: rebase it onto that branch, dropping what it already does. Each file below was checked: nothing imports it, launches it with `run_script`, or names it in a workflow.
 
 | Group | Files | Evidence |
 |---|---|---|
-| Legacy setup scripts | `setup_Windows/`, `setup_Mac/` (all but the two icons), `src/NLP_setup_shortcut_add.py`, `src/NLP_setup_shortcut_remove.py`, `src/requirements.txt`, `src/requirements_mac.txt` | §5.1 #1. Outside those folders, only the spec uses them: its icon path and two hidden imports. The two `src/requirements*` files are read only by STEP2 |
-| Icons (move, don't delete) | `setup_Windows/NLP_Suite.ico`, `logo.ico` | `NLP_Suite.spec:27` uses `NLP_Suite.ico`; `logo.ico` is used nowhere. Move the first (e.g. to `lib/`), update line 27, drop the second |
+| Shortcut scripts | `src/NLP_setup_shortcut_add.py`, `src/NLP_setup_shortcut_remove.py` | Used only by the deleted setup scripts and the old spec |
 | PC-ACE debugging scripts (June 2026) | `src/_add_indexes.py`, `_add_indexes_now.py`, `_check_idx.py`, `_check_path.py`, `_debug_hops.py`, `_debug_xref.py`, `_test_actor_process.py`, `_test_cross_join.py` | One-off scripts with a hard-coded `C:/Users/rfranzo/Desktop/...sqlite` path; imported nowhere |
-| Unused modules | `GIS_heatMapIntegration.py`, `GIS_heatMapintegration_ver2.py`, `html_annotator_extractor_util_NEW.py`, `knowledge_graphs_DBpedia_util_SPARQL.py` (440 lines), `nyt_api_call.py`, `TensorFlow_semantic_analysis.py`, `POTUS_webscraper.py` (2023), `pandas_compat_util.py`, `videos_util.py`, `NLP_setup_download_jars.py` | Imported nowhere. `pandas_compat_util` (July 2026) is a shim for pandas < 1.3 that nothing ever adopted; pandas 2 is pinned. `videos_util` is imported only in commented-out lines (`GUI_util`, `NLP_welcome_main`); drop `pafy` and `python-vlc` from `requirements-mac.txt` with it. `NLP_setup_download_jars` appears only in the spec's hidden imports |
+| Unused modules | `GIS_heatMapIntegration.py`, `GIS_heatMapintegration_ver2.py`, `html_annotator_extractor_util_NEW.py`, `knowledge_graphs_DBpedia_util_SPARQL.py` (440 lines), `nyt_api_call.py`, `TensorFlow_semantic_analysis.py`, `POTUS_webscraper.py` (2023), `pandas_compat_util.py`, `videos_util.py`, `NLP_setup_download_jars.py` | Imported nowhere. `pandas_compat_util` (July 2026) is a shim for pandas < 1.3 that nothing ever adopted; pandas 2 is pinned. `videos_util` is imported only in commented-out lines (`GUI_util`, `NLP_welcome_main`); `NLP_setup_download_jars` was named only in the old spec's hidden imports |
 | Repo root and workflows | `post_build_fixup.py`, `wiki-draft-About.md`, `.github/workflows/build-family-viewer.yml` | §5.1 #14. The spec mentions `post_build_fixup` only in a comment |
-| `NLP_Suite.spec` | Hidden imports of the modules above and of the 8 that do not exist (§5.1 #15); the "Python 3.8" comment | The pre-tag build checks it |
 
-**Checks for the PR:** rerun the grep on the final tree; `pytest tests/`; `tests/gui_smoke.py`; CHANGELOG: one line ("Removed the 2021 Anaconda setup scripts and unused files; nothing a tool uses changed").
+**Checks for the PR:** rerun the grep on the final tree; `pytest tests/`; `tests/gui_smoke.py`; CHANGELOG: one line ("Removed unused files; nothing a tool uses changed").
 
 ### 1.2 Looks dead, is not
 
@@ -58,55 +56,27 @@ Moved out of PLAN.md on 11 Nov 2026. The sections keep their scan dates; nothing
 
 ## 2. Bundle size (scan of 11 Nov 2026)
 
-**Where it stands:** the v1.6.41 zips are **1,331 MB** (`NLP-Suite-mac-arm64.zip`) and **1,539 MB** (`NLP-Suite-windows-x64.zip`). `spike/1.6.43-bundle-size-rc` (13 Nov, not merged) does §2.1–§2.4 and brings a CI build to 775 MB (Mac) and 863 MB (Windows); it still needs §2.5's checks, now `tests/bundle_gate.py`, and a rebase that drops its copy commit (`bea9d173`, merged separately as #1733). The self-updater downloads the whole zip on every update, so size is paid again at each release, not just at first install. The Suite's own files are small: `src/` 12 MB, `lib/` 66 MB, `TIPS/` 73 MB, uncompressed. Almost all the size is Python packages.
+**Where it stands:** `release/v1.6.44` trims the spec to what the menu runs, drops TensorFlow and 14 packages nothing imports, and recompresses 42 TIPS pdfs: a CI build of the same commits on 13 Nov was 775 MB (Mac) and 863 MB (Windows), against 1,332 and 1,541 MB for 1.6.43. Re-measure on the 1.6.44 candidate. What is left is below.
 
 **How it was found:** `gh release view` for the asset sizes; reading `NLP_Suite.spec`, `build-installers.yml` and `run_script_util.py`; a `grep` of `src/*.py` for an `import`/`from` of each package in `requirements*.txt`, then for any mention of the ones with no import. **Not measured:** per-package sizes inside the zip. The figures below that say "estimate" need one release zip unpacked and `du` run on `_internal/` and `python-env/.../site-packages` by package (not possible on Cora's machine; do it on the machine that runs the pre-tag build).
 
-### 2.1 The scientific stack ships twice
+### 2.1 What is left in `_internal/`
 
-The build makes a PyInstaller app, then adds a full portable Python (`python-env/`, python-build-standalone) with all of `requirements*.txt` installed. Frozen, the PyInstaller executable runs only the menu: `run_script_util._find_python()` sends every tool to `python-env/python`, and `_script_dir()` to the loose `src/*.py`. But `NLP_Suite.spec` still hidden-imports pandas, numpy, scipy, sklearn, stanza, spacy, gensim, transformers, sentence_transformers, matplotlib, plotly, seaborn, folium, geopandas, shapely, lxml and others, and `collect_data_files` copies all of stanza's and spaCy's package files into `_internal/`. None of that copy is used by a tool. Size of `_internal/`: not measured (estimate: hundreds of MB).
+The PyInstaller executable runs only the menu; every tool runs on `python-env`. `release/v1.6.44` trims the spec to what the menu reaches, but keeps spacy, numpy, pandas, scipy, matplotlib, plotly and openpyxl because the menu's language advisor imported `spaCy_util` in-process. Since #1732 (1.6.43) the advisor runs on `python-env` and imports no package util, so those can probably go too: check with a probe build (an entry script importing every module the menu imports) before cutting.
 
-**Fix, two options:**
-1. **Trim the spec (recommended first).** Hidden imports and datas only for what `NLP_menu_main` reaches: tkinter, customtkinter/darkdetect, PIL, and the local modules it imports (`GUI_util`, `GUI_IO_util`, `config_util`, `run_script_util`, `IO_libraries_util`, reminders, the self-updater…). Drop `_stanza_datas`, `_spacy_datas` and the third-party list. The `_local_modules` list goes too: tools load from `src/` through `python-env`, not from the frozen archive. Before cutting, trace what the menu imports at module level (the §6 import trace method), since `GUI_util` and `IO_libraries_util` may pull in pandas.
-2. **No PyInstaller at all.** A small launcher (`NLP_Suite.exe` / Mac binary or script) that runs `python-env/python src/NLP_menu_main.py`. Removes `_internal/` entirely, but changes the Mac `codesign` step, the `.command` launcher, the Windows DLL copy step, and what `get_java_executable()` and the updater take as the app dir (`sys.executable`'s folder). Larger; only if option 1 leaves too much.
+**No PyInstaller at all** stays the larger option: a small launcher that runs `python-env/python src/NLP_menu_main.py`. It removes `_internal/` entirely but changes the Mac `codesign` step, the `.command` launcher, the Windows DLL copy step, and what `get_java_executable()` and the updater take as the app dir (`sys.executable`'s folder). Only if the trim leaves too much.
 
-### 2.2 TensorFlow is installed and nothing uses it
+### 2.2 Requirements and data, still open
 
-No file in `src/` imports `tensorflow`. It appears only as a name in the `install_all_Python_packages` lists (`BERT_util.py:26`, `WSI_util.py:19`), in `TensorFlow_semantic_analysis.py` (dead, §1.1) and a comment and error message in `spaCy_util.py:16–23`. `transformers`, `sentence-transformers`, `bertopic` and `fastcoref` run on torch.
-
-**Fix:** drop `tensorflow`, `tensorflow-hub`, `tf-keras` from `requirements.txt` (and `h5py` if nothing else needs it: no `src/` import), and `tensorflow`, `tensorflow_hub`, `tensorflow_intel` from the spec. Same PR: remove `"tensorflow"` from the two install lists (otherwise a source run asks to install it) and `tensorflow` from the build's import check (`build-installers.yml`, the `"$PYTHON" -c "import ..."` line). Size saved: not measured (estimate: the largest single package in `python-env`, several hundred MB on Windows). Check that `transformers.pipeline(...)` in `BERT_util` doesn't fall back to TF anywhere (it picks torch when TF is absent).
-
-### 2.3 Requirements nothing imports
-
-Each was checked by `grep` over `src/`. Small one by one; they shorten the build and the hidden-import list more than the zip.
-
-| Package | Used by |
-|---|---|
-| `geopandas`, `shapely` | Only `GIS_heatMapIntegration.py`, `GIS_heatMapintegration_ver2.py` (dead, §1.1) |
-| `SPARQLWrapper` | Only `knowledge_graphs_DBpedia_util_SPARQL.py` (dead, §1.1) |
-| `gmaps`, `googlemaps` | Only the two dead heatmap files (`GIS_Google_Maps_util` writes the JS itself) |
-| `pywsd` | Nothing; `nominalization_main` says it no longer relies on it |
-| `mpld3`, `geojson`, `ipywidgets`, `editdistance`, `numexpr`, `xlrd`, `pexpect`, `geocoder` (the package) | Nothing |
-| `IPython` | Only a commented-out line in `topic_modeling_main.py` |
-| `contextualSpellCheck` | Only the `BERT_util` install list; never loaded. Remove from both together |
-| `pafy`, `python-vlc` (`requirements-mac.txt`) | Already §1.1 (`videos_util`) |
-| `umap-learn`, `hdbscan` | Not imported, but BERTopic depends on them: redundant, harmless; keep or drop |
-
-`kaleido` stays (Plotly `write_image`), `spacytextblob` stays (loaded by name in `nlp.add_pipe`), `sacremoses`/`sentencepiece` stay (tokenizers for `BERT_util` models). Before dropping any, check `xlrd` against the `.xls` reading in `corpus_profiler_util` (pandas needs it for old `.xls`; keep if that path should work).
-
-### 2.4 Data files (small)
-
-- **TIPS PDFs, 73 MB, 176 files.** Largest: Universal dependencies 3.9 MB, Google Earth Pro 3.8, BERT Sentiment 3.0. `gs -sDEVICE=pdfwrite -dPDFSETTINGS=/ebook` usually halves image-heavy PDFs. Tens of MB at most; check a few by eye after.
+- `umap-learn`, `hdbscan`: not imported, but BERTopic depends on them; keep.
 - `lib/namesGender` (34 MB of CSV) compresses well in the zip already; leave it.
-- §1.1's deletions and a §1.3 `vulture` pass are cleanup, not size.
+- PR #1706's deletions and a §1.3 `vulture` pass are cleanup, not size.
 
-### 2.5 When, and the checks
+### 2.5 The checks
 
-1.6.44, with the dead files (§1.1), after the HW 5 fixes ship in 1.6.43: both change what the build ships, and together they close the 108 alerts in the stale `src/requirements*.txt` files (§3.1). Roberto's call. One PR each, 2.2 before 2.1 so a TF regression can't hide behind the spec change.
-
-Checks (CI build and a machine with the zips; not Cora's):
-- Unzip the current release first and record `_internal/` and the top 20 `site-packages` folders by size, to put real numbers in this section.
-- After each PR: zip size on both OSes; the menu opens from the zip on Windows and on a Mac; `gui_smoke.py`; one tool from each family run from the zip (BERT NER and sentiment, BERTopic, coreference with fastcoref, a CoreNLP parse via the bundled JRE, GIS map, wordclouds, an Excel chart).
+On each candidate:
+- `tests/bundle_gate.py` against the last release (`DO_NOT_TRACK=1`).
+- zip size on both OSes; the menu opens from the zip on Windows and on a Mac; `gui_smoke.py`; one tool from each family run from the zip (BERT NER and sentiment, BERTopic, coreference with fastcoref, a CoreNLP parse via the bundled JRE, GIS map, wordclouds, an Excel chart).
 - 14.1: the self-updater 1.6.(n−1) → n still finds its manifest and keeps user files.
 
 ## 3. Security alerts and the Python 3.11 release (scan of 11 Nov 2026)
@@ -118,12 +88,12 @@ Dependabot alerts on `current-stable`, read 11 Nov 2026 with `gh api repos/NLP-S
 | Manifest | Pillow | transformers | stanza | protobuf | Closed by |
 |---|---|---|---|---|---|
 | `requirements.txt` (what the build installs) | 52 (4 critical) | 18 (6 high) | — | — | Pillow: #1688. transformers: §3.2 |
-| `src/requirements.txt` | 51 | — | 1 | 2 | Deleting the file (#1706) |
-| `src/requirements_mac.txt` | 50 | — | 1 | 3 | Deleting the file (#1706) |
+| `src/requirements.txt` | 51 | — | 1 | 2 | Deleted on `release/v1.6.44` |
+| `src/requirements_mac.txt` | 50 | — | 1 | 3 | Deleted on `release/v1.6.44` |
 
-- **108 of the 178 are in the two stale `src/` files**, which no build reads. #1706 deletes both, so they close when that reaches `current-stable` (Dependabot reads the default branch, not `roberto`). The stanza and protobuf alerts are only there: the root file leaves both unpinned, and today they resolve to stanza 1.15.0 and protobuf 7.36.2, above every fixed version.
+- **108 of the 178 are in the two stale `src/` files**, which no build reads. `release/v1.6.44` deletes both, so they close when it reaches `current-stable` (Dependabot reads the default branch, not `roberto`). The stanza and protobuf alerts are only there: the root file leaves both unpinned, and today they resolve to stanza 1.15.0 and protobuf 7.36.2, above every fixed version.
 - **Pillow 13.0.0 fixes all 52 in the root file**, and it needs Python 3.11 (no 3.10 wheels). That is #1688.
-- **transformers 4.41.2 is the other 18**, and Pillow does not touch them. 14 are fixed by 4.53 (ReDoS, three untrusted-pickle loaders); 4 need 5.x: two remote-code-execution paths (fixed in 5.3 and 5.5), a `save_pretrained` path traversal (5.10) and the `Trainer` (5.0). transformers 5 also needs Python 3.11, so it can only move with #1688.
+- **transformers is the other 18**, and Pillow does not touch them. `release/v1.6.44` moves it from 4.41.2 to 4.51.3, the last version the summarizer allows (§3.2), which closes 7. 14 are fixed by 4.53 (ReDoS, three untrusted-pickle loaders); 4 need 5.x: two remote-code-execution paths (fixed in 5.3 and 5.5), a `save_pretrained` path traversal (5.10) and the `Trainer` (5.0). transformers 5 also needs Python 3.11, so it can only move with #1688.
 - **Not seen by Dependabot:** the SRL env (`setup_SRL.py`: `transformer-srl==2.4.6`, torch 1.7, allennlp, spaCy 2, Python 3.8). It is old and has known advisories of its own, but it is opt-in, local, and has no newer release to move to. Leave it; say so if anyone asks.
 
 Practical exposure is low across the board (the Suite opens the user's own files and downloads fixed models from Hugging Face), but the critical Pillow ones are in JPEG and TIFF decoding, which any image input reaches.
@@ -153,10 +123,9 @@ What #1688 then carries, beyond the 3.10 → 3.11 workflow and Pillow change it 
 
 | Change | File | Why |
 |---|---|---|
-| `transformers>=5.10` (was `==4.41.2`; rewrite the comment) | `requirements.txt` | Closes the other 18. If fastcoref fails on 5.x: `transformers>=4.53,<5` closes 14 and leaves the 4, and still needs §3.2 |
+| `transformers>=5.10` (was `==4.51.3` from 1.6.44; rewrite the comment) | `requirements.txt` | Closes the other 18. If fastcoref fails on 5.x: `transformers>=4.53,<5` closes 14 and leaves the 4, and still needs §3.2 |
 | `stanza>=1.12.2` (was unpinned) | `requirements.txt` | No-op today (resolves 1.15.0), but stops a cached or constrained resolve from going back below the pickle-RCE fix |
 | `target-version = "py311"`, `"pythonVersion": "3.11"` | `pyproject.toml`, `pyrightconfig.json` | #1688 left them at 3.10; nothing else open touches them now |
-| "Python 3.8"/"3.10" comment | `NLP_Suite.spec` | Already §5.1 #15 |
 | Pillow bullet; "CI Python" bullet → 3.11 | §14 here | Settled decisions |
 | Security line: "Pillow 13 and transformers 5 fix N advisories; the app now runs on Python 3.11" | `CHANGELOG.md` | User-facing |
 
@@ -181,12 +150,11 @@ Deletions and behaviour changes. Each is ready to do once decided.
 
 | # | What | Evidence | Proposal |
 |---|---|---|---|
-| 1 | `setup_Windows/` and `setup_Mac/` scripts (STEP1-3, `run_NLP-Suite.*`, `NLP.bat`, shortcut scripts, `readme_*_beta.md`) | Not in the zip. Anaconda 2021.05, `python=3.8`, `cudatoolkit` on a Mac, `git checkout -f`, read the stale `src/requirements.txt`; the Mac STEP3 points to a folder that does not exist | **1.6.44, §1.1** |
 | 2 | SRL in the zip build | `setup_SRL.py` is not shipped and needs conda, so SRL cannot be set up there. The checkboxes in SVO, Semantic analysis and SRL_main stay enabled; the menu entry "SRL Semantic Role Labeling" shows as unavailable although `SRL_main.py` exists | Either disable the SRL checkboxes when frozen, or ship an SRL environment. Then fix the menu entry to match |
 | 3 | Java as "external software" | A JRE is bundled, but Setup external software still lists "Java (JDK)" as missing and offers to download it. In the install branch (`IO_libraries_util`, "RF 8/30") the test reads `if Java_errorFound:` → "IS ALREADY INSTALLED" | Hide the Java row when the bundled `jre` is found. Check the RF 8/30 condition |
 | 4 | Coreference default | `coreference_main` defaults to Stanford CoreNLP (needs CoreNLP); Stanza and BERT need nothing. Menu labels still say "CoreNLP annotator - coreference", "Pronominal resolution via CoreNLP" (`constants_util` 1011, 1067; `NLP_menu_tools_util` 40, 87, 97) | Default to Stanza; rename the labels (keys change in three files together) |
 | 5 | `config_util` fallback | When the package config cannot be read the fallback is Stanford CoreNLP (line 199) | Stanza |
-| 6 | First three launches open `NLP_welcome_main` in a second process | §6.7; its video button is disabled, Enter only reopens the menu | Remove the redirect and the file |
+| 6 | First three launches open `NLP_welcome_main` in a second process | Decided before `import GUI_util` since 1.6.44; its video button is disabled, Enter only reopens the menu | Remove the redirect and the file |
 | 7 | `NLP_menu_main` external-software reminder | `setup_external_programs_checkbox` returns the module global (always ""), so the reminder never shows; `setup_external_software_warning` is never called | Delete the two |
 | 8 | N-grams VIEWER | The checkbox and two menu entries are live; RUN answers "temporarily disconnected" | Hide until it is back, or reconnect |
 | 9 | Topic modeling "Run MALLET (coherence)" checkbox | Calls `gensim.models.wrappers`, removed in Gensim 4; always ends in "install Gensim 3.8.3" | Remove, or rewrite with Gensim's CoherenceModel. Help text also says "Gensim uses the MALLET algorithm" (it does not) |
@@ -195,20 +163,19 @@ Deletions and behaviour changes. Each is ready to do once decided.
 | 12 | Open-GUI launchers that use `sys.executable` | `DB_PCACE_data_analysis_main`, `DB_PCACE_data_validation_main`, `DB_SQL_main` (frozen: that is the app, not Python); `corpus_checker_PCACE_data_main` runs `sudo Python X_main.py` on a Mac and launches `WordNet.py`, which does not exist | Use `run_script_util` everywhere |
 | 13 | TIPS menu | "pip install & Anaconda environments", "Python: download, install, run", "Anaconda & pip useful commands" are second in the main TIPS list | Move to the end as developer TIPS, or remove. The pdfs themselves, and the Java / CoreNLP / MALLET install TIPS and "Topic modeling and corpus size", need a read |
 | 14 | Dead files | `videos_util.py` (pafy/vlc, imported nowhere), `NLP_setup_download_jars.py`, `knowledge_graphs_DBpedia_util_SPARQL.py`, `nyt_api_call.py`, `html_annotator_extractor_util_NEW.py`, `TensorFlow_semantic_analysis.py`, `GIS_heatMapIntegration.py`, `GIS_heatMapintegration_ver2.py`, `post_build_fixup.py`, `wiki-draft-About.md`, `.github/workflows/build-family-viewer.yml` (its spec files are not in the repo) | **1.6.44, §1.1.** |
-| 15 | `NLP_Suite.spec` | Hidden imports for 8 modules that do not exist (`data_visualization_1_main`, `_2_main`, `whats_in_your_corpus_main`, `GIS_folium_map_util`, `SENNA_util`, `social_science_research_main`, `knowledge_graphs_DBpedia_YAGO_main`, `charts_matplotlib_seaborn_util`); a local build bundles the live `config/` (API keys); "Python 3.8" comment | Hidden imports and the comment: **1.6.44, §1.1**. The `config/` bundling changes what a build ships: with §2 |
 | 16 | Reminders | 51 titles are in `reminders.csv` twice, under a GUI and under `*`. Popups read only the `*` row, the dropdown toggles the GUI row, so switching a reminder off there does nothing. About 12 definitions in `reminders_util` are used nowhere (Java 64-bit `-d64`, "CoreNLP Server is shutting down", tkinter Mac bug, SVO/WordNet/MALLET/Google Earth "system requirements") | Delete the per-GUI duplicates and the unused definitions |
 | 18 | wordclouds | Menu offers Wordle (site gone) and Tagxedo (needs Silverlight); "Tagul" is now WordArt; Python WordCloud asks for internet though it needs none | Remove the two, rename the third, drop the check |
 | 19 | `MEMO_Development_Notes.md`, `docs/CustomTkinter-Migration-Plan.md` | June 2026 history (Python 3.8 build, Mac Intel CI, files since deleted); a plan that names `setup-app/` and says installers build from `roberto` | A "historical" banner on each, or delete |
 
-### 5.2 Smaller copy still to fix
+### 5.2 Left from the copy pass (18 Nov)
 
-Low risk, left out of PR #1705 to keep it reviewable. Moved out of 1.6.42 on 11 Nov.
+The wording pass on `release/v1.6.44` fixed the rest of the old §5.2. These were left because they change behaviour, not words:
 
-- **CoreNLP-era wording where three or four packages now work:** `NER_main` 611, 634, 658, 990; `GIS_main` 1290, 1322, 1343; `coreference_main` 272, 364, 563, 592, 635; `narrative_analysis_ALL_main` 443, 459, 927; `corpus_profiler_main` 717 ("hundreds" of documents), 726; `parsers_annotators_main` 972 (a "*" option that does not exist); `shape_of_stories_main` 599–600, 996, 1061 and `sentiments_emotions_ALL_main` 247 (spaCy listed as neural); `sentiment_analysis_main` 1077–1083, 1123 (old script names, `nltk.downloader`); `language_tools_advisor_util` 186, 254, 263; `NLP_setup_external_software_main` 491, 499, 518.
-- **"Setup NLP package and corpus language"** (the item is "Setup NLP package (parsers & annotators) and corpus language"): `Stanza_util` 147/680, `sentiment_analysis_main` (7 places), `semantic_aggregation_main` 1417, and the "NLP setup options" reminder built in 9 GUIs.
-- **Names that do not exist:** `knowledge_graphs_main` 989 (TIPS name), 928–941 (YAGO and Wikipedia TIPS not offered); `file_classifier_NER_util` 40–46 and `file_find_non_related_documents_util` 43–49 (`concreteness_analysis.py`, then `sys.exit`); `sentiment_analysis_hedonometer_util` 59, `sentiment_analysis_VADER_util` 85 (wrong lib path and script name).
-- **Windows-only advice also shown on a Mac:** `config_util` 130, 159, 250, 284, 665, 698.
-- **Other:** `IO_libraries_util` Windows 64-bit Java branch; MALLET and Google Earth download links to check; `topic_modeling_mallet_util` "TEMPORARY FIX… environment variables" popups on every run (the code sets them itself); `file_manager_main` utf-8/ASCII checkboxes that only say "not available yet"; `file_merger_main` 326; `NLP_menu_main` 596 (CoreNLP 4.3.1 in the external-software help); `docs/Supported-Systems-Languages.md` 38; `requirements-mac.txt` still lists pafy/python-vlc.
+- `IO_libraries_util` (~line 361): the Windows check for a 32-bit Java. The zip bundles a 64-bit JRE, so only source installs can reach it; drop it with §5.1 #3.
+- `topic_modeling_mallet_util` (~lines 115 and 139): two "THIS IS A TEMPORARY FIX" warnings about `MALLET_HOME` on every run, though the code sets the variable itself. Print instead of a popup.
+- `file_manager_main`: the utf-8 and ASCII checkboxes only answer "not available yet". Hide them.
+- `file_classifier_NER_util`, `file_find_non_related_documents_util`: a missing `social-actor-list.csv` ends in `sys.exit()`, closing the GUI. Return instead.
+- The MALLET and Google Earth download links in Setup external software: not opened since 9 Nov.
 
 ### 5.3 First run from source: the config warning repeats and the window looks frozen
 
@@ -227,13 +194,12 @@ Evaluated 9 Nov 2026 on `current-stable` @ `43cbca1c` (v1.6.40), Windows 11, NLP
 | # | Finding | Measured cost | Who pays | Fix size |
 |---|---|---|---|---|
 | 1 | Heavy libraries imported when the GUI opens, not at RUN | 10–40 s | 32 of 55 GUIs | Medium, file by file |
-| 2 | Every GUI starts with 4.6 s of `GUI_util` imports (pandas, requests) | 4.6 s vs 0.9 s for a bare Tk window | Every GUI, every open | Small |
+| 2 | Every GUI starts with 4.6 s of `GUI_util` imports (pandas) | 4.6 s vs 0.9 s for a bare Tk window | Every GUI, every open | Small |
 | 3 | "Started/Finished running" alerts and reminders block until their countdown ends | 1–12 s each | Every RUN | Small (a decision first) |
 | 4 | Fixed `time.sleep` calls freeze the GUI | 5–10 s each | Config-file edits, CoreNLP, spell checker | Small |
 | 5 | Version check on the main thread on every GUI open; other web calls without a timeout | 0.1 s here; up to ~16–18 s on a blocked or dead network | Every GUI | Small |
-| 6 | First three launches start three Python processes before the menu shows | about 3 × 4.6 s | New users | Small |
-| 7 | Menu runs `java -version` at every start | Not measured | Menu | Small |
-| 8 | Row-by-row pandas loops in the analyses | Not measured | RUN on large corpora | Profile first |
+| 6 | Menu runs `java -version` at every start | Not measured | Menu | Small |
+| 7 | Row-by-row pandas loops in the analyses | Not measured | RUN on large corpora | Profile first |
 
 Findings 1–2 are where the opening time goes. Adding up the measured parts, a GUI such as Style analysis takes an estimated half a minute to open (4.6 s base + 29 s of libraries; not timed end to end) and should drop to a few seconds; the menu and the light GUIs should drop from about 5 s to about 1.5 s.
 
@@ -265,15 +231,13 @@ The GUIs in the first row already import their logic inside `run()`; they pay th
 | Part | Time | Why it is there |
 |---|---|---|
 | pandas | 2.2 s (3.1–3.5 s alone) | `IO_csv_util`, `reminders_util` and `config_util` import it at the top to read a few small config CSVs |
-| requests (with urllib3) | 1.3 s | `GUI_util.py:13` and `IO_libraries_util.py:13`, for the release check and three other small GETs |
 | Tk window, the rest | about 1.1 s | |
 
 **Fix.**
 - `reminders_util`, `config_util`: read `reminders.csv` and the config files with the `csv` module. `getReminders_list` and `checkReminder` each re-read `reminders.csv` with pandas, two or three times per GUI open.
 - `IO_csv_util`: `import pandas` inside the functions that need a DataFrame.
-- `GUI_util`, `IO_libraries_util`: `import requests` inside the functions that call it (or use `urllib.request`, which `usage_util` already does).
 
-Expected saving: about 3.5 s on every window, the menu included. The menu also imports `customtkinter` (1.4 s), which is needed.
+`requests` is already imported only where it is used on `release/v1.6.44` (`import GUI_util` 1.50 s -> 0.82 s on a Mac). Expected saving from pandas: about 2 s on every window, the menu included. The menu also imports `customtkinter` (1.4 s), which is needed.
 
 ### 6.4 Timed alerts block the run
 
@@ -294,13 +258,7 @@ The 1 s pauses in `GIS_geocode_util` and `charts_util` are Nominatim's rate limi
 
 - `GUI_util.display_release()` runs at the end of `GUI_bottom` for every GUI: `internet_on()` then a GET to GitHub, before the window is usable. Here it took 0.03 s + 0.07 s, so on a good connection it is not the problem. On a dead or filtered network `internet_on()` can take up to 16 s (3 + 3 + 5 + 5 s of timeouts), and the GET up to 18 s (3 tries × 6 s).
 - **Fix:** run the check in a background thread and fill the release label with `window.after`; check once per session, not once per window (the menu can pass the result to the GUIs it starts, like `NLP_SUITE_OPEN_WINDOWS`).
-- No timeout at all, so a stalled connection hangs the GUI: `IO_libraries_util.check_CoreNLPVersion` (line 374, called at the start of every CoreNLP run from `Stanford_CoreNLP_util.py:360`), `IO_libraries_util.open_url` (line 652) and `GUI_util.watch_video` (line 2168). The last two fetch the whole page only to test that it exists before opening the browser; open the browser directly. Give the CoreNLP check `timeout=5` and run it at most once a day.
-
-### 6.7 The first three launches start three processes
-
-`NLP_menu_main.py` imports `GUI_util` (4.6 s) and only then, at lines 87–108, reads `config/launch_count.json` and starts `NLP_welcome_main.py` as a new process (another 4.6 s plus PIL), which in turn starts the menu again with `--from-welcome`. A new user waits roughly 14 s for the menu on the launches where first impressions are made.
-
-**Fix:** move the launch-count block above `import GUI_util` (it needs only `json`, `os`, `sys` and `run_script_util`).
+- No timeout at all, so a stalled connection hangs the GUI: `GUI_util.watch_video` (line 2168). (`check_CoreNLPVersion` and `open_url` get 5 s and 10 s on `release/v1.6.44`.) The last two fetch the whole page only to test that it exists before opening the browser; open the browser directly. Give the CoreNLP check `timeout=5` and run it at most once a day.
 
 ### 6.8 Menu start-up extras (not timed)
 
@@ -312,8 +270,8 @@ Read from the code only: 96 `iterrows()` / row-append patterns in 29 files, most
 
 ### 6.10 Order of work
 
-1. §6.3 pandas and requests out of the `GUI_util` import chain; §6.2 step 1 (`find_spec`). Every GUI gets faster.
-2. §6.7 launch-count block; §6.5 sleeps; §6.6 timeouts.
+1. §6.3 pandas out of the `GUI_util` import chain; §6.2 step 1 (`find_spec`). Every GUI gets faster.
+2. §6.5 sleeps; §6.6 the release check in the background, and `watch_video`'s timeout.
 3. §6.4 alerts, once Roberto has decided the behaviour.
 4. §6.2 steps 2–3, module by module.
 5. Re-measure with the same commands, on Windows and on a Mac, and on the zip build. Add a CI check that `import GUI_util` under the test stubs does not import pandas or requests, so the gain is not lost.
@@ -382,7 +340,7 @@ Each PR carries before/after screenshots from a gallery script. Add one to `test
 | `Installation-Instructions-for-the-NLP-Suite` | Byte-identical to `Installation-of-the-NLP-Suite`; linked nowhere |
 | `Supported-Systems-&-Languages` | Byte-identical to `Supported-Systems-Languages`; linked nowhere |
 | `Download,-Install,-Update,-Run-the-NLP-Suite` | Linked nowhere; overlaps the install page. Its Update and Config Folder sections are not on the install page: merge them in (from the #1705 version of `docs/Download-Install-Update-Run.md`), then delete both the wiki page and the `docs/` file |
-| `Install-Git`, `pip-install` | Feb 2022; for the Anaconda STEP2 install and git-based updates, both gone (§5.1 #1). Linked nowhere |
+| `Install-Git`, `pip-install` | Feb 2022; for the Anaconda STEP2 install and git-based updates, both gone (the setup scripts were deleted in 1.6.44). Linked nowhere |
 
 **Replace, not delete:** `Install-External-Software` (Oct 2022) tells users to install the Java JDK and CoreNLP. The #1705 version of `docs/Installing-External-Software.md` is current (optional tools, bundled fallbacks). Publish it under the wiki name and link it from the sidebar.
 
@@ -390,7 +348,6 @@ Each PR carries before/after screenshots from a gallery script. Add one to `test
 
 | Link | Where | Fix |
 |---|---|---|
-| `wiki/Install-the-NLP-Suite` (no such page) | `setup_Mac/readme_Mac_beta.md`, `setup_Windows/readme_Windows_beta.md` | Deleted by §1.1 |
 | `wiki/NLP-Suite-Release-History` (no such page) | wiki `Home` | `CHANGELOG.md` |
 | `Watch-YouTube-Videos` (no such page) | Wiki `_Sidebar` | Publish `docs/Watch-YouTube-Videos.md`, or drop the entry |
 

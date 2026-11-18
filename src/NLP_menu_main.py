@@ -599,8 +599,8 @@ external_software_setup_help = (
     "The NLP_setup_external_software_config.csv file has three columns (with headers Software, Path, Download_link) and 6 rows, one for each of the external software and with the following expected labels: Stanford CoreNLP, MALLET, Java (JDK), WordNet, Gephi, Google Earth Pro and where "
     "Path refers to the installation path of the software on your machine. "
     "As an example, the three fields for the Stanford CoreNLP software would look like this: "
-    "Stanford CoreNLP   C:/Program Files (x86)/stanford-corenlp-4.3.1   https://stanfordnlp.github.io/CoreNLP/download.html. "
-    "Needless to say C:/Program Files (x86)/stanford-corenlp-4.3.1 will change, depending upon where you install CoreNLP locally."
+    "Stanford CoreNLP   C:/Program Files (x86)/stanford-corenlp-4.6.0   https://stanfordnlp.github.io/CoreNLP/download.html. "
+    "Needless to say C:/Program Files (x86)/stanford-corenlp-4.6.0 will change, depending upon where you install CoreNLP locally."
 )
 
 # the card is as tall as its content, so the start buttons sit right under the setup rows, not at the

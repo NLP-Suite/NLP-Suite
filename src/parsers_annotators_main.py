@@ -308,7 +308,7 @@ def run():
                     title="Option not available in spaCy",
                     message="The "
                     + annotators_menu_var
-                    + " is not available in spaCy.\n\nThe annotator is available in Stanford CoreNLP. If you wish to run the annotator, please, using the Setup dropdown menu at the bottom of this GUI, select the Setup NLP package and corpus language option and select Stanford CoreNLP as your default package and try again.",
+                    + " is not available in spaCy.\n\nThe annotator is available in Stanford CoreNLP. If you wish to run the annotator, please, using the Setup dropdown menu at the bottom of this GUI, select the Setup NLP package (parsers & annotators) and corpus language option and select Stanford CoreNLP as your default package and try again.",
                 )
                 return
             else:
@@ -403,7 +403,7 @@ def run():
                     title="Option not available in Stanza",
                     message="The "
                     + annotators_menu_var
-                    + " is not available in Stanza.\n\nThe annotator is available in Stanford CoreNLP. If you wish to run the annotator, please, using the Setup dropdown menu at the bottom of this GUI, select the Setup NLP package and corpus language option and select Stanford CoreNLP as your default package and try again.",
+                    + " is not available in Stanza.\n\nThe annotator is available in Stanford CoreNLP. If you wish to run the annotator, please, using the Setup dropdown menu at the bottom of this GUI, select the Setup NLP package (parsers & annotators) and corpus language option and select Stanford CoreNLP as your default package and try again.",
                 )
                 return
             else:
