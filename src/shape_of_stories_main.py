@@ -1096,6 +1096,7 @@ GUI_util.GUI_bottom(
     scriptName,
 )
 
-check_IO_requirements(GUI_util.inputFilename.get(), GUI_util.input_main_dir_path.get())
+# no I/O check here: with the default options (data reduction ticked, Sentiment analysis not) and the sample txt
+# folder it warned before the user had chosen anything; run() and the Sentiment analysis checkbox still check
 
 GUI_util.window.mainloop()

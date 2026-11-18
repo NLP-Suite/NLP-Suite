@@ -1196,6 +1196,11 @@ def Dialog2Display(title: str):
 def message_box_widget(window, message_title, message_text, buttonType="OK", timeout=3000):
     global yes_no_button
     yes_no_button = ""
+    # unattended/silent mode (NLP_SILENT): print the message instead of opening a window that blocks for its
+    # countdown, and answer as a timeout does ("": a reminder keeps its current status)
+    if os.environ.get("NLP_SILENT", "").strip().lower() not in ("", "0", "false", "no", "off"):
+        print("[NLP_SILENT] " + str(message_title) + ": " + str(message_text))
+        return yes_no_button
     # if not 'Started' in message_text and not 'Finished' in message_text:
     #    if 'Started' in message_text or 'Finished' in message_text:
     #        return yes_no_button
