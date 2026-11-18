@@ -96,6 +96,9 @@ def test_a_missing_punkt_tab_is_downloaded(iolib):
     with (
         mock.patch.dict(sys.modules, {"nltk": fake_nltk, "nltk.data": fake_nltk.data}),
         mock.patch.object(iolib, "IO_user_interface_util"),
+        # the message's wording is tested above; here only the download matters, and downloaded_build reads
+        # GUI_IO_util.NLPPath, which other tests' monkeypatching can leave deleted on the shared stub (CI)
+        mock.patch.object(iolib, "downloaded_build", return_value=True),
     ):
         iolib.import_nltk_resource(None, "tokenizers/punkt", "punkt")
     fake_nltk.download.assert_called_once_with("punkt_tab")
