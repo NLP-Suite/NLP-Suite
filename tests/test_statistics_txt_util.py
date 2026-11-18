@@ -9,6 +9,7 @@ erroring at collection time.
 import pytest
 
 try:
+    import statistics_txt_util
     from statistics_txt_util import get_yules_k_i, tokenize, word_count
 except (ImportError, SystemExit):  # pragma: no cover - defensive
     pytest.skip("statistics_txt_util dependencies not available", allow_module_level=True)
@@ -32,3 +33,26 @@ def test_get_yules_k_i():
     k, i = get_yules_k_i("the cat and the dog and the bird")
     assert k > 0
     assert i > 0
+
+
+class TestRepetitionK:
+    """A blank, cancelled or non-numeric K used to end silently or crash (#1723)."""
+
+    def test_a_number_is_used(self):
+        assert statistics_txt_util.repetition_k("5", 4) == (5, "")
+
+    def test_blank_falls_back_and_says_so(self):
+        k, note = statistics_txt_util.repetition_k("", 4)
+        assert k == 4 and "default K = 4" in note
+
+    def test_cancel_returns_none(self):
+        k, note = statistics_txt_util.repetition_k(None, 3)
+        assert k == 3 and note
+
+    def test_not_a_number(self):
+        k, note = statistics_txt_util.repetition_k("three", 3)
+        assert k == 3 and "'three'" in note
+
+    def test_zero(self):
+        k, note = statistics_txt_util.repetition_k("0", 4)
+        assert k == 4 and note

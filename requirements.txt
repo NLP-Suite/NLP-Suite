@@ -9,7 +9,9 @@
 pandas
 numpy
 scipy
-scikit-learn
+# floor: Shape of Stories' Hierarchical Clustering passes AgglomerativeClustering(metric=...), which 1.2 added
+# (1.4 removed the old affinity=, #1722)
+scikit-learn>=1.2
 openpyxl
 xlrd
 numexpr

@@ -29,6 +29,7 @@ import IO_csv_util
 import IO_files_util
 import IO_user_interface_util
 import reminders_util
+import sentiment_analysis_util
 import shape_of_stories_clustering_util as cl
 import shape_of_stories_vectorizer_util as vec
 import shape_of_stories_visualization_util as viz
@@ -215,14 +216,13 @@ def run():
             #     flag="false" or flag="" ONLY produce individual output files when processing a directory; NO  merged file produced
 
             annotator = ["sentiment"]
-            document_length_var = 1
-            limit_sentence_length_var = 1000
+            # config_filename used to be passed a second time here, which shifted every argument after it by one
+            # (outputDir became the openOutputFiles flag, the annotator list became DoCleanXML...): #1549
             tempOutputFiles = spaCy_util.spaCy_annotate(
                 config_filename,
                 inputFilename,
                 inputDir,
                 outputDir,
-                config_filename,
                 openOutputFiles,
                 chartPackage,
                 dataTransformation,
@@ -273,9 +273,12 @@ def run():
                 language_var,
                 export_json_var,
                 memory_var,
+                # the setup's limits; without them parse.maxlen was always 1000 and long sentences ran the Java
+                # heap out of memory (#1721). CoreNLP_annotate turns 0 into its defaults
+                document_length=document_length_var,
+                sentence_length=limit_sentence_length_var,
             )
-            # outputFilename=outputFilename[0] # annotators return a list and not a string
-            if len(tempOutputFiles) > 0:
+            if tempOutputFiles:
                 sentiment_scores_input = tempOutputFiles[0]
                 filesToOpen.extend(tempOutputFiles)
 
@@ -289,8 +292,6 @@ def run():
                 return
 
             annotator = "sentiment"
-            document_length_var = 1
-            limit_sentence_length_var = 1000
             tempOutputFiles = Stanza_util.Stanza_annotate(
                 config_filename,
                 inputFilename,
@@ -320,6 +321,26 @@ def run():
                 filesToOpen.extend(tempOutputFiles)
 
     # step 2 ----------------------------------------------------------------------------------------------------
+
+    if (
+        hierarchical_clustering or SVD or NMF or best_topic_estimation
+    ) and not sentiment_analysis_util.sentiment_scores_ready(
+        sentimentAnalysis, sentiment_scores_input, inputFilename, inputDir
+    ):
+        mb.showwarning(
+            title="No sentiment scores",
+            message="The data reduction options (Hierarchical Clustering, SVD, NMF, best k) need a csv file of "
+            "sentiment scores, and "
+            + (
+                "the sentiment analysis (step 1) produced none: check the command line/terminal for the reason."
+                if sentimentAnalysis
+                else "the input is not a csv file.\n\nPlease, tick 'Sentiment Analysis' to compute the scores "
+                "from your txt files, or select a csv file of sentiment scores as input."
+            ),
+        )
+        if filesToOpen:
+            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
+        return
 
     if hierarchical_clustering or SVD or NMF or best_topic_estimation:
         nSAscoreFiles = IO_csv_util.GetMaxValueInCSVField(sentiment_scores_input, "Shape of Stories", "Document ID")
@@ -403,9 +424,9 @@ def run():
         vis = viz.Visualizer(outputHCDir)
         vis.visualize_clusters(nSAscoreFiles, grouped_vectors, "Hierarchical Clustering (HC)", "HC", clusters_file)
         for i in range(rec_n_clusters):
-            filesToOpen.append(os.path.join(outputHCDir, "HC_Cluster_" + str(i + 1) + ".png"))
-            filesToOpen.append(os.path.join(outputHCDir, "HC_Cluster_" + str(i + 1) + "_subplot.png"))
-        filesToOpen.append(os.path.join(outputHCDir, "Hierarchical_Clustering_Documents.csv"))
+            filesToOpen.append(os.path.join(outputHCDir, "HC_cluster_" + str(i + 1) + ".png"))
+            filesToOpen.append(os.path.join(outputHCDir, "HC_cluster_" + str(i + 1) + "_subplot.png"))
+        filesToOpen.append(os.path.join(outputHCDir, "Hierarchical Clustering Documents.csv"))
 
     # svd
     if SVD:
@@ -454,9 +475,9 @@ def run():
             modes=neg_modes,
         )
         for i in range(rec_n_clusters):
-            filesToOpen.append(os.path.join(outputSVDDir, "SVD_Positive_Cluster_" + str(i + 1) + ".png"))
+            filesToOpen.append(os.path.join(outputSVDDir, "SVD_Positive_cluster_" + str(i + 1) + ".png"))
         for i in range(rec_n_clusters):
-            filesToOpen.append(os.path.join(outputSVDDir, "SVD_Negative_Cluster_" + str(i + 1) + ".png"))
+            filesToOpen.append(os.path.join(outputSVDDir, "SVD_Negative_cluster_" + str(i + 1) + ".png"))
         filesToOpen.append(os.path.join(outputSVDDir, "SVD_Positive_Documents.csv"))
         filesToOpen.append(os.path.join(outputSVDDir, "SVD_Negative_Documents.csv"))
 
@@ -484,8 +505,8 @@ def run():
             nSAscoreFiles, grouped_vectors, "Non-negative Matrix Factorization (NMF)", "NMF", clusters_file
         )
         for i in range(rec_n_clusters):
-            filesToOpen.append(os.path.join(outputNMFDir, "NMF_Cluster_" + str(i + 1) + ".png"))
-            filesToOpen.append(os.path.join(outputNMFDir, "NMF_Cluster_" + str(i + 1) + "_subplot.png"))
+            filesToOpen.append(os.path.join(outputNMFDir, "NMF_cluster_" + str(i + 1) + ".png"))
+            filesToOpen.append(os.path.join(outputNMFDir, "NMF_cluster_" + str(i + 1) + "_subplot.png"))
         filesToOpen.append(os.path.join(outputNMFDir, "NMF_Documents.csv"))
 
     # best topic estimate
@@ -600,12 +621,8 @@ sentiment_analysis_menu = tk.OptionMenu(
     "   spaCy",
     "   Stanford CoreNLP",
     "   Stanza",
-    "",
-    "Dictionary approaches:",
-    "   ANEW",
-    "   hedonometer",
-    "   SentiWordNet",
-    "   VADER",
+    # the dictionary methods (ANEW, hedonometer, SentiWordNet, VADER) are in the Sentiment analysis GUI only:
+    # Shape of Stories never computed them, and went on to read the txt folder as a csv (#1722)
 )
 y_multiplier_integer = GUI_IO_util.placeWidget(
     window,
@@ -1058,7 +1075,7 @@ readMe_message = (
     "In OUTPUT the algorithms will produce sentiment analysis scores (if the option is selected) and a number of visual plots (e.g., sentiment arcs). "
     "\n\nPlease, use the 'Select INPUT/OUTPUT configuration' button to select the appropriate options. "
     "Output files will be saved in a sub-directory called 'Shape of Stories' itself a subdirectory of the current default output directory; inside this 'Shape of Stories' subdirecory all files will be saved inside a further subdirectory with the name of the final part of the input directory.\n\n"
-    "Two different types of approaches to SENTIMENT ANALYSIS are used: 1. neural network and 2. dictionary-based approaches.\n\nNeural network approaches, albeit slower, are far more reliable. The NLP Suite provides four different neural network algorithms - BERT, spaCy, Stanford CoreNLP, Stanza - and four dictionary-based algorithms - ANEW, hedonometer, sentiWordNet, VADER.\n\n"
+    "Two different types of approaches to SENTIMENT ANALYSIS are used: 1. neural network and 2. dictionary-based approaches.\n\nNeural network approaches, albeit slower, are far more reliable. The NLP Suite provides four different neural network algorithms - BERT, spaCy, Stanford CoreNLP, Stanza - and four dictionary-based algorithms - ANEW, hedonometer, sentiWordNet, VADER. Shape of Stories uses only the neural network algorithms; the dictionary-based ones are in the Sentiment analysis GUI.\n\n"
     "Three different approaches to DATA REDUCTION are used: Hierarchical clustering (HC), Singular Value Decomposition (SVD), Non-Negative Matrix Factorization (NMF).\n\n"
     "During execution, the algorithm will ask the user to confirm three different PARAMETERS used by the data reduction algorithms: Window size, Sentiment Vector Size, Cluster (modes) size.\n\n"
     "   WINDOW SIZE: the number of sentences that will be averaged to obtain one point of the story arc.\n   Lower bound: At least one sentence must be take average to get the values in sentiment score vector.\n   Upper bound: minimum document length-1. Window size should be less than the minimum document length, i.e, number of sentences in the shortest document.\n"

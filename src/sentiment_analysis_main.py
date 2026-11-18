@@ -26,6 +26,7 @@ import sentiment_analysis_ANEW_util
 import sentiment_analysis_hedonometer_util
 import sentiment_analysis_NRC_util
 import sentiment_analysis_SentiWordNet_util
+import sentiment_analysis_util
 import sentiment_analysis_VADER_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
@@ -104,16 +105,13 @@ def run():
     elif mean_var == True and median_var == True:
         mode = "both"
 
-    BERT_var = 0
-    SentiWordNet_var = 0
-    CoreNLP_var = 0
-    Stanza_var = 0
-    spaCy_var = 0
-    hedonometer_var = 0
-    vader_var = 0
-    anew_var = 0
-    nrc_var = 0
-    character_arcs_var = 0
+    selected = sentiment_analysis_util.selected_algorithms(SA_algorithm_var)
+    if not selected:
+        mb.showwarning(
+            "Warning",
+            SA_algorithm_var.lstrip() + " is not available yet. Sorry!\n\nPlease, select another option and try again.",
+        )
+        return
 
     if SA_algorithm_var == "*":
         if inputFilename != "":
@@ -127,41 +125,20 @@ def run():
             return
         outputDir = outputSentDir
 
-        BERT_var = 1
-        CoreNLP_var = 1
-        spaCy_var = 1
-        Stanza_var = 1
-        anew_var = 1
-        hedonometer_var = 1
-        nrc_var = 1
-        SentiWordNet_var = 1
-        vader_var = 1
-    elif "BERT" in SA_algorithm_var:
-        BERT_var = 1
-    elif "spaCy" in SA_algorithm_var:
-        spaCy_var = 1
-    elif "Stanford CoreNLP" in SA_algorithm_var:
-        CoreNLP_var = 1
-    elif "Stanza" in SA_algorithm_var:
-        Stanza_var = 1
-    elif "SentiWordNet" in SA_algorithm_var:
-        SentiWordNet_var = 1
-    elif "ANEW" in SA_algorithm_var:
-        anew_var = 1
-    elif "NRC" in SA_algorithm_var:
-        nrc_var = 1
-    elif "Character Emotion Arcs" in SA_algorithm_var:
-        character_arcs_var = 1
-    elif "hedonometer" in SA_algorithm_var:
-        hedonometer_var = 1
-    elif "VADER" in SA_algorithm_var:
-        vader_var = 1
-    else:
-        mb.showwarning(
-            "Warning",
-            SA_algorithm_var.lstrip() + " is not available yet. Sorry!\n\nPlease, select another option and try again.",
-        )
-        return
+    BERT_var = int("BERT" in selected)
+    CoreNLP_var = int("CoreNLP" in selected)
+    spaCy_var = int("spaCy" in selected)
+    Stanza_var = int("Stanza" in selected)
+    anew_var = int("ANEW" in selected)
+    hedonometer_var = int("hedonometer" in selected)
+    nrc_var = int("NRC" in selected)
+    SentiWordNet_var = int("SentiWordNet" in selected)
+    vader_var = int("VADER" in selected)
+    character_arcs_var = int("Character Emotion Arcs" in selected)
+
+    # the csv the 'Shape of stories' hand-off opens, and the algorithms that produced nothing (#1720)
+    outputFilename = ""
+    failed = []
 
     # NEURAL NETWORK APPROACHES -------------------------------------------------------------------
 
@@ -177,13 +154,11 @@ def run():
         outputFiles = BERT_util.sentiment_main(
             inputFilename, inputDir, outputDir, config_filename, mode, chartPackage, dataTransformation, model_path
         )
-        if outputFiles != None:
-            if isinstance(outputFiles, str):
-                filesToOpen.append(outputFiles)
-                outputFilename = outputFiles  # used later by shape_of_stories
-            else:
-                filesToOpen.extend(outputFiles)
-                outputFilename = outputFiles[0]  # used later by shape_of_stories
+        first_file = sentiment_analysis_util.add_outputs(outputFiles, filesToOpen)
+        if first_file:
+            outputFilename = first_file  # used later by shape_of_stories
+        else:
+            failed.append("BERT")
 
     # spaCy  _______________________________________________________
 
@@ -197,8 +172,6 @@ def run():
         #     flag="false" or flag="" ONLY produce individual output files when processing a directory; NO  merged file produced
 
         annotator = ["sentiment"]
-        document_length_var = 1
-        limit_sentence_length_var = 1000
         import spaCy_util
 
         outputFiles = spaCy_util.spaCy_annotate(
@@ -213,21 +186,19 @@ def run():
             False,
             language_var,
             memory_var,
-            document_length_var,
-            limit_sentence_length_var,
+            1,  # document length (not used by spaCy)
+            1000,  # sentence length (not used by spaCy)
             filename_embeds_date_var=0,
             date_format="",
             items_separator_var="",
             date_position_var=0,
         )
 
-        if outputFiles != None:
-            if isinstance(outputFiles, str):
-                filesToOpen.append(outputFiles)
-                outputFilename = outputFiles  # used later by shape_of_stories
-            else:
-                filesToOpen.extend(outputFiles)
-                outputFilename = outputFiles[0]  # used later by shape_of_stories
+        first_file = sentiment_analysis_util.add_outputs(outputFiles, filesToOpen)
+        if first_file:
+            outputFilename = first_file  # used later by shape_of_stories
+        else:
+            failed.append("spaCy")
 
     # Stanford CORENLP  _______________________________________________________
 
@@ -259,15 +230,16 @@ def run():
             language_var,
             export_json_var,
             memory_var,
+            # without these the parser's sentence limit was always 1000 tokens, and the long sentences of
+            # unpunctuated text ran the Java heap out of memory (#1721); CoreNLP_annotate turns 0 into its defaults
+            document_length=document_length_var,
+            sentence_length=limit_sentence_length_var,
         )
-        # outputFilename=outputFilename[0] # annotators return a list and not a string
-        if outputFiles != None:
-            if isinstance(outputFiles, str):
-                filesToOpen.append(outputFiles)
-                outputFilename = outputFiles  # used later by shape_of_stories
-            else:
-                filesToOpen.extend(outputFiles)
-                outputFilename = outputFiles[0]  # used later by shape_of_stories
+        first_file = sentiment_analysis_util.add_outputs(outputFiles, filesToOpen)
+        if first_file:
+            outputFilename = first_file  # used later by shape_of_stories
+        else:
+            failed.append("Stanford CoreNLP")
 
     # Stanza  _______________________________________________________
 
@@ -279,8 +251,6 @@ def run():
             return
 
         annotator = "sentiment"
-        document_length_var = 1
-        limit_sentence_length_var = 1000
         import Stanza_util
 
         outputFiles = Stanza_util.Stanza_annotate(
@@ -295,24 +265,30 @@ def run():
             False,
             [language_var],  # Stanza_util takes language_var as a list
             memory_var,
-            document_length_var,
-            limit_sentence_length_var,
+            1,  # document length (not used by Stanza)
+            1000,  # sentence length (not used by Stanza)
             filename_embeds_date_var=0,
             date_format="",
             items_separator_var="",
             date_position_var=0,
         )
 
-        if outputFiles != None:
-            if isinstance(outputFiles, str):
-                filesToOpen.append(outputFiles)
-            else:
-                filesToOpen.extend(outputFiles)
+        first_file = sentiment_analysis_util.add_outputs(outputFiles, filesToOpen)
+        if first_file:
+            if not outputFilename:
+                outputFilename = first_file  # used later by shape_of_stories
+        else:
+            failed.append("Stanza")
 
     # shape of stories ------------------------------------------------------------------------
     #   only for neural network approaches
 
-    if (BERT_var or spaCy_var or CoreNLP_var or Stanza_var) and shape_of_stories_var:
+    if (BERT_var or spaCy_var or CoreNLP_var or Stanza_var) and shape_of_stories_var and not outputFilename:
+        mb.showwarning(
+            title="Shape of stories",
+            message="The sentiment analysis produced no scores, so the 'Shape of stories' GUI was not opened.",
+        )
+    elif (BERT_var or spaCy_var or CoreNLP_var or Stanza_var) and shape_of_stories_var:
         if IO_libraries_util.check_inputPythonJavaProgramFile("shape_of_stories_main.py") == False:
             return
 
@@ -336,7 +312,7 @@ def run():
         config_util.write_IO_config_file(
             GUI_util.window,
             config_filename_temp,
-            config_input_output_numeric_options,
+            config_input_output_numeric_options_temp,  # was this GUI's own options (#1722)
             config_input_output_alphabetic_options_temp,
             True,
         )
@@ -377,11 +353,8 @@ def run():
                 inputFilename, inputDir, outputDir, mode, chartPackage, dataTransformation
             )
 
-            if outputFiles != None:
-                if isinstance(outputFiles, str):
-                    filesToOpen.append(outputFiles)
-                else:
-                    filesToOpen.extend(outputFiles)
+            if not sentiment_analysis_util.add_outputs(outputFiles, filesToOpen):
+                failed.append("ANEW")
 
             IO_user_interface_util.timed_alert(
                 GUI_util.window,
@@ -422,11 +395,8 @@ def run():
             outputFiles = sentiment_analysis_NRC_util.main(
                 inputFilename, inputDir, outputDir, chartPackage, dataTransformation
             )
-            if outputFiles is not None:
-                if isinstance(outputFiles, str):
-                    filesToOpen.append(outputFiles)
-                else:
-                    filesToOpen.extend(outputFiles)
+            if not sentiment_analysis_util.add_outputs(outputFiles, filesToOpen):
+                failed.append("NRC")
 
             IO_user_interface_util.timed_alert(
                 GUI_util.window,
@@ -467,11 +437,8 @@ def run():
             outputFiles = character_emotion_arcs_util.main(
                 inputFilename, inputDir, outputDir, chartPackage, dataTransformation
             )
-            if outputFiles is not None:
-                if isinstance(outputFiles, str):
-                    filesToOpen.append(outputFiles)
-                else:
-                    filesToOpen.extend(outputFiles)
+            if not sentiment_analysis_util.add_outputs(outputFiles, filesToOpen):
+                failed.append("Character Emotion Arcs")
 
             IO_user_interface_util.timed_alert(
                 GUI_util.window,
@@ -509,11 +476,8 @@ def run():
             outputFiles = character_emotion_arcs_util.main(
                 inputFilename, inputDir, outputDir, chartPackage, dataTransformation
             )
-            if outputFiles is not None:
-                if isinstance(outputFiles, str):
-                    filesToOpen.append(outputFiles)
-                else:
-                    filesToOpen.extend(outputFiles)
+            if not sentiment_analysis_util.add_outputs(outputFiles, filesToOpen):
+                failed.append("Character Emotion Arcs")
             IO_user_interface_util.timed_alert(
                 GUI_util.window,
                 2000,
@@ -563,11 +527,8 @@ def run():
                 inputFilename, inputDir, outputDir, mode, chartPackage, dataTransformation
             )
 
-            if outputFiles != None:
-                if isinstance(outputFiles, str):
-                    filesToOpen.append(outputFiles)
-                else:
-                    filesToOpen.extend(outputFiles)
+            if not sentiment_analysis_util.add_outputs(outputFiles, filesToOpen):
+                failed.append("HEDONOMETER")
 
             IO_user_interface_util.timed_alert(
                 GUI_util.window,
@@ -611,11 +572,8 @@ def run():
                 inputFilename, inputDir, outputDir, config_filename, mode, chartPackage, dataTransformation
             )
 
-            if outputFiles != None:
-                if isinstance(outputFiles, str):
-                    filesToOpen.append(outputFiles)
-                else:
-                    filesToOpen.extend(outputFiles)
+            if not sentiment_analysis_util.add_outputs(outputFiles, filesToOpen):
+                failed.append("SentiWordNet")
 
             IO_user_interface_util.timed_alert(
                 GUI_util.window,
@@ -665,11 +623,8 @@ def run():
                 inputFilename, inputDir, outputDir, mode, chartPackage, dataTransformation
             )
 
-            if outputFiles != None:
-                if isinstance(outputFiles, str):
-                    filesToOpen.append(outputFiles)
-                else:
-                    filesToOpen.extend(outputFiles)
+            if not sentiment_analysis_util.add_outputs(outputFiles, filesToOpen):
+                failed.append("VADER")
 
             IO_user_interface_util.timed_alert(
                 GUI_util.window,
@@ -690,6 +645,9 @@ def run():
                 + language
                 + '.\n\nYou can change the language using the Setup dropdownmenu at the bottom of this GUI and selecting "Setup NLP package and corpus language."',
             )
+
+    if failed:
+        mb.showwarning(title="Sentiment analysis", message=sentiment_analysis_util.failed_algorithms_message(failed))
 
     if len(filesToOpen) > 0:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)

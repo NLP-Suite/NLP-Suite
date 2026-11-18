@@ -1266,6 +1266,46 @@ def print_results(
 
 
 # called by sentence_analysis_main and style_analysis_main
+_spacy_textblob_nlp = None
+
+
+def spacy_textblob_pipeline():
+    """spaCy's English model with the spacytextblob pipe, loaded once per process.
+
+    spacytextblob registers its "spacytextblob" factory only when spacytextblob.spacytextblob is imported, so
+    add_pipe failed with E002 "Can't find factory" without that import (#1720). The model used to be loaded
+    again for every sentence.
+    """
+    global _spacy_textblob_nlp
+    if _spacy_textblob_nlp is None:
+        import spacytextblob.spacytextblob  # noqa: F401  (registers the factory)
+
+        nlp = spacy.load("en_core_web_sm")
+        nlp.add_pipe("spacytextblob")
+        _spacy_textblob_nlp = nlp
+    return _spacy_textblob_nlp
+
+
+def repetition_k(k_str, default):
+    """K for the repetition finders, from what the user typed. Returns (k, note); note is "" when k_str was used.
+
+    A blank or cancelled K used to end the run with no output and no message, and a non-number crashed on
+    int() (#1723). Both now fall back to the value '*' uses, and say so.
+    """
+    k_str = (k_str or "").strip()
+    if k_str == "":
+        return default, "No value was entered for K: the default K = " + str(default) + " was used."
+    try:
+        k = int(k_str)
+    except ValueError:
+        return default, "K must be a whole number ('" + k_str + "' is not): the default K = " + str(
+            default
+        ) + " was used."
+    if k < 1:
+        return default, "K must be 1 or more: the default K = " + str(default) + " was used."
+    return k, ""
+
+
 def process_words(
     window,
     configFileName,
@@ -1403,9 +1443,9 @@ def process_words(
             k_str, useless = GUI_IO_util.enter_value_widget(
                 "Enter the number of sentences, K, to be analyzed (Repetition finder)", "K", 1, "", "", ""
             )
-        if k_str == "":
-            return
-        k = int(k_str)
+        k, k_note = repetition_k(k_str, 4)
+        if k_note:
+            mb.showinfo(title="Repetition finder", message=k_note)
 
     if "Repetition across" in processType:
         if "*" in processType:
@@ -1420,9 +1460,9 @@ def process_words(
                 "",
                 "",
             )
-        if k_str == "":
-            return
-        k = int(k_str)
+        k, k_note = repetition_k(k_str, 3)
+        if k_note:
+            mb.showinfo(title="Repetition finder", message=k_note)
         if k < 2:
             k = 2
 
@@ -1500,8 +1540,7 @@ def process_words(
                 # annotator_available = spaCy_util.check_spaCy_annotator_availability(['Objectivity/subjectivity'], language, silent=False)
                 # if not annotator_available:
                 #     return
-                nlp = spacy.load("en_core_web_sm")
-                nlp.add_pipe("spacytextblob")
+                nlp = spacy_textblob_pipeline()
 
                 header = ["Subjectivity Score", "Sentence ID", "Sentence", "Document ID", "Document"]
                 select_col = ["Subjectivity Scores"]

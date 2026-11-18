@@ -140,10 +140,6 @@ def run():
             )
             return
 
-        if "Iconic" in vocabulary_analysis_menu_var:
-            mb.showwarning("Warning", "The selected option is not available yet.\n\nSorry!")
-            return
-
         if "*" == vocabulary_analysis_menu_var:
             outputDir_style = IO_files_util.make_output_subdirectory(
                 inputFilename, inputDir, outputDir, label="style", silent=True
@@ -753,7 +749,8 @@ vocabulary_analysis_menu = tk.OptionMenu(
     "Vocabulary (via NLTK unusual words)",
     "Vocabulary richness (word type/token ratio or Yule’s K)",
     "Abstract/concrete vocabulary",
-    "Iconic vocabulary",
+    # "Iconic vocabulary" is out of the menu until it works on its own: it only answered "not available yet"
+    # (#1723). '*' still runs the iconicity analysis.
     "Objectivity/subjectivity (via spaCy)",
     "Punctuation as figures of pathos (? !)",
     "Sentence length",

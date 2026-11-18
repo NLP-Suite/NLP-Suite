@@ -19,14 +19,18 @@ import tkinter.messagebox as mb
 from matplotlib.colors import to_rgba
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
-from nrclex import NRCLex
 import numpy as np
 
 import charts_util
 import IO_csv_util
 import IO_files_util
+import nrclex_util
 from Stanza_functions_util import sentence_split_stanza_text, stanzaPipeLine
 import statistics_statistical_tests_util
+
+# NRCLex tokenizes and lemmatizes through TextBlob, which needs NLTK's punkt (punkt_tab on NLTK 3.9+) and wordnet
+IO_libraries_util.import_nltk_resource(GUI_util.window, "tokenizers/punkt", "punkt")
+IO_libraries_util.import_nltk_resource(GUI_util.window, "corpora/wordnet", "wordnet")
 
 EIGHT_EMOTIONS = ["anger", "anticipation", "disgust", "fear", "joy", "sadness", "surprise", "trust"]
 
@@ -89,8 +93,7 @@ INTENSITY_LEVELS = {
 
 
 def score_sentence(text):
-    emotion_obj = NRCLex(text)
-    raw = emotion_obj.raw_emotion_scores
+    raw = nrclex_util.raw_emotion_scores(text)
     total = sum(raw.get(e, 0) for e in EIGHT_EMOTIONS) or 1
     return {e: raw.get(e, 0) / total for e in EIGHT_EMOTIONS}
 

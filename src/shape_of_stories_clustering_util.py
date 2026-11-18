@@ -14,6 +14,10 @@ import IO_csv_util
 import shape_of_stories_vectorizer_util as vec
 import shape_of_stories_visualization_util as viz
 
+# scikit-learn 1.2 renamed AgglomerativeClustering(affinity=...) to metric= and 1.4 removed affinity, so
+# affinity= crashed every Hierarchical Clustering run with a TypeError (#1722). metric= needs 1.2 or later.
+HC_PARAMS = {"metric": "euclidean", "linkage": "ward"}
+
 
 class SVDClustering:
     def __init__(self, n_modes):
@@ -72,6 +76,18 @@ class SVDClustering:
         )
 
 
+def nonnegative(vectors):
+    """The vectors shifted up so that the smallest value is 0, for NMF, which refuses negative values.
+
+    Polarity scores (spaCy/TextBlob, -1 to 1) stopped NMF with "Negative values in data passed to NMF
+    initialization". A shift by one constant keeps every arc's shape; the clusters are drawn from the original
+    vectors. Vectors with no negative value are returned as they are.
+    """
+    vectors = np.asarray(vectors, dtype=float)
+    low = vectors.min()
+    return vectors - low if low < 0 else vectors
+
+
 class NMFClustering:
     def __init__(self, n_clusters, max_iter_nmf=1000):
         self.max_iter_nmf = max_iter_nmf
@@ -102,7 +118,7 @@ class NMFClustering:
         model = NMF(
             n_components=self.n_clusters, init="random", random_state=0, max_iter=self.max_iter_nmf, solver="mu"
         )
-        W = model.fit_transform(vectors)
+        W = model.fit_transform(nonnegative(vectors))
         # H = model.components_.T
 
         # here the groups are made out of the indices of the docs, not their vectors
@@ -175,7 +191,7 @@ class Clustering:
         """
         assert self.n_clust >= 1
         assert self.n_clust < len(vectors)
-        cluster = AgglomerativeClustering(n_clusters=self.n_clust, affinity="euclidean", linkage="ward")
+        cluster = AgglomerativeClustering(n_clusters=self.n_clust, **HC_PARAMS)
         cluster.fit_predict(vectors)
         clusters_indices = cluster.labels_
         # computes the complete clustering of the vectors
@@ -323,7 +339,8 @@ def estimate_best_k(document_matrix, output_dir, filesToOpen):
     np.random.seed(0)
 
     # document_matrix, documents_map = load_data()
-    A = np.array(document_matrix).T
+    # best k runs NMF too: shift negative scores (spaCy polarity) as NMFClustering does (#1722)
+    A = nonnegative(document_matrix).T
     t = 50
     sampling_rate = 0.8
 

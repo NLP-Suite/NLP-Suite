@@ -619,6 +619,12 @@ def word_embeddings_BERT(
     return filesToOpen
 
 
+# The cardiffnlp roBERTa tokenizers set no length limit of their own, so truncation=True alone let a sentence
+# over 512 tokens reach the model whole: "The expanded size of the tensor (586) must match the existing size
+# (514)" (#1722). Shape of Stories' default method and the sentiment GUI's BERT option both stopped there.
+SENTIMENT_PIPELINE_KWARGS = {"truncation": True, "max_length": 512}
+
+
 # Performs sentiment analysis using roBERTa model
 def sentiment_analysis_BERT(inputFilename, outputDir, outputFilename, mode, Document_ID, Document, model_path):
     # model_path = "cardiffnlp/twitter-xlm-roberta-base-sentiment" # multilingual model
@@ -626,7 +632,7 @@ def sentiment_analysis_BERT(inputFilename, outputDir, outputFilename, mode, Docu
     # sentiment_task = pipeline("sentiment-analysis",
     #  model=model_path, tokenizer=model_path, max_length=512, truncation=True)
 
-    sentiment_task = pipeline("sentiment-analysis", model=model_path, tokenizer=model_path, truncation=True)
+    sentiment_task = pipeline("sentiment-analysis", model=model_path, tokenizer=model_path, **SENTIMENT_PIPELINE_KWARGS)
 
     with open(inputFilename, encoding="utf-8", errors="ignore") as myfile:
         fulltext = myfile.read()

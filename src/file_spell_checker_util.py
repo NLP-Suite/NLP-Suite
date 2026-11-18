@@ -1445,6 +1445,16 @@ def spellcheck(inputFilename, inputDir, checker_value_var, check_withinDir):
     return autocorrect_df, pyspellchecker_df, textblob_df
 
 
+def stanza_langid_pipeline():
+    """Stanza's language identifier alone (no parser), downloading the multilingual model the first time."""
+    try:
+        return stanza.Pipeline(lang="multilingual", processors="langid", verbose=False)
+    except Exception as e:  # the multilingual model is not downloaded yet
+        print("Downloading Stanza's language identification model (" + str(e) + ")")
+        stanza.download(lang="multilingual", verbose=False)
+        return stanza.Pipeline(lang="multilingual", processors="langid", verbose=False)
+
+
 # function implements three different approaches to language detection: langdetect, spacy, langid
 # https://towardsdatascience.com/benchmarking-language-detection-for-nlp-8250ea8b67c
 # TODO print all languages and their probabilities in a csv file, with Language, Probability, Document ID, Document (with hyperlink)
@@ -1489,14 +1499,10 @@ def language_detection(
         True,
     )
 
-    # Stanza's multilingual pipeline needs to load only once, therefore called outside the for-loop
-    from stanza.pipeline.multilingual import MultilingualPipeline
-
-    try:
-        nlp_stanza = MultilingualPipeline()
-    except:
-        stanza.download(lang="multilingual", verbose=False)
-        nlp_stanza = MultilingualPipeline()
+    # Stanza's language identifier, loaded once, outside the for-loop. Only langid: MultilingualPipeline()
+    # identified the language and then ran the full parser (tokenize, POS, lemma, constituency, dependency) on
+    # every document, about a minute each, to use only doc.lang (#1724).
+    nlp_stanza = stanza_langid_pipeline()
 
     lang_dict = dict(constants_util.languages)
 

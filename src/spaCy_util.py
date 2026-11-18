@@ -215,9 +215,15 @@ def spaCy_annotate(
             return filesToOpen
     try:
         if "sentiment" in annotator_params:
+            # importing it registers the "spacytextblob" factory; without it add_pipe failed with E002 (#1720)
+            import spacytextblob.spacytextblob  # noqa: F401
+
             nlp.add_pipe("spacytextblob")
-    except Exception:
-        mb.showinfo("Warning", "spaCy encountered an error adding the sentiment pipeline for " + str(language) + ".")
+    except Exception as e:
+        mb.showinfo(
+            "Warning",
+            "spaCy encountered an error adding the sentiment pipeline for " + str(language) + ".\n\n" + str(e),
+        )
         return filesToOpen
 
     # different outputFilename if SVO is selected

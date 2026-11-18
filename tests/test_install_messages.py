@@ -66,3 +66,55 @@ def test_nltk_message_from_source_gives_the_download_command(iolib):
     msg = iolib.nltk_download_message("wordnet", frozen=False)
     assert "python -m nltk.downloader wordnet" in msg
     assert "STEP" not in msg and "(base)" not in msg
+
+
+def test_punkt_also_checks_punkt_tab(iolib):
+    # NLTK 3.9+ tokenizers look only for punkt_tab (#1718)
+    pairs = iolib.nltk_resources_to_check("tokenizers/punkt", "punkt")
+    assert ("tokenizers/punkt", "punkt") in pairs
+    assert ("tokenizers/punkt_tab", "punkt_tab") in pairs
+
+
+def test_the_pos_tagger_also_checks_its_english_json(iolib):
+    # NLTK 3.9+ PerceptronTagger loads taggers/averaged_perceptron_tagger_eng/ (SentiWordNet, nominalization)
+    pairs = iolib.nltk_resources_to_check("taggers/averaged_perceptron_tagger", "averaged_perceptron_tagger")
+    assert ("taggers/averaged_perceptron_tagger_eng", "averaged_perceptron_tagger_eng") in pairs
+
+
+def test_other_resources_are_checked_alone(iolib):
+    assert iolib.nltk_resources_to_check("corpora/wordnet", "wordnet") == [("corpora/wordnet", "wordnet")]
+
+
+def test_a_missing_punkt_tab_is_downloaded(iolib):
+    fake_nltk = mock.MagicMock()
+
+    def find(path):
+        if "punkt_tab" in path:
+            raise LookupError(path)
+
+    fake_nltk.data.find.side_effect = find
+    with (
+        mock.patch.dict(sys.modules, {"nltk": fake_nltk, "nltk.data": fake_nltk.data}),
+        mock.patch.object(iolib, "IO_user_interface_util"),
+    ):
+        iolib.import_nltk_resource(None, "tokenizers/punkt", "punkt")
+    fake_nltk.download.assert_called_once_with("punkt_tab")
+
+
+class TestDownloadedBuild:
+    """Tools in the zip run on python-env (sys.frozen False): messages must still give zip advice, not conda."""
+
+    def test_tool_on_python_env_is_the_download(self, iolib, tmp_path):
+        (tmp_path / "python-env").mkdir()
+        assert iolib.downloaded_build(str(tmp_path), frozen=False)
+
+    def test_frozen_menu_is_the_download(self, iolib, tmp_path):
+        assert iolib.downloaded_build(str(tmp_path), frozen=True)
+
+    def test_source_checkout(self, iolib, tmp_path):
+        (tmp_path / ".git").mkdir()
+        (tmp_path / "python-env").mkdir()
+        assert not iolib.downloaded_build(str(tmp_path), frozen=False)
+
+    def test_plain_source_folder(self, iolib, tmp_path):
+        assert not iolib.downloaded_build(str(tmp_path), frozen=False)

@@ -53,7 +53,9 @@ import os
 import time
 import tkinter.messagebox as mb
 
-IO_libraries_util.import_nltk_resource(GUI_util.window, "vader_lexicon", "vader_lexicon")
+# NLTK keeps it at sentiment/vader_lexicon(.zip): looking for "vader_lexicon" never found it, so the download
+# message showed at every run
+IO_libraries_util.import_nltk_resource(GUI_util.window, "sentiment/vader_lexicon", "vader_lexicon")
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 
 import charts_util
@@ -76,13 +78,16 @@ import statistics_statistical_tests_util
 # IO_libraries_util.import_nltk_resource(GUI_util.window,'corpora/stopwords','stopwords')
 # from nltk.corpus import stopwords
 # stops = set(stopwords.words("english"))
-fin = open("../lib/wordLists/stopwords.txt")
+fin = open(os.path.join(GUI_IO_util.wordLists_libPath, "stopwords.txt"), encoding="utf-8")  # was ../lib: cwd-dependent
 stops = set(fin.read().splitlines())
 
 vader = GUI_IO_util.sentiment_libPath + os.sep + "vader_lexicon.txt"
 if not os.path.isfile(vader):
     print(
-        "The file './lib/vader_lexicon.txt' could not be found. The VADER sentiment analysis routine expects a txt dictionary file 'vader_lexicon.txt' in a directory 'lib' expected to be a subdirectory of the directory where the sentiment_analysis_VADER.py script is stored.\n\nPlease, check your lib directory and try again."
+        "The file "
+        + vader
+        + " could not be found. VADER sentiment analysis needs it. Please, download the NLP Suite again, or"
+        " restore lib/sentimentLib/vader_lexicon.txt from the NLP Suite GitHub repository."
     )
     sys.exit()
 

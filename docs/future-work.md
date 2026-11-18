@@ -6,21 +6,20 @@ Moved out of PLAN.md on 11 Nov 2026. The sections keep their scan dates; nothing
 
 ## Contents
 
-1. [Dead code (scan of 10 Nov 2026)](#1-dead-code-scan-of-10-nov-2026)
-2. [Bundle size (scan of 11 Nov 2026)](#2-bundle-size-scan-of-11-nov-2026)
-3. [Security alerts and the Python 3.11 release (scan of 11 Nov 2026)](#3-security-alerts-and-the-python-311-release-scan-of-11-nov-2026)
-4. [HW 5 tools: sentiment, emotions, Shape of Stories (sweep of 11 Nov 2026)](#4-hw-5-tools-sentiment-emotions-shape-of-stories-sweep-of-11-nov-2026)
-5. [Outdated copy and flows (scan of 9 Nov 2026)](#5-outdated-copy-and-flows-scan-of-9-nov-2026)
-6. [Performance: slow GUI opening and "downloading"](#6-performance-slow-gui-opening-and-downloading)
-7. [UI overhaul: findings (10 Nov 2026)](#7-ui-overhaul-findings-10-nov-2026)
-8. [The GitHub wiki (scan of 10 Nov 2026)](#8-the-github-wiki-scan-of-10-nov-2026)
-9. [Open pull requests](#9-open-pull-requests)
-10. [Recent issues (2025–2026)](#10-recent-issues-20252026)
-11. [The 2021–2024 backlog](#11-the-20212024-backlog)
-12. [Tech debt](#12-tech-debt)
-13. [Branches](#13-branches)
-14. [Requirements, release checks and settled decisions](#14-requirements-release-checks-and-settled-decisions)
-15. [The updater: known limits](#15-the-updater-known-limits)
+- [1. Dead code (scan of 10 Nov 2026)](#1-dead-code-scan-of-10-nov-2026)
+- [2. Bundle size (scan of 11 Nov 2026)](#2-bundle-size-scan-of-11-nov-2026)
+- [3. Security alerts and the Python 3.11 release (scan of 11 Nov 2026)](#3-security-alerts-and-the-python-311-release-scan-of-11-nov-2026)
+- [5. Outdated copy and flows (scan of 9 Nov 2026)](#5-outdated-copy-and-flows-scan-of-9-nov-2026)
+- [6. Performance: slow GUI opening and "downloading"](#6-performance-slow-gui-opening-and-downloading)
+- [7. UI overhaul: findings (10 Nov 2026)](#7-ui-overhaul-findings-10-nov-2026)
+- [8. The GitHub wiki (scan of 10 Nov 2026)](#8-the-github-wiki-scan-of-10-nov-2026)
+- [9. Open pull requests](#9-open-pull-requests)
+- [10. Recent issues (2025–2026)](#10-recent-issues-20252026)
+- [11. The 2021–2024 backlog](#11-the-20212024-backlog)
+- [12. Tech debt](#12-tech-debt)
+- [13. Branches](#13-branches)
+- [14. Requirements, release checks and settled decisions](#14-requirements-release-checks-and-settled-decisions)
+- [15. The updater: known limits](#15-the-updater-known-limits)
 
 ---
 
@@ -28,7 +27,7 @@ Moved out of PLAN.md on 11 Nov 2026. The sections keep their scan dates; nothing
 
 **How it was found:** every `src/*.py` whose module name appears nowhere else in `src/`, `tests/`, `lib/`, the specs, the workflows or the setup scripts (`grep -w`), plus the §5.1 findings. A mention in a comment counts as a use, so the list is short of complete (`videos_util` was found only by reading). Not swept: dead functions and branches inside live modules (§12.7 counts 496 unused variables); `lib/` data files; TIPS pdfs no GUI names.
 
-### 1.1 Delete in 1.6.45, with the bundle size changes (needs Roberto's yes)
+### 1.1 Delete in 1.6.44, with the bundle size changes (needs Roberto's yes)
 
 **Done in part on `spike/1.6.43-bundle-size-rc`** (13 Nov, not merged): it deletes the legacy setup scripts and `src/requirements*.txt` but no `src/*.py` module. PR #1706 does the rest; it conflicts with `roberto` since #1705 merged (both touch `README.txt` and `CLAUDE.md`): rebase it. It goes with §2 because both change what the build ships, and because deleting `src/requirements*.txt` closes 108 of the 178 Dependabot alerts (§3.1). Each file was checked: nothing imports it, launches it with `run_script`, or names it in a workflow; the spec names some of them only as hidden imports.
 
@@ -103,7 +102,7 @@ Each was checked by `grep` over `src/`. Small one by one; they shorten the build
 
 ### 2.5 When, and the checks
 
-1.6.45, with the dead files (§1.1), after the HW 5 release (1.6.44): both change what the build ships, and together they close the 108 alerts in the stale `src/requirements*.txt` files (§3.1). Roberto's call. One PR each, 2.2 before 2.1 so a TF regression can't hide behind the spec change.
+1.6.44, with the dead files (§1.1), after the HW 5 fixes ship in 1.6.43: both change what the build ships, and together they close the 108 alerts in the stale `src/requirements*.txt` files (§3.1). Roberto's call. One PR each, 2.2 before 2.1 so a TF regression can't hide behind the spec change.
 
 Checks (CI build and a machine with the zips; not Cora's):
 - Unzip the current release first and record `_internal/` and the top 20 `site-packages` folders by size, to put real numbers in this section.
@@ -141,12 +140,12 @@ The other transformers users look safe on 5.x from their imports: `BERT_util` (`
 
 Resolution check: with Pillow 13.0.0 and `transformers>=5.10` on Python 3.11, both Windows and Mac resolve (transformers 5.22.2, tokenizers 0.23.3, sentence-transformers 6.3.0, fastcoref 2.1.6, bertopic 0.17.4).
 
-### 3.3 Proposed release: 1.6.46
+### 3.3 Proposed release: 1.6.45
 
-The Python bump means users download a new bundled Python (the whole env is rebuilt), so if something breaks it should be clear it was the bump. Proposal: this release carries the bump and nothing else, after 1.6.44 (HW 5) and 1.6.45 (dead files and bundle size) have shipped; #1682 and §6.3 wait for the release after it. Roberto's call.
+The Python bump means users download a new bundled Python (the whole env is rebuilt), so if something breaks it should be clear it was the bump. Proposal: this release carries the bump and nothing else, after 1.6.44 (dead files and bundle size) has shipped; #1682 and §6.3 wait for the release after it. Roberto's call.
 
 Prerequisites, in order:
-1. #1706 is merged (1.6.45). It deletes `src/requirements*.txt` and the STEP1–3 scripts, which also settles two of #1688's open review points: its `src/requirements.txt` hunk goes away, and nothing left creates a `python=3.8` env.
+1. #1706 is merged (1.6.44). It deletes `src/requirements*.txt` and the STEP1–3 scripts, which also settles two of #1688's open review points: its `src/requirements.txt` hunk goes away, and nothing left creates a `python=3.8` env.
 2. The summarizer PR (§3.2), on its own.
 3. Rebase #1688 onto `roberto` after both (its `requirements.txt` hunk sits next to #1705's lines; its `src/requirements.txt` hunk becomes a modify/delete conflict: drop it).
 
@@ -170,28 +169,6 @@ Checks before tagging, added to #1688's own list (installer build on both OSes, 
 
 Not needed: protobuf (transitive, resolves to 7.36.2), or a `.github/dependabot.yml` (alerts work without one; version-update PRs would fight the deliberate pins).
 
-## 4. HW 5 tools: sentiment, emotions, Shape of Stories (sweep of 11 Nov 2026)
-
-**Where it stands:** QTM 446W's Homework 5 (due Sun 6 Dec) uses the Sentiments/emotions (ALL) hub and the GUIs it opens: sentiment analysis (every algorithm), Character Emotion Arcs, WordNet tagging of emotion words, the vocabulary options in `style_analysis_main` (punctuation of pathos, repetition), and Shape of Stories (HC, SVD, NMF, best k). On `roberto` the class would hit six crashes and one silent wrong result among them, including the step that is half the rubric (Shape of Stories with HC, ticked by default). All seven are filed for **1.6.44**; each issue has the cause, the line and a proposed fix with a test. Rechecked on `c991d9ad` (after #1704 and #1705): all still present.
-
-**How it was found:** a headless sweep that loads each GUI without showing it, sets its widgets, and calls its `run()` (what RUN does), one option at a time, under `NLP_SILENT=1`, recording status, time, files written, the dialogs that would have shown, tracebacks and Python warnings. Run on `274634b4` (macOS, Python 3.10 env) on 12- and 60-document samples of a 958-document course corpus. The script is Cora's coursework (`qtm446/assignments/hw5/hw5_suite_run.py`), not in the repo. **Not measured:** full-corpus timings, Windows, the zip build's pinned versions (the failures come from unpinned `nltk`, `nrclex`, `scikit-learn`; check what the build actually installs).
-
-| Issue | Tool | Failure | Cause, fix |
-|---|---|---|---|
-| #1722 | Shape of Stories | HC: `TypeError ... 'affinity'` on every run, after the sentiment step, so SVD/NMF/best k never run. BERT: tensor 586 vs 514. spaCy/dictionary methods: `ParserError` (the txt folder read as a csv) | scikit-learn 1.4 removed `affinity`: `metric=` (`shape_of_stories_clustering_util.py:178`). `max_length=512` on the BERT pipeline (`BERT_util.py:629`). Drop the dictionary methods from the menu; stop when step 1 gave no scores. spaCy part: #1549 (`config_filename` passed twice) |
-| #1719 | NRC, Character Emotion Arcs | NRC: `AttributeError: raw_emotion_scores`. Arcs: routed to NRC (`"NRC" in` tested first); once routed, scores every emotion 0 with no warning | NRCLex 4.x: `NRCLex(); load_raw_text(text)`. One helper for both files; move the arcs test above NRC; warn on all-zero documents |
-| #1718 | SentiWordNet (and NRC via TextBlob) | `LookupError: punkt_tab` | NLTK 3.9+: check and download `punkt_tab` as well as `punkt` |
-| #1720 | spaCy (TextBlob) sentiment, `*`, Objectivity/subjectivity | `IndexError` at `sentiment_analysis_main.py:230`; `*` stops there; `E002 ... 'spacytextblob'` | `import spacytextblob.spacytextblob` before `add_pipe`; empty results do not stop `*`, which lists what failed |
-| #1721 | CoreNLP sentiment | `OutOfMemoryError: Java heap space` (8 GB Mac) | The sentiment and Shape of Stories GUIs don't pass the setup's sentence-length limit, so `parse.maxlen` is 1000; pass memory and limits through |
-| #1723 | Vocabulary analysis | "Iconic vocabulary" is a placeholder; repetition with K blank ends with no output or message | Remove from the menu; default K as `*` does (#1550 is likely this) |
-| #1724 | Language detection | ~1 min per document (Stanza's full parser) | `processors="langid"` or drop Stanza from language detection |
-
-**Works** (same sweep): BERT (English, Multilingual, short sentences), CoreNLP, Stanza, ANEW, hedonometer, VADER; every other vocabulary option; WordNet Zoom UP (tags `noun.feeling`, `verb.emotion`); Shape of Stories SVD, NMF and best k with HC unticked; the sentiment → Shape of Stories hand-off (with the config bug noted in #1722).
-
-**Order:** #1722 and #1719 first (the rubric's two halves), then #1718 and #1720 (they share TextBlob and `*`), #1721, then #1723 and #1724. One branch and PR each, per CLAUDE.md. Files shared with other work: `requirements.txt` (pin `scikit-learn`, `nrclex`, `nltk` floors here, but the Python 3.11 rebuild, §3.3, changes the same file: rebase whichever lands second); `spaCy_util.py` (#1682).
-
-**Checks before 1.6.44 is tagged:** rerun the sweep on the release candidate; one Shape of Stories run from the Windows zip with HC ticked; NRC on a fresh install (the `punkt_tab` download has to happen there, not only in a dev env).
-
 ## 5. Outdated copy and flows (scan of 9 Nov 2026)
 
 A scan of all of `src/`, `reminders/`, the docs and the setup scripts for text and flows that predate how the NLP Suite works now: the zip build (no Anaconda, no pip, no terminal), Stanza as default parser, the bundled Java runtime, the self-updater, the new menu, fastcoref, pandas 2, Python 3.10. Six read-only passes, one per slice; each finding below was checked against the code before it was changed or listed.
@@ -204,7 +181,7 @@ Deletions and behaviour changes. Each is ready to do once decided.
 
 | # | What | Evidence | Proposal |
 |---|---|---|---|
-| 1 | `setup_Windows/` and `setup_Mac/` scripts (STEP1-3, `run_NLP-Suite.*`, `NLP.bat`, shortcut scripts, `readme_*_beta.md`) | Not in the zip. Anaconda 2021.05, `python=3.8`, `cudatoolkit` on a Mac, `git checkout -f`, read the stale `src/requirements.txt`; the Mac STEP3 points to a folder that does not exist | **1.6.45, §1.1** |
+| 1 | `setup_Windows/` and `setup_Mac/` scripts (STEP1-3, `run_NLP-Suite.*`, `NLP.bat`, shortcut scripts, `readme_*_beta.md`) | Not in the zip. Anaconda 2021.05, `python=3.8`, `cudatoolkit` on a Mac, `git checkout -f`, read the stale `src/requirements.txt`; the Mac STEP3 points to a folder that does not exist | **1.6.44, §1.1** |
 | 2 | SRL in the zip build | `setup_SRL.py` is not shipped and needs conda, so SRL cannot be set up there. The checkboxes in SVO, Semantic analysis and SRL_main stay enabled; the menu entry "SRL Semantic Role Labeling" shows as unavailable although `SRL_main.py` exists | Either disable the SRL checkboxes when frozen, or ship an SRL environment. Then fix the menu entry to match |
 | 3 | Java as "external software" | A JRE is bundled, but Setup external software still lists "Java (JDK)" as missing and offers to download it. In the install branch (`IO_libraries_util`, "RF 8/30") the test reads `if Java_errorFound:` → "IS ALREADY INSTALLED" | Hide the Java row when the bundled `jre` is found. Check the RF 8/30 condition |
 | 4 | Coreference default | `coreference_main` defaults to Stanford CoreNLP (needs CoreNLP); Stanza and BERT need nothing. Menu labels still say "CoreNLP annotator - coreference", "Pronominal resolution via CoreNLP" (`constants_util` 1011, 1067; `NLP_menu_tools_util` 40, 87, 97) | Default to Stanza; rename the labels (keys change in three files together) |
@@ -217,8 +194,8 @@ Deletions and behaviour changes. Each is ready to do once decided.
 | 11 | `parsers_annotators_main` | Two unreachable "select Stanford CoreNLP as your default package" branches (300–313, 395–408); "Open coreference GUI" checkbox is read and never used; Word2Vec item never matches its own label; coreference item says "via spaCy" (coreferee is gone); Stanza constituency says "not available yet" though Setup offers it | One PR for the annotator menu |
 | 12 | Open-GUI launchers that use `sys.executable` | `DB_PCACE_data_analysis_main`, `DB_PCACE_data_validation_main`, `DB_SQL_main` (frozen: that is the app, not Python); `corpus_checker_PCACE_data_main` runs `sudo Python X_main.py` on a Mac and launches `WordNet.py`, which does not exist | Use `run_script_util` everywhere |
 | 13 | TIPS menu | "pip install & Anaconda environments", "Python: download, install, run", "Anaconda & pip useful commands" are second in the main TIPS list | Move to the end as developer TIPS, or remove. The pdfs themselves, and the Java / CoreNLP / MALLET install TIPS and "Topic modeling and corpus size", need a read |
-| 14 | Dead files | `videos_util.py` (pafy/vlc, imported nowhere), `NLP_setup_download_jars.py`, `knowledge_graphs_DBpedia_util_SPARQL.py`, `nyt_api_call.py`, `html_annotator_extractor_util_NEW.py`, `TensorFlow_semantic_analysis.py`, `GIS_heatMapIntegration.py`, `GIS_heatMapintegration_ver2.py`, `post_build_fixup.py`, `wiki-draft-About.md`, `.github/workflows/build-family-viewer.yml` (its spec files are not in the repo) | **1.6.45, §1.1.** |
-| 15 | `NLP_Suite.spec` | Hidden imports for 8 modules that do not exist (`data_visualization_1_main`, `_2_main`, `whats_in_your_corpus_main`, `GIS_folium_map_util`, `SENNA_util`, `social_science_research_main`, `knowledge_graphs_DBpedia_YAGO_main`, `charts_matplotlib_seaborn_util`); a local build bundles the live `config/` (API keys); "Python 3.8" comment | Hidden imports and the comment: **1.6.45, §1.1**. The `config/` bundling changes what a build ships: with §2 |
+| 14 | Dead files | `videos_util.py` (pafy/vlc, imported nowhere), `NLP_setup_download_jars.py`, `knowledge_graphs_DBpedia_util_SPARQL.py`, `nyt_api_call.py`, `html_annotator_extractor_util_NEW.py`, `TensorFlow_semantic_analysis.py`, `GIS_heatMapIntegration.py`, `GIS_heatMapintegration_ver2.py`, `post_build_fixup.py`, `wiki-draft-About.md`, `.github/workflows/build-family-viewer.yml` (its spec files are not in the repo) | **1.6.44, §1.1.** |
+| 15 | `NLP_Suite.spec` | Hidden imports for 8 modules that do not exist (`data_visualization_1_main`, `_2_main`, `whats_in_your_corpus_main`, `GIS_folium_map_util`, `SENNA_util`, `social_science_research_main`, `knowledge_graphs_DBpedia_YAGO_main`, `charts_matplotlib_seaborn_util`); a local build bundles the live `config/` (API keys); "Python 3.8" comment | Hidden imports and the comment: **1.6.44, §1.1**. The `config/` bundling changes what a build ships: with §2 |
 | 16 | Reminders | 51 titles are in `reminders.csv` twice, under a GUI and under `*`. Popups read only the `*` row, the dropdown toggles the GUI row, so switching a reminder off there does nothing. About 12 definitions in `reminders_util` are used nowhere (Java 64-bit `-d64`, "CoreNLP Server is shutting down", tkinter Mac bug, SVO/WordNet/MALLET/Google Earth "system requirements") | Delete the per-GUI duplicates and the unused definitions |
 | 18 | wordclouds | Menu offers Wordle (site gone) and Tagxedo (needs Silverlight); "Tagul" is now WordArt; Python WordCloud asks for internet though it needs none | Remove the two, rename the third, drop the check |
 | 19 | `MEMO_Development_Notes.md`, `docs/CustomTkinter-Migration-Plan.md` | June 2026 history (Python 3.8 build, Mac Intel CI, files since deleted); a plan that names `setup-app/` and says installers build from `roberto` | A "historical" banner on each, or delete |
@@ -445,7 +422,7 @@ Reviewed 9 Nov 2026. The older PRs conflict only because v1.6.40 reformatted all
 
 | PR | Opened | What | Merge | Tests | Release | Review |
 |---|---|---|---|---|---|---|
-| #1706 | 11-10 | Dead files and the legacy setup scripts (§1.1) | Conflict with `roberto` since #1705 (`README.txt`, `CLAUDE.md`) | — | 1.6.45, if Roberto agrees | Rebase on `roberto`; the pre-tag build is its test |
+| #1706 | 11-10 | Dead files and the legacy setup scripts (§1.1) | Conflict with `roberto` since #1705 (`README.txt`, `CLAUDE.md`) | — | 1.6.44, if Roberto agrees | Rebase on `roberto`; the pre-tag build is its test |
 | #1682 | 10-16 | spaCy CoNLL ID/HEAD sentence-level and 1-based | Conflict: ruff only, mechanical | 2 pass | Later (shared structure) | Correct: Stanza and CoreNLP already write 1-based, sentence-level, root 0, and no reader compensates for spaCy's old values. Shared structure, so not in a release about the updater. spaCy tables already on disk stay 0-based: say "re-parse" in the CHANGELOG |
 | #1683 | 10-16 | Gender dictionary looks up only PERSON tokens | Conflict: ruff only | 5 pass | No | **Needs changes:** hardcodes `Stanford_CoreNLP_util.CoreNLP_annotate` whatever parser is configured (so the option now needs Java); returns `''` with no message when no NER csv comes back; once "Will" is a PERSON anywhere, every "will" is tagged |
 | #1688 | 10-26 | Python 3.11 build so Pillow can go to 13.0.0 | Conflict: 2 adjacent lines | CI only | §3.3 | Decide. Whole pinned stack must rebuild on 3.11. STEP2 scripts still create `python=3.8` envs (`setup_Windows/STEP2-install_NLP-Suite.ps1:12`, `setup_Mac/STEP2-install_NLP-Suite.command:35`) and `pyproject.toml`/`pyrightconfig.json` say py310; the PR touches none of them |
@@ -573,7 +550,8 @@ Remote branches besides `roberto`, `current-stable`:
 - `dictionary` (Sep 2024), `taeeun` (Dec 2024): heads of stale PRs #1528 and #1525. Delete after those PRs are closed.
 - `remove_shortcut_prompt` (2021), `tony` (2023): no open PR. Delete candidates.
 - Cora's, merged and safe to delete: `fix/1725-stanza-download-mac-crash`, `fix/1728-stanza-resources-json`, `fix/1731-language-advisor`, `fix/release-history-links`, `test/bundle-gate`, `release/v1.6.42`.
-- Cora's, open work: `spike/1.6.43-bundle-size-rc` (§2), `chore/remove-dead-files` (#1706).
+- Cora's, open work: `spike/1.6.43-bundle-size-rc` (§2, now 1.6.44), `chore/remove-dead-files` (#1706).
+- Cora's fork: `spike/1.6.44-hw5` was merged into `roberto` on 18 Nov; safe to delete, with the local and fork copies of `spike/1.6.43-bundle-size` once the `-rc` branch is the only one in use.
 
 Deleting someone else's remote branch is Roberto's call.
 

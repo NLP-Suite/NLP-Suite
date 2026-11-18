@@ -20,13 +20,17 @@ import tkinter.messagebox as mb
 
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
-from nrclex import NRCLex
 import numpy as np
 import pandas as pd
 
 import IO_csv_util
 import IO_files_util
 import IO_user_interface_util
+import nrclex_util
+
+# NRCLex tokenizes and lemmatizes through TextBlob, which needs NLTK's punkt (punkt_tab on NLTK 3.9+) and wordnet
+IO_libraries_util.import_nltk_resource(GUI_util.window, "tokenizers/punkt", "punkt")
+IO_libraries_util.import_nltk_resource(GUI_util.window, "corpora/wordnet", "wordnet")
 
 EIGHT_EMOTIONS = ["anger", "anticipation", "disgust", "fear", "joy", "sadness", "surprise", "trust"]
 
@@ -43,13 +47,7 @@ NRC_COLORS = {
 
 
 def _score_sentence_nrc(text):
-    emotion_obj = NRCLex(text)
-    # NRCLex API drift: older versions expose .raw_emotion_scores (counts); some newer builds only
-    # populate .affect_frequencies (normalized). Fall back so a version mismatch doesn't crash the
-    # character emotion arcs -- either is fine here since we re-normalize over the 8 emotions below.
-    raw = getattr(emotion_obj, "raw_emotion_scores", None)
-    if not raw:
-        raw = getattr(emotion_obj, "affect_frequencies", None) or {}
+    raw = nrclex_util.raw_emotion_scores(text)
     total = sum(raw.get(e, 0) for e in EIGHT_EMOTIONS) or 1
     return {e: raw.get(e, 0) / total for e in EIGHT_EMOTIONS}
 
@@ -1135,6 +1133,15 @@ def main(
     if not all_rows:
         mb.showwarning(title="No data", message="No text data found to analyze.")
         return filesToOpen
+
+    if nrclex_util.all_scores_zero(all_rows, [e.capitalize() for e in EIGHT_EMOTIONS]):
+        # an NRCLex that analyzes nothing used to give every emotion 0 with no word of warning (#1719)
+        mb.showwarning(
+            title="No emotion words found",
+            message="The NRC lexicon found no emotion words in the input, so every emotion score is 0.\n\n"
+            "If the input is ordinary English text, the NRC lexicon (NRCLex) is not working: please, report it on "
+            "GitHub with the messages in the command line/terminal.",
+        )
 
     with open(outputFilename, "w", encoding="utf-8", errors="ignore", newline="") as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
