@@ -1,6 +1,6 @@
 # Future work — NLP Suite
 
-The findings behind the "Future work" list in [PLAN.md](../PLAN.md): evidence, line numbers, proposed fixes. PLAN.md says what is next; this file says why and how. What has shipped is in [CHANGELOG.md](../CHANGELOG.md).
+The findings behind the "Future work" list in [PLAN.md](../PLAN.md): evidence, line numbers, proposed fixes. PLAN.md says what is next; this file says why and how. What has shipped is in [CHANGELOG.md](../CHANGELOG.md): this file lists open items only, so delete an item (or the fixed part of it) in the PR that fixes it.
 
 Moved out of PLAN.md on 11 Nov 2026. The sections keep their scan dates; nothing here was re-checked by the move. The issue lists are proposals for Roberto: nothing in them has been closed or commented on.
 
@@ -205,14 +205,14 @@ Deletions and behaviour changes. Each is ready to do once decided.
 | # | What | Evidence | Proposal |
 |---|---|---|---|
 | 1 | `setup_Windows/` and `setup_Mac/` scripts (STEP1-3, `run_NLP-Suite.*`, `NLP.bat`, shortcut scripts, `readme_*_beta.md`) | Not in the zip. Anaconda 2021.05, `python=3.8`, `cudatoolkit` on a Mac, `git checkout -f`, read the stale `src/requirements.txt`; the Mac STEP3 points to a folder that does not exist | **1.6.43, §1.1** |
-| 2 | SRL in the zip build | `setup_SRL.py` is not shipped and needs conda, so SRL cannot be set up there. The checkboxes in SVO, Semantic analysis and SRL_main stay enabled; the menu entry "SRL Semantic Role Labeling" shows as unavailable although `SRL_main.py` exists | Either disable the SRL checkboxes when frozen, or ship an SRL environment. Then fix the menu entry to match |
-| 3 | Java as "external software" | A JRE is bundled, but Setup external software still lists "Java (JDK)" as missing and offers to download it. In the install branch (`IO_libraries_util`, "RF 8/30") the test reads `if Java_errorFound:` → "IS ALREADY INSTALLED" | Hide the Java row when the bundled `jre` is found. Check the RF 8/30 condition |
-| 4 | Coreference default | `coreference_main` defaults to Stanford CoreNLP (needs CoreNLP); Stanza and BERT need nothing. Menu labels still say "CoreNLP annotator - coreference", "Pronominal resolution via CoreNLP" (`constants_util` 1011, 1067; `NLP_menu_tools_util` 40, 87, 97) | Default to Stanza; rename the labels (keys change in three files together) |
-| 5 | `config_util` fallback | When the package config cannot be read the fallback is Stanford CoreNLP (line 199) | Stanza |
-| 6 | First three launches open `NLP_welcome_main` in a second process | §6.7; its video button is disabled, Enter only reopens the menu | Remove the redirect and the file |
-| 7 | `NLP_menu_main` external-software reminder | `setup_external_programs_checkbox` returns the module global (always ""), so the reminder never shows; `setup_external_software_warning`/`callback` are never called | Delete the three |
-| 8 | N-grams VIEWER | The checkbox and two menu entries are live; RUN answers "temporarily disconnected" | Hide until it is back, or reconnect |
-| 9 | Topic modeling "Run MALLET (coherence)" checkbox | Calls `gensim.models.wrappers`, removed in Gensim 4; always ends in "install Gensim 3.8.3" | Remove, or rewrite with Gensim's CoherenceModel. Help text also says "Gensim uses the MALLET algorithm" (it does not) |
+| 1 | SRL in the zip build | `setup_SRL.py` is not shipped and needs conda, so SRL cannot be set up there. The checkboxes in SVO, Semantic analysis and SRL_main stay enabled; the menu entry "SRL Semantic Role Labeling" shows as unavailable although `SRL_main.py` exists | Either disable the SRL checkboxes when frozen, or ship an SRL environment. Then fix the menu entry to match |
+| 2 | Java as "external software" | A JRE is bundled, but Setup external software still lists "Java (JDK)" as missing and offers to download it. In the install branch (`IO_libraries_util`, "RF 8/30") the test reads `if Java_errorFound:` → "IS ALREADY INSTALLED" | Hide the Java row when the bundled `jre` is found. Check the RF 8/30 condition |
+| 3 | Coreference default | `coreference_main` defaults to Stanford CoreNLP (needs CoreNLP); Stanza and BERT need nothing. Menu labels still say "CoreNLP annotator - coreference", "Pronominal resolution via CoreNLP" (`constants_util` 1011, 1067; `NLP_menu_tools_util` 40, 87, 97) | Default to Stanza; rename the labels (keys change in three files together) |
+| 4 | `config_util` fallback | When the package config cannot be read the fallback is Stanford CoreNLP (line 199) | Stanza |
+| 5 | First three launches open `NLP_welcome_main` in a second process | §6.7; its video button is disabled, Enter only reopens the menu | Remove the redirect and the file |
+| 6 | `NLP_menu_main` external-software reminder | `setup_external_programs_checkbox` returns the module global (always ""), so the reminder never shows; `setup_external_software_warning`/`callback` are never called | Delete the three |
+| 7 | N-grams VIEWER | The checkbox and two menu entries are live; RUN answers "temporarily disconnected" | Hide until it is back, or reconnect |
+| 8 | Topic modeling "Run MALLET (coherence)" checkbox | Calls `gensim.models.wrappers`, removed in Gensim 4; always ends in "install Gensim 3.8.3" | Remove, or rewrite with Gensim's CoherenceModel. Help text also says "Gensim uses the MALLET algorithm" (it does not) |
 | 10 | OCR menu item | pytesseract/pdf2image are not bundled, so in the zip it can only end in the "missing" message | Hide when frozen, or bundle |
 | 11 | `parsers_annotators_main` | Two unreachable "select Stanford CoreNLP as your default package" branches (300–313, 395–408); "Open coreference GUI" checkbox is read and never used; Word2Vec item never matches its own label; coreference item says "via spaCy" (coreferee is gone); Stanza constituency says "not available yet" though Setup offers it | One PR for the annotator menu |
 | 12 | Open-GUI launchers that use `sys.executable` | `DB_PCACE_data_analysis_main`, `DB_PCACE_data_validation_main`, `DB_SQL_main` (frozen: that is the app, not Python); `corpus_checker_PCACE_data_main` runs `sudo Python X_main.py` on a Mac and launches `WordNet.py`, which does not exist | Use `run_script_util` everywhere |
@@ -228,8 +228,8 @@ Deletions and behaviour changes. Each is ready to do once decided.
 Low risk, left out of PR #1705 to keep it reviewable. Moved out of 1.6.42 on 11 Nov.
 
 - **CoreNLP-era wording where three or four packages now work:** `NER_main` 611, 634, 658, 990; `GIS_main` 1290, 1322, 1343; `coreference_main` 272, 364, 563, 592, 635; `narrative_analysis_ALL_main` 443, 459, 927; `corpus_profiler_main` 717 ("hundreds" of documents), 726; `parsers_annotators_main` 972 (a "*" option that does not exist); `shape_of_stories_main` 599–600, 996, 1061 and `sentiments_emotions_ALL_main` 247 (spaCy listed as neural); `sentiment_analysis_main` 1077–1083, 1123 (old script names, `nltk.downloader`); `language_tools_advisor_util` 186, 254, 263; `NLP_setup_external_software_main` 491, 499, 518.
-- **"Setup NLP package and corpus language"** (the item is "Setup NLP package (parsers & annotators) and corpus language"): `Stanza_util` 202/731, `sentiment_analysis_main` (7 places), `semantic_aggregation_main` 1417, and the "NLP setup options" reminder built in 9 GUIs. (`NER_main`, `NGrams_CoOccurrences_main`, `Stanford_CoreNLP_util`, `IO_internet_util` and `GUI_util` fixed for 1.6.43.)
-- **Names that do not exist:** `knowledge_graphs_main` 989 (TIPS name), 928–941 (YAGO and Wikipedia TIPS not offered); `file_classifier_NER_util` 40–46 and `file_find_non_related_documents_util` 43–49 (`concreteness_analysis.py`, then `sys.exit`); `sentiment_analysis_hedonometer_util` 59, `sentiment_analysis_VADER_util` 85 (wrong lib path and script name). (`Word2Vec_main.py` fixed for 1.6.43; `tests/test_run_script_targets.py` now checks every launch.)
+- **"Setup NLP package and corpus language"** (the item is "Setup NLP package (parsers & annotators) and corpus language"): `Stanza_util` 202/731, `sentiment_analysis_main` (7 places), `semantic_aggregation_main` 1417, and the "NLP setup options" reminder built in 9 GUIs.
+- **Names that do not exist:** `knowledge_graphs_main` 989 (TIPS name), 928–941 (YAGO and Wikipedia TIPS not offered); `file_classifier_NER_util` 40–46 and `file_find_non_related_documents_util` 43–49 (`concreteness_analysis.py`, then `sys.exit`); `sentiment_analysis_hedonometer_util` 59, `sentiment_analysis_VADER_util` 85 (wrong lib path and script name).
 - **Windows-only advice also shown on a Mac:** `config_util` 130, 159, 250, 284, 665, 698.
 - **Other:** `IO_libraries_util` Windows 64-bit Java branch; MALLET and Google Earth download links to check; `topic_modeling_mallet_util` "TEMPORARY FIX… environment variables" popups on every run (the code sets them itself); `file_manager_main` utf-8/ASCII checkboxes that only say "not available yet"; `file_merger_main` 326; `NLP_menu_main` 593–598 (CoreNLP 4.3.1 in the external-software help); `docs/Supported-Systems-Languages.md` 38; `requirements-mac.txt` still lists pafy/python-vlc.
 
@@ -249,29 +249,24 @@ Evaluated 9 Nov 2026 on `current-stable` @ `43cbca1c` (v1.6.40), Windows 11, NLP
 
 | # | Finding | Measured cost | Who pays | Fix size |
 |---|---|---|---|---|
-| 1 | Stanza model re-checked (and a pipeline built) every time a GUI opens. **Fixed by #1704 (§6.1)** | 9–11 s per check, 8.7 s for the pipeline | 18 of 55 GUIs | Small |
 | 2 | Heavy libraries imported when the GUI opens, not at RUN | 10–40 s | 32 of 55 GUIs | Medium, file by file |
 | 3 | Every GUI starts with 4.6 s of `GUI_util` imports (pandas, requests) | 4.6 s vs 0.9 s for a bare Tk window | Every GUI, every open | Small |
 | 4 | "Started/Finished running" alerts and reminders block until their countdown ends | 1–12 s each | Every RUN | Small (a decision first) |
 | 5 | Fixed `time.sleep` calls freeze the GUI | 5–10 s each | Config-file edits, CoreNLP, spell checker | Small |
-| 6 | Version check on the main thread on every GUI open; other web calls without a timeout | 0.1 s here; up to ~16–18 s on a blocked or dead network | Every GUI | Small; the offline part shipped in 1.6.41 |
+| 6 | Version check on the main thread on every GUI open; other web calls without a timeout | 0.1 s here; up to ~16–18 s on a blocked or dead network | Every GUI | Small |
 | 7 | First three launches start three Python processes before the menu shows | about 3 × 4.6 s | New users | Small |
 | 8 | Menu runs `java -version` (and `pip freeze` on Apple Silicon source installs) at every start | Not measured | Menu | Small |
 | 9 | Row-by-row pandas loops in the analyses | Not measured | RUN on large corpora | Profile first |
 
-Findings 1–3 are where the opening time goes. Adding up the measured parts, a GUI such as Style analysis takes an estimated minute or more to open (4.6 s base + 29 s of libraries + three model checks + the pipeline; not timed end to end) and should drop to a few seconds; the menu and the light GUIs should drop from about 5 s to about 1.5 s.
-
-### 6.1 The Stanza model was re-checked every time a GUI opened (the "downloading"): fixed
-
-Fixed by PR #1704 (merged 11 Nov, in Unreleased): the model downloads only when missing, at RUN, behind a progress window, and the pipeline is built on first use. Measured after the fix: `import Stanza_functions_util` 33.0 → 18.5 s, `import statistics_txt_util` 38.5 → 21.3 s; what remains is library import time (§6.2). **Still not checked:** the first download on a machine with no model; Windows.
+Findings 1–2 are where the opening time goes. Adding up the measured parts, a GUI such as Style analysis takes an estimated half a minute to open (4.6 s base + 29 s of libraries; not timed end to end) and should drop to a few seconds; the menu and the light GUIs should drop from about 5 s to about 1.5 s.
 
 ### 6.2 Heavy libraries are imported when the GUI opens
 
-Each `*_util.py` starts with `install_all_Python_packages(...)`, which **imports** every listed package to test that it is installed, and then with module-level imports of the same libraries. A GUI therefore loads everything any of its options might use before it draws.
+Each `*_util.py` starts with `install_all_Python_packages(...)`, which **imports** every listed package to test that it is installed, and then with module-level imports of the same libraries. A GUI therefore loads everything any of its options might use before it draws. Since #1704 stopped the Stanza model check, this is most of what is left: `import Stanza_functions_util` takes 18.5 s and `import statistics_txt_util` 21.3 s.
 
 Libraries alone, fresh process (seconds): `sentence_transformers` 39.5 · `summarizer` 25.2 · `spacy_langdetect` 23.6 · `tensorflow` 21.0 · `stanza` 16.8 · `contextualSpellCheck` 15.0 · `spacy` 14.6 · `seaborn` 11.4 · `transformers` 9.4 · `textblob` 8.2 · `pyLDAvis` 8.1 · `textstat` 7.5 · `nltk` 7.4 · `sklearn` 5.6 · `gensim` 5.2 · `folium` 3.6 · `openpyxl` 3.4 · `pandas` 3.1–3.5.
 
-Library import cost per GUI (all its libraries together, one process; excludes §6.1 and the Suite's own code):
+Library import cost per GUI (all its libraries together, one process; excludes the Suite's own code):
 
 | Cost | GUIs |
 |---|---|
@@ -320,8 +315,6 @@ The 1 s pauses in `GIS_geocode_util` and `charts_util` are Nominatim's rate limi
 
 ### 6.6 Network calls on the main thread
 
-**Partly done in 1.6.41:** the offline check is quiet and CLOSE no longer checks twice.
-
 - `GUI_util.display_release()` runs at the end of `GUI_bottom` for every GUI: `internet_on()` then a GET to GitHub, before the window is usable. Here it took 0.03 s + 0.07 s, so on a good connection it is not the problem. On a dead or filtered network `internet_on()` can take up to 16 s (3 + 3 + 5 + 5 s of timeouts), and the GET up to 18 s (3 tries × 6 s).
 - **Fix:** run the check in a background thread and fill the release label with `window.after`; check once per session, not once per window (the menu can pass the result to the GUIs it starts, like `NLP_SUITE_OPEN_WINDOWS`).
 - No timeout at all, so a stalled connection hangs the GUI: `IO_libraries_util.check_CoreNLPVersion` (line 442, called at the start of every CoreNLP run from `Stanford_CoreNLP_util.py:360`), `IO_libraries_util.open_url` (line 720) and `GUI_util.watch_video` (line 2166). The last two fetch the whole page only to test that it exists before opening the browser; open the browser directly. Give the CoreNLP check `timeout=5` and run it at most once a day.
@@ -343,12 +336,11 @@ Read from the code only: 96 `iterrows()` / row-append patterns in 29 files, most
 
 ### 6.10 Order of work
 
-1. ~~§6.1 Stanza check and lazy pipeline~~ (done, #1704).
-2. §6.3 pandas and requests out of the `GUI_util` import chain; §6.2 step 1 (`find_spec`). Every GUI gets faster.
-3. §6.7 launch-count block; §6.5 sleeps; §6.6 timeouts.
-4. §6.4 alerts, once Roberto has decided the behaviour.
-5. §6.2 steps 2–3, module by module.
-6. Re-measure with the same commands, on Windows and on a Mac, and on the zip build. Add a CI check that `import GUI_util` under the test stubs does not import pandas or requests, so the gain is not lost.
+1. §6.3 pandas and requests out of the `GUI_util` import chain; §6.2 step 1 (`find_spec`). Every GUI gets faster.
+2. §6.7 launch-count block; §6.5 sleeps; §6.6 timeouts.
+3. §6.4 alerts, once Roberto has decided the behaviour.
+4. §6.2 steps 2–3, module by module.
+5. Re-measure with the same commands, on Windows and on a Mac, and on the zip build. Add a CI check that `import GUI_util` under the test stubs does not import pandas or requests, so the gain is not lost.
 
 Every change follows CLAUDE.md: unit tests for new helpers, `pytest tests/`, and `python tests/gui_smoke.py` after any GUI edit.
 
@@ -389,7 +381,6 @@ Most of these are about content and chrome, not the widget toolkit; CTk alone fi
 
 ### 7.3 Bugs found along the way
 
-- **Shape of Stories crashed at open** with the default config (relative paths in `lib/config_defaults` resolved under `src/`): fixed by #1711, in Unreleased. Still to do: check it on a fresh 1.6.42 zip.
 - Not bugs: `NLP_setup_IO_main` refuses to run on its own (by design); `data_manipulation`, the menu and the setup GUIs build their window only under `__main__`.
 
 ### 7.4 Proposed order (its own releases)
@@ -423,11 +414,9 @@ Each PR carries before/after screenshots from a gallery script. Add one to `test
 
 | Link | Where | Fix |
 |---|---|---|
-| `wiki/Install-the-NLP-Suite` (no such page) | `setup_Mac/readme_Mac_beta.md`, `setup_Windows/readme_Windows_beta.md` (README.md fixed for 1.6.43) | The setup readmes go in §1.1 |
-| `wiki/NLP-Suite-Release-History` (no such page) | wiki `Home` (README.md and the Release history button point to `CHANGELOG.md` since 1.6.43) | `CHANGELOG.md` |
+| `wiki/Install-the-NLP-Suite` (no such page) | `setup_Mac/readme_Mac_beta.md`, `setup_Windows/readme_Windows_beta.md` | Deleted by §1.1 |
+| `wiki/NLP-Suite-Release-History` (no such page) | wiki `Home` | `CHANGELOG.md` |
 | `Watch-YouTube-Videos` (no such page) | Wiki `_Sidebar` | Publish `docs/Watch-YouTube-Videos.md`, or drop the entry |
-
-#1705 is merged, so `README.md` is free to edit.
 
 ### 8.3 Pages in use that are out of date
 
@@ -451,7 +440,7 @@ About 50 em dashes on user-facing pages. The design notes in `docs/` have more (
 
 ## 9. Open pull requests
 
-Reviewed 9 Nov 2026 (#1699, #1701, #1702 shipped in 1.6.41; #1679 and #1656 were re-applied there and closed); #1704 and #1705 merged 11 Nov. The older PRs conflict only because v1.6.40 reformatted all of `src/` (PR #1687).
+Reviewed 9 Nov 2026. The older PRs conflict only because v1.6.40 reformatted all of `src/` (PR #1687).
 
 "Tests" = the PR's own new tests, run on Windows in the NLP env on 9 Nov.
 
