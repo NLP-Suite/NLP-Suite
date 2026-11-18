@@ -141,7 +141,7 @@ def run():
                 message="NER in BERT is only available for the English language. Your currently selected language is "
                 + language
                 + "."
-                "\n\nYou can change the selected language using the Setup dropdown menu at the bottom of this GUI, select the 'Setup NLP package and corpus language' to open the GUI where you can change the language option.",
+                "\n\nYou can change the selected language using the Setup dropdown menu at the bottom of this GUI, select 'Setup NLP package (parsers & annotators) and corpus language' to open the GUI where you can change the language option.",
             )
             return
         import BERT_util

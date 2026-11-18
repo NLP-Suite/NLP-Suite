@@ -19,7 +19,7 @@ NLP_Suite_website_name = "NLP Suite GitHub"
 introduction_main = 'Welcome to this Python 3 script.\nFor brief general information about this script, click on the "Read Me" button.\nFor brief information on specific lines click on any of the "?HELP" buttons.\nFor longer information on various aspects of the script, click on the "Open TIPS files" button and select the pdf help file to view.\nAfter selecting an option, click on "RUN" (the RUN button is disabled until all I/O information has been entered).   Click on "CLOSE" to exit.'
 # msg_fileButtonDisabled="\n\nIf the Select INPUT file button is greyed out because you previously selected an INPUT directory but you now wish to use a file as input, click on the Select INPUT directory button and press ESCape to make all INPUT options available."
 # msg_dirButtonDisabled="\n\nIf the Select INPUT directory button is greyed out because you previously selected an INPUT file but you now wish to use a directory as input, click on the Select INPUT file button and press ESCape to make all INPUT options available."
-msg_openExplorer = "\n\nA small button appears next to the select directory button. Click on the button to open Windows Explorer on the directory displayed, if one is displayed, or on the directory where the NLP script is saved."
+msg_openExplorer = "\n\nA small button appears next to the select directory button. Click on the button to open the directory displayed in File Explorer (Finder on a Mac), if one is displayed, or on the directory where the NLP script is saved."
 msg_openFile = "\n\nA small button appears next to the select file button. Click on the button to open the file, if one has been selected, as a check that you selected the correct file."  # + msg_fileButtonDisabled
 msg_Esc = "\n\nPress the ESCape button to clear any previously selected options and start fresh."
 
@@ -1132,12 +1132,9 @@ def about():
 
 
 def release_history():
-    url = "https://github.com/NLP-Suite/NLP-Suite/wiki/NLP-Suite-Release-History"
+    # the wiki page NLP-Suite-Release-History does not exist; CHANGELOG.md is the release history
+    url = "https://github.com/NLP-Suite/NLP-Suite/blob/current-stable/CHANGELOG.md"
     IO_libraries_util.open_url(NLP_Suite_website_name, url)
-    # check internet connection
-    # if not IO_internet_util.check_internet_availability_warning("Check on GitHub the NLP Suite release history"):
-    #     return
-    # webbrowser.open_new_tab("https://github.com/NLP-Suite/NLP-Suite/wiki/NLP-Suite-Release-History")
 
 
 # The function displays the contributors to the development of the NLP Suite

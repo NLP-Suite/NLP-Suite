@@ -1083,7 +1083,7 @@ classify_words_by_semantic_closeness_button = tk.Button(
     window,
     width=90,
     text="WORD embeddings: Classify words by semantic proximity: Word2Vec & word embeddings (Open GUI)",
-    command=lambda: run_script_util.run_script("Word2Vec_main.py"),
+    command=lambda: run_script_util.run_script("word2vec_main.py"),
 )
 y_multiplier_integer = GUI_IO_util.placeWidget(
     window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer, classify_words_by_semantic_closeness_button, False

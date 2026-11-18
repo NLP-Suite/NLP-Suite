@@ -14,7 +14,7 @@ Checked on the 17 Nov release candidate (Mac, macOS 26.5.2): both zips hold the 
 2. **Update a real 1.6.41 install** on Windows and on a Mac: close it, accept the update, and check that config and user files survive and that `NLP_Suite_previous` is gone after the next start. Read `%TEMP%\NLP_Suite_update.log` (Mac: the log named in the message). This is the first full-size run; the 9 Nov test used a 26 MB stand-in release on localhost.
 3. **Not yet tested by hand:** a source checkout on `current-stable` updating with git; opening and closing a GUI offline (no popups expected).
 
-**Found after the tag (#1728):** on a new install, the 13 GUIs that import `Stanza_util` closed as they opened (Shape of Stories among them; HW 5 is due 6 Dec). Fixed on `roberto`. **1.6.43** ships it with #1731 (the menu's language advisor said Stanza supports no language); bundle size moves to 1.6.44.
+**Found after the tag (#1728):** on a new install, the 13 GUIs that import `Stanza_util` closed as they opened (Shape of Stories among them; HW 5 is due 6 Dec). Fixed on `roberto`. **1.6.43** ships it with #1731 (the menu's language advisor said Stanza supports no language) and a small links-and-copy PR (README and Release history links, the Word2Vec launch, the §5.2 copy outside the HW 5 files). Then 1.6.44 for HW 5, and bundle size in 1.6.45.
 
 Ask students who report update problems to send that log to coralynn.yang@emory.edu.
 
@@ -22,13 +22,13 @@ Ask students who report update problems to send that log to coralynn.yang@emory.
 
 Details in [docs/future-work.md](docs/future-work.md); section numbers below refer to it.
 
-**1.6.43 (proposed): dead files and bundle size.** Both change what the build ships, so they go out together.
+**1.6.44 (planned): the HW 5 tools** (§4), issues #1718–#1724: Shape of Stories, NRC, SentiWordNet, spaCy sentiment, CoreNLP memory, vocabulary, language detection. QTM 446W's HW 5 is due Sun 6 Dec. #1722 and #1719 first.
+
+**1.6.45 (proposed): dead files and bundle size.** Both change what the build ships, so they go out together, after HW 5.
 - PR #1706 deletes the legacy setup scripts and unused files (§1.1). Rebase it on `roberto` first; it conflicts with #1705 in `README.txt` and `CLAUDE.md`. Deleting `src/requirements*.txt` also closes 108 of the 178 Dependabot alerts (§3.1).
 - Drop TensorFlow, which nothing imports (§2.2), then trim `NLP_Suite.spec` to what the menu needs (§2.1), and remove the requirements that nothing imports (§2.3).
 
-**1.6.44 (planned): the HW 5 tools** (§4), issues #1718–#1724: Shape of Stories, NRC, SentiWordNet, spaCy sentiment, CoreNLP memory, vocabulary, language detection. QTM 446W's HW 5 is due Sun 6 Dec. #1722 and #1719 first.
-
-**Python 3.11 security release** (§3): the summarizer replacement (§3.2), then #1688 rebased with Pillow 13 and transformers 5. It needs #1706 merged first. Its release number has to be settled against 1.6.44.
+**1.6.46 (proposed): the Python 3.11 security release** (§3): the summarizer replacement (§3.2), then #1688 rebased with Pillow 13 and transformers 5. It needs #1706 merged first (1.6.45).
 
 **Later, unscheduled:**
 - Smaller copy left over from #1705 (§5.2), and the repeated config warning on a first run from source (§5.3).

@@ -87,7 +87,7 @@ def report_download_failure(script, err, resource="a language model"):
         "sites open normally: the models come from raw.githubusercontent.com and "
         "huggingface.co.\n"
         "  3. If you cannot reach those sites, you can select a different NLP package (Stanford "
-        "CoreNLP or spaCy) in the NLP Suite setup, under 'Setup NLP package and language'.\n\n"
+        "CoreNLP or spaCy) in the NLP Suite setup, under 'Setup NLP package (parsers & annotators) and corpus language'.\n\n"
         "The analysis cannot run until the model is available.",
     )
 

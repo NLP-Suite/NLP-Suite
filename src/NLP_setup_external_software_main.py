@@ -452,7 +452,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(
     90,
     GUI_IO_util.read_button_x_coordinate,
     "When clicking the CLOSE button, the script will give you the option to save the currently selected configuration IF different from the previously saved configuration."
-    "\nThe CLOSE button will also trigger the automatic update of the NLP Suite pulling the latest release from GitHub. The new release will be displayed next time you open your local NLP Suite."
+    "\nWhen a new release of the NLP Suite is out, pressing the CLOSE button offers to download and install it. The new release is used the next time you open the NLP Suite."
     "\nYou must be connected to the internet for the auto update to work.",
 )
 
