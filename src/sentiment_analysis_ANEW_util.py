@@ -100,7 +100,7 @@ def analyzefile(inputFilename, outputDir, outputFilename, csvfile, mode, Documen
         return
 
     from Stanza_functions_util import (
-        lemmatize_stanza_word,
+        lemmatize_stanza_word_cached,
         sentence_split_stanza_text,
         stanzaPipeLine,
         tokenize_stanza_text,
@@ -143,7 +143,7 @@ def analyzefile(inputFilename, outputDir, outputFilename, csvfile, mode, Documen
             # lemma = lmtzr.lemmatize(w, pos='v')
             # if lemma == w:
             #     lemma = lmtzr.lemmatize(w, pos='n')
-            lemma = lemmatize_stanza_word(stanzaPipeLine(w))
+            lemma = lemmatize_stanza_word_cached(w)
 
             total_words += 1
 

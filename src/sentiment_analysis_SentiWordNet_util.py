@@ -111,7 +111,7 @@ def analyzefile(inputFilename, outputDir, output_file, mode, documentID, documen
         return
 
     from Stanza_functions_util import (
-        lemmatize_stanza_word,
+        lemmatize_stanza_word_cached,
         sentence_split_stanza_text,
         stanzaPipeLine,
     )
@@ -139,7 +139,7 @@ def analyzefile(inputFilename, outputDir, output_file, mode, documentID, documen
                 continue
 
             # lemma = lemmatizer.lemmatize(word, pos=wn_tag)
-            lemma = lemmatize_stanza_word(stanzaPipeLine(word))
+            lemma = lemmatize_stanza_word_cached(word)
             if not lemma:
                 continue
 
