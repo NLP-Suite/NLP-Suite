@@ -152,6 +152,13 @@ def check_Stanza_annotator_availability(annotator_params, short_lang, long_lang,
 
 
 # Stanza annotate functions
+def add_output_file(filesToOpen, filename):
+    """Add an output file once. Stanza_annotate's loop runs once per document but writes one csv per run;
+    appending it per document made the charts loop below chart the same csv once per document."""
+    if filename not in filesToOpen:
+        filesToOpen.append(filename)
+
+
 def Stanza_annotate(
     configFilename,
     inputFilename,
@@ -420,7 +427,7 @@ def Stanza_annotate(
 
         # the dt dataframe when running SVO is the CoNLL table, saved later, after processing all input files
         # it needs to be added here so as to know exactly the place of the CoNLL table in the output files list
-        filesToOpen.append(outputFilename)
+        add_output_file(filesToOpen, outputFilename)
 
         # SVO extraction
         if "SVO" in annotator_params:
@@ -435,13 +442,13 @@ def Stanza_annotate(
             svo_df = pd.concat([svo_df, temp_svo_df], ignore_index=True, axis=0)
 
             svo_df.to_csv(svo_df_outputFilename, index=False, encoding=language_encoding)
-            filesToOpen.append(svo_df_outputFilename)
+            add_output_file(filesToOpen, svo_df_outputFilename)
 
             if google_earth_var is True:
                 loc_df = visualize_GIS_maps_Stanza(svo_df)
                 loc_df_outputFilename = kwargs["location_filename"]
                 loc_df.to_csv(loc_df_outputFilename, index=False, encoding=language_encoding)
-                filesToOpen.append(loc_df_outputFilename)
+                add_output_file(filesToOpen, loc_df_outputFilename)
 
     # filter NER output to the user-selected tags (when a subset is selected);
     # only for a standalone NER run (the SVO/parse df is a CoNLL table, not to be filtered)
