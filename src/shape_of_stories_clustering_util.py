@@ -271,25 +271,13 @@ def processCluster(
 
 
 def update_Ct_St(sample, H, C_t, S_t):
-    for i in range(S_t.shape[0]):
-        for j in range(S_t.shape[1]):
-            if i in sample and j in sample:
-                S_t[i][j] += 1
-
-    clusters = []
-    for col in range(H.shape[1]):
-        docs_in_same_clust = []
-        for row in range(H.shape[0]):
-            if np.argmax(H[row]) == col:
-                docs_in_same_clust.append(sample[row])
-        clusters.append(docs_in_same_clust)
-
-    for cluster in clusters:
-        for idx_1 in cluster:
-            for idx_2 in cluster:
-                C_t[idx_1][idx_2] += 1
-                if S_t[idx_1][idx_2] == 0:
-                    print("ERROR" + "\n")
+    # S_t counts the pairs of documents drawn together, C_t the pairs also put in the same cluster.
+    # numpy, not loops over every pair: on 958 documents the loops took about 4 minutes per k
+    sample = np.asarray(sample)
+    pairs = np.ix_(sample, sample)
+    S_t[pairs] += 1
+    same_cluster = np.eye(H.shape[1])[np.argmax(H, axis=1)]
+    C_t[pairs] += same_cluster @ same_cluster.T
     return C_t, S_t
 
 
@@ -311,26 +299,15 @@ def group_elements(H):
 
 
 def compute_consensus_matrix(Ct_all, St_all):
-    C = np.zeros(shape=(Ct_all.shape[0], Ct_all.shape[1]))
-    for i in range(Ct_all.shape[0]):
-        for j in range(Ct_all.shape[1]):
-            c_ij_t = Ct_all[i][j]
-            s_ij_t = St_all[i][j]
-
-            if c_ij_t == 0:
-                C[i][j] = 0
-            else:
-                C[i][j] = c_ij_t / s_ij_t
+    # 0 where two documents were never clustered together (including pairs never drawn together, S = 0)
+    C = np.zeros(shape=Ct_all.shape)
+    np.divide(Ct_all, St_all, out=C, where=Ct_all != 0)
     return C
 
 
 def compute_dispersion_coeff(consensus_matrix):
     n = consensus_matrix.shape[0]
-    total = 0
-    for i in range(n):
-        for j in range(n):
-            total += 4 * (consensus_matrix[i][j] - 0.5) ** 2
-    return total / (n**2)
+    return float(np.sum(4 * (consensus_matrix - 0.5) ** 2)) / (n**2)
 
 
 def estimate_best_k(document_matrix, output_dir, filesToOpen):

@@ -118,3 +118,80 @@ def test_nmf_input_is_shifted_to_nonnegative():
         assert np.allclose(mod.nonnegative([[1.0, 2.0]]), [[1.0, 2.0]])
     finally:
         _real_pandas.swap_out(saved)
+
+
+def _loop_reference():
+    """The pre-numpy best-k helpers, kept here to check that the numpy versions give the same numbers."""
+
+    def update_Ct_St(sample, H, C_t, S_t):
+        for i in range(S_t.shape[0]):
+            for j in range(S_t.shape[1]):
+                if i in sample and j in sample:
+                    S_t[i][j] += 1
+        for col in range(H.shape[1]):
+            cluster = [sample[row] for row in range(H.shape[0]) if H[row].argmax() == col]
+            for idx_1 in cluster:
+                for idx_2 in cluster:
+                    C_t[idx_1][idx_2] += 1
+        return C_t, S_t
+
+    def compute_consensus_matrix(Ct_all, St_all):
+        C = Ct_all * 0.0
+        for i in range(Ct_all.shape[0]):
+            for j in range(Ct_all.shape[1]):
+                C[i][j] = 0 if Ct_all[i][j] == 0 else Ct_all[i][j] / St_all[i][j]
+        return C
+
+    def compute_dispersion_coeff(consensus_matrix):
+        n = consensus_matrix.shape[0]
+        return sum(4 * (consensus_matrix[i][j] - 0.5) ** 2 for i in range(n) for j in range(n)) / (n**2)
+
+    return update_Ct_St, compute_consensus_matrix, compute_dispersion_coeff
+
+
+def test_best_k_helpers_match_the_loop_versions():
+    """Best k spent about 4 minutes per k on 958 documents in Python loops over every pair of documents."""
+    try:
+        _, saved = _real_pandas.swap_in()
+    except ImportError:
+        pytest.skip("pandas/numpy not installed")
+    try:
+        import numpy as np
+
+        stubs = dict(_LOCAL_STUBS)
+        for m in (
+            "matplotlib",
+            "matplotlib.pyplot",
+            "scipy",
+            "scipy.cluster",
+            "scipy.cluster.hierarchy",
+            "scipy.linalg",
+            "sklearn",
+            "sklearn.cluster",
+            "sklearn.decomposition",
+            "tqdm",
+        ):
+            if m not in sys.modules or m.startswith(("sklearn", "scipy")):
+                stubs[m] = MagicMock()
+        with patch.dict(sys.modules, stubs):
+            mod = _load("_sos_clustering_best_k")
+        ref_update, ref_consensus, ref_dispersion = _loop_reference()
+
+        rng = np.random.default_rng(0)
+        n, k = 40, 4
+        C, S = np.zeros((n, n)), np.zeros((n, n))
+        C_ref, S_ref = np.zeros((n, n)), np.zeros((n, n))
+        for _ in range(5):
+            sample = [j for j in range(n) if rng.random() <= 0.8]
+            H = rng.random((len(sample), k))
+            C, S = mod.update_Ct_St(sample, H, C, S)
+            C_ref, S_ref = ref_update(sample, H, C_ref, S_ref)
+        assert np.array_equal(C, C_ref)
+        assert np.array_equal(S, S_ref)
+        assert S.min() == 0  # some pairs were never sampled together: the consensus must not divide by 0
+
+        consensus = mod.compute_consensus_matrix(C, S)
+        assert np.array_equal(consensus, ref_consensus(C, S))
+        assert np.isclose(mod.compute_dispersion_coeff(consensus), ref_dispersion(consensus))
+    finally:
+        _real_pandas.swap_out(saved)
