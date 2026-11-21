@@ -523,7 +523,7 @@ Deleting someone else's remote branch is Roberto's call.
 - **`src/` is Ruff-formatted** (v1.6.40). PRs opened before that need a rebase, not a hand merge.
 - **Update order matters.** The in-app check reads `current-stable`'s `lib/release_version.txt`, which changes before the tag's zips finish building. The self-updater and the launch popup both wait until that version's zip is on the release page.
 - **Before every tag:** build, unzip both artifacts, confirm `Launch NLP Suite (Mac).command` and the Windows entry point exist, run `tests/bundle_gate.py` (`snapshot` the last release and the candidate, then `compare`), then draft the CHANGELOG section.
-- **`bundle_gate.py`'s menu check, two false alarms (17 Nov):** without `DO_NOT_TRACK=1` the first-run usage question covers the menu for the whole 40 s, so a base snapshot never builds the menu; and the menu sometimes prints `TclError: can't invoke "winfo" command: application has been destroyed` when the gate closes it (CustomTkinter's DPI-scaling timer firing after the window is gone; 1.6.42 does it too, 1 run in 2). Fix in the gate: set `DO_NOT_TRACK` in `_env`, and ignore that one traceback, or cancel CustomTkinter's scaling tracker when the menu closes. `lib/release_version.txt` must equal the tag (CI enforces it).
+- **`bundle_gate.py` sets `DO_NOT_TRACK=1`** for every program it runs, and ignores CustomTkinter's `application has been destroyed` traceback when it closes the menu (both were false alarms on 17 Nov). `lib/release_version.txt` must equal the tag (CI enforces it).
 
 ## 15. The updater: known limits
 

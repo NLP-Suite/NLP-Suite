@@ -17,12 +17,12 @@ Still to check on 1.6.43, on the published zips:
 Ask students who report update problems to send the update log (item 2) to coralynn.yang@emory.edu.
 
 To finish 1.6.44:
-1. **Fix `bundle_gate.py`'s two false alarms** (future-work §14): set `DO_NOT_TRACK` in its `_env`, and ignore CustomTkinter's "application has been destroyed" at shutdown. Small, test-only; first, since every check below uses the gate.
+1. *(Done 21 Nov: `bundle_gate.py`'s two false alarms.)*
 2. *(#1706 and the setup-script deletion are no longer in 1.6.44: see Future work.)*
 3. **Maybe trim the spec further** (§2.1): it keeps spaCy, pandas and the rest for the language advisor, which since #1732 runs on `python-env` instead. Probe build first.
 4. **Re-sync the dev env** before testing: `pip install -r requirements.txt -r requirements-mac.txt --upgrade` in NLP310 (on 17 Nov it had transformers 4.51.3, the pin was 4.41.2; on the branch the pin is now 4.51.3).
 5. **Checks on a candidate** (`build-installers.yml`, workflow_dispatch on `release/v1.6.44`, after setting `lib/release_version.txt` and the CHANGELOG heading there):
-   - `bundle_gate.py` against 1.6.43 on the Mac zip (`DO_NOT_TRACK=1`): the spec trim is what its menu-archive check is for.
+   - `bundle_gate.py` against 1.6.43 on the Mac zip: the spec trim is what its menu-archive check is for.
    - The HW 5 sweep (`qtm446/assignments/hw5/hw5_suite_run.py`) on the candidate's own `python-env`: transformers moves to 4.51.3 under BERT sentiment and Shape of Stories. Use the 60-document sample for Shape of Stories (under 50 documents it asks "TOO FEW!", which silent mode answers No).
    - §2.5: zip sizes on both OSes; the menu from each zip; one tool per family on `python-env` (BERT NER, BERTopic, coreference with fastcoref, a CoreNLP parse with the bundled JRE, a GIS map, wordclouds, an Excel chart). Launch the menu, Setup external software and the welcome screen by hand: `gui_smoke.py` skips them, and the copy pass changed their text.
    - The self-updater 1.6.43 → 1.6.44: the first update that drops files from the release (`NLP_Suite_previous` holds them until the next start).
