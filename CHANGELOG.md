@@ -7,6 +7,7 @@ release workflow). Keep the newest version's section at the very top and update 
 ## Unreleased
 - **Sentiment analysis with ANEW, hedonometer, SentiWordNet or VADER is much faster.** Each tool ran Stanza on every word of every document to find its dictionary form; it now does that once for each different word. The scores are the same.
 - **Shape of Stories: best k is much faster on large corpora.** For each k it compared every pair of documents in slow loops: on 958 documents, about 4 minutes per k and 9 to 12 hours for the whole run. It now compares them all at once, with the same results.
+- **Stanza runs on many documents no longer chart the same table over and over.** The lemma, sentiment, SVO and location tables were charted once for every input document, though each run writes one table: on a 958-document corpus, charting the lemma table alone took about 10 hours. Each table is now charted once, and the charts are the same.
 
 ## v1.6.43
 - **Stanza tools open on a new install.** On a computer where no Stanza tool had run yet, Shape of Stories, Style analysis, SVO, NER, GIS maps, the parsers, Semantic analysis and six other tools showed "The Stanza language models could not be downloaded" and closed as they opened, and trying again did not help. They now download the list of Stanza languages (about 0.5 MB) and open; the language model itself is still downloaded the first time you click RUN. Without internet they open anyway and say what to check.
