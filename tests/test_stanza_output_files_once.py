@@ -6,10 +6,8 @@ document, and the charts loop after it charts every csv in that list: on 958 doc
 """
 
 import ast
-import importlib.util
 import os
-import sys
-from unittest.mock import MagicMock, patch
+import types
 
 import pytest
 
@@ -18,22 +16,13 @@ _PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 @pytest.fixture(scope="module")
 def stanza_util():
-    stubs = {}
-    for name in ("stanza", "stanza.pipeline", "stanza.pipeline.multilingual", "stanza.resources", "pandas"):
-        if name not in sys.modules or isinstance(sys.modules[name], MagicMock):
-            stubs[name] = MagicMock()
-    with patch.dict(sys.modules, stubs):
-        for _ in range(30):
-            spec = importlib.util.spec_from_file_location("_stanza_util_files_once", _PATH)
-            module = importlib.util.module_from_spec(spec)
-            try:
-                spec.loader.exec_module(module)
-                break
-            except ModuleNotFoundError as e:
-                if not e.name or e.name in sys.modules:
-                    raise
-                sys.modules[e.name] = MagicMock()
-        yield module
+    # Only add_output_file, compiled from the source: importing Stanza_util pulls in a module that builds a Tk window,
+    # which fails on CI (no display).
+    tree = ast.parse(open(_PATH, encoding="utf-8").read())
+    func = next(n for n in tree.body if isinstance(n, ast.FunctionDef) and n.name == "add_output_file")
+    namespace = {}
+    exec(compile(ast.Module(body=[func], type_ignores=[]), _PATH, "exec"), namespace)
+    return types.SimpleNamespace(add_output_file=namespace["add_output_file"])
 
 
 def test_each_file_is_added_once_in_first_seen_order(stanza_util):
