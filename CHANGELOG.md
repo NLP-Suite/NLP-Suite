@@ -4,7 +4,7 @@ The most recent release is at the top. Each release's bullets are shown as **"Wh
 on the corresponding GitHub Release page (the top section is added automatically by the
 release workflow). Keep the newest version's section at the very top and update it before tagging.
 
-## Unreleased
+## v1.6.44
 - **A smaller download and update: about 40% smaller** (Mac 1.3 GB → about 775 MB, Windows 1.5 GB → about 863 MB, measured on a test build), so updates download faster too. The NLP Suite no longer installs TensorFlow, which no tool used (everything that needs a neural network runs on PyTorch), nor fourteen other packages nothing imported. The program that starts the menu no longer carries a second, unused copy of the libraries the tools use, nor of the `lib`, `TIPS` and `src` folders. The help (TIPS) files take 15 MB less. Nothing a tool does changes.
 - **Every window opens faster**, by about half a second to a second, and the first three launches open the welcome screen sooner. A slow or stalled internet connection can no longer freeze a window while checking the Stanford CoreNLP version or opening a website.
 - **Security: transformers 4.51.3** (was 4.41.2), which fixes 7 of the published vulnerabilities in the library behind the BERT tools. The rest need a newer Python and come with a later release.
