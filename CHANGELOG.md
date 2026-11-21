@@ -4,6 +4,9 @@ The most recent release is at the top. Each release's bullets are shown as **"Wh
 on the corresponding GitHub Release page (the top section is added automatically by the
 release workflow). Keep the newest version's section at the very top and update it before tagging.
 
+## Unreleased
+- **Sentiment analysis with ANEW, hedonometer, SentiWordNet or VADER is much faster.** Each tool ran Stanza on every word of every document to find its dictionary form; it now does that once for each different word. The scores are the same.
+
 ## v1.6.43
 - **Stanza tools open on a new install.** On a computer where no Stanza tool had run yet, Shape of Stories, Style analysis, SVO, NER, GIS maps, the parsers, Semantic analysis and six other tools showed "The Stanza language models could not be downloaded" and closed as they opened, and trying again did not help. They now download the list of Stanza languages (about 0.5 MB) and open; the language model itself is still downloaded the first time you click RUN. Without internet they open anyway and say what to check.
 - **"Which tools work with my corpus language?" gives the right answer for Stanza.** In the downloaded NLP Suite the menu's report said Stanza could not parse, tag names or score sentiment in any language, because it was built inside the menu, which does not contain Stanza. It is now built with the NLP Suite's full Python, and if Stanza's list of languages cannot be read the report says so instead of showing every language as unsupported. A report that cannot be written, or a browser that cannot open it, is now reported instead of passing unseen.

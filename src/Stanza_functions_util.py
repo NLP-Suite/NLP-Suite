@@ -16,6 +16,7 @@ Examples of Usage:
     lemma = lemmatize_stanza_word(stanzaPipeLine(word))
 """
 
+import functools
 import sys
 
 import GUI_util
@@ -81,6 +82,13 @@ def sentence_split_stanza_text(text_to_process, return_text=True):
 # in OUTPUT, whatever the input, the function returns a STRING of a lemmatized single word
 #   (regardless of input, always the first word of the first sentence of a document)
 #   e.g., ['Robert']
+
+
+# lemmatize_stanza_word(stanzaPipeLine(word)) runs the whole pipeline on one word; the sentiment dictionaries call it on
+# every word of every document. The lemma of a word is the same each time, so compute it once per distinct word.
+@functools.lru_cache(maxsize=200_000)
+def lemmatize_stanza_word_cached(word, return_empty_string=True):
+    return lemmatize_stanza_word(stanzaPipeLine(word), return_empty_string)
 
 
 # must be called as lemmatize_stanza_word(stanzaPipeLine(token))
