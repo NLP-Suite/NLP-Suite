@@ -104,3 +104,20 @@ class TestCompare:
         cand = _snap(menu={"runs": True, "missing_from_archive": {"stanza": ["NLP_menu_main", "IO_util", "stanza"]}})
         fails, notes = gate.compare(_snap(), cand)
         assert fails == [] and any("REVIEW" in n and "IO_util -> stanza" in n for n in notes)
+
+
+class TestMenuTracebacks:
+    def test_a_real_traceback_is_kept(self):
+        log = "start\nTraceback (most recent call last):\n  File x\nKeyError: 'lang'\n"
+        assert gate.menu_tracebacks(log) == ["KeyError: 'lang'"]
+
+    def test_customtkinters_scaling_timer_after_the_gate_closes_the_menu_is_ignored(self):
+        log = (
+            "Traceback (most recent call last):\n  File scaling_tracker.py\n"
+            '_tkinter.TclError: can\'t invoke "winfo" command: application has been destroyed\n'
+        )
+        assert gate.menu_tracebacks(log) == []
+
+
+def test_the_gui_env_answers_the_first_run_usage_question(tmp_path):
+    assert gate._env(str(tmp_path))["DO_NOT_TRACK"] == "1"
