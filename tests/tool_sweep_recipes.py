@@ -9,6 +9,8 @@ tkinter variables the GUI's run() reads), and the input:
 `package` switches the NLP package in the recipe's own copy of the Parser & language config.
 `needs` names software the zip does not bring: the recipe is SKIPPED, with the reason, when it is missing.
 `answers` answers enter_value_widget prompts whose title contains the key (silent mode answers '').
+`yes` answers Yes to a yes/no question whose title or text contains one of these strings (silent mode
+answers No unless the question's default is Yes); every question is recorded either way.
 `args` is passed to run() when the GUI's run takes arguments (SVO: run(package)).
 `known` notes a failure the baseline already has, so it is not mistaken for news.
 
@@ -28,6 +30,7 @@ class Recipe:
     package: str = ""
     needs: tuple = ()
     answers: dict = field(default_factory=dict)
+    yes: tuple = ()
     args: tuple = ()
     timeout_min: int = 30
     known: str = ""
@@ -89,6 +92,7 @@ for key, label in (
                 best_topic_estimation_var=1,
             ),
             needs=("corenlp",) if key == "CoreNLP" else (),
+            yes=("TOO FEW",),  # 10 documents; it recommends 50 and asks whether to go on
         )
     )
 
@@ -138,6 +142,7 @@ add(
 )
 
 # ------------------------------------------------------------------ word embeddings and WSI
+W2V_YES = ("t-SNE",)  # asks whether to go on with the (slow) plot of word vectors
 W2V_OFF = dict(
     BERT_var=0,
     Gensim_var=0,
@@ -148,9 +153,25 @@ W2V_OFF = dict(
     min_count_var=2,
 )
 add(
-    R("word2vec_BERT", "word2vec_main", set={**W2V_OFF, "BERT_var": 1}),
-    R("word2vec_Gensim", "word2vec_main", set={**W2V_OFF, "Gensim_var": 1}),
-    R("word2vec_WSI", "word2vec_main", set={**W2V_OFF, "WSI_var": 1, "keywords_var": "book, novel"}),
+    R("word2vec_BERT", "word2vec_main", set={**W2V_OFF, "BERT_var": 1}, yes=W2V_YES),
+    R("word2vec_Gensim", "word2vec_main", set={**W2V_OFF, "Gensim_var": 1}, yes=W2V_YES),
+)
+
+# word sense induction lives in Semantic analysis (word2vec_main no longer offers it)
+add(
+    R(
+        "semantic_WSI_BERT",
+        "semantic_analysis_main",
+        set=dict(
+            WSI_var=1,
+            WSI_keywords_var="book",
+            WSD_var=0,
+            SSC_var=0,
+            SRL_var=0,
+            vocabulary_analysis_var=0,
+            extra_GUIs_var=0,
+        ),
+    ),
 )
 
 # ------------------------------------------------------------------ parsers (the configured package)
@@ -307,7 +328,6 @@ NOT_COVERED = {
     "nominalization_main": "next batch",
     "sample_corpus_main": "next batch",
     "semantic_aggregation_main": "next batch (from: a parser recipe's CoNLL table)",
-    "semantic_analysis_main": "next batch",
     "sentence_analysis_main": "next batch",
     "statistics_csv_main": "next batch",
     "statistics_txt_main": "next batch",

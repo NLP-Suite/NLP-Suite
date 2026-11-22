@@ -443,6 +443,20 @@ def capture(record, recipe):
             return _silent(title, message, *a, **k)
 
         setattr(mb, kind, show)
+    for kind in ("askyesno", "askokcancel", "askyesnocancel", "askquestion", "askretrycancel"):
+        silent = getattr(mb, kind)
+
+        def ask(title="", message="", *a, _kind=kind, _silent=silent, **k):
+            text = f"{title} {message}"
+            yes = any(key in text for key in recipe.yes)
+            if yes:
+                answer = "yes" if _kind == "askquestion" else True
+            else:
+                answer = _silent(title, message, *a, **k)
+            record["dialogs"].append(f"{_kind} | {title} | {' '.join(str(message).split())[:200]} -> {answer}")
+            return answer
+
+        setattr(mb, kind, ask)
     import GUI_IO_util
 
     def no_box(window, message_title, message_text, buttonType="OK", timeout=3000):
