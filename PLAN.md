@@ -21,7 +21,7 @@ To finish 1.6.44:
 2. *(#1706 and the setup-script deletion are no longer in 1.6.44: see Future work.)*
 3. **Maybe trim the spec further** (§2.1): it keeps spaCy, pandas and the rest for the language advisor, which since #1732 runs on `python-env` instead. Probe build first.
 4. **Re-sync the dev env** before testing: `pip install -r requirements.txt -r requirements-mac.txt --upgrade` in NLP310 (on 17 Nov it had transformers 4.51.3, the pin was 4.41.2; on the branch the pin is now 4.51.3).
-5. **Checks on the candidate.** Run 44956055378 (21 Nov, commit `387b9ec2`, version and CHANGELOG heading set) built both zips: Mac 721 MB, Windows 829 MB (1.6.43: 1,332 and 1,541).
+5. **Checks on the candidate.** Run 44956055378 (21 Nov, commit `387b9ec2`, version and CHANGELOG heading set) built both zips: the Mac zip is 721 MB (1.6.43: 1,332); the Windows download from the run is 772 MB (1.6.43 zip: 1,541; the zip inside not measured).
 
    **Done on the Mac zip (21 Nov):**
    - `bundle_gate.py` against the published 1.6.43: unzipped 4,417 → 2,227 MB (`python-env` 3,226 → 1,783, `_internal/` 831 → 148). Every GUI that built still builds, no new popup at opening, the frozen menu starts with no new traceback; about 30 GUIs no longer load IPython, h5py, ipywidgets and the like when they open. 3 FAILs, all expected: `SPARQLWrapper`, `gmaps`, `googlemaps` no longer import, and only the dead `knowledge_graphs_DBpedia_util_SPARQL` and `GIS_heatMapIntegration*` use them (§1.1; nothing references those modules). They go away with the dead files. 3 REVIEW notes (`stanza`, `huggingface_hub`, `pdfminer` reachable from the menu, not in its archive): the spec excludes them on purpose, and they are imported only inside functions that tools call on `python-env`.
