@@ -2,7 +2,7 @@
 
 What to do before tagging the next release, and what comes after it. The findings behind each future item (evidence, line numbers, proposed fixes) are in [docs/future-work.md](docs/future-work.md). How to fix an issue is in [CLAUDE.md](CLAUDE.md#fixing-an-issue). What has shipped is in [CHANGELOG.md](CHANGELOG.md).
 
-**Last updated:** 21 Nov 2026. v1.6.43 released 18 Nov (the evening of the 17th, Atlanta time). Releases are now Cora's (handed over by Roberto).
+**Last updated:** 21 Nov 2026 (evening). v1.6.43 released 18 Nov (the evening of the 17th, Atlanta time). Releases are now Cora's (handed over by Roberto).
 
 ## Now: 1.6.43 is out; 1.6.44 (bundle size) is on `release/v1.6.44`; 1.6.45 (HW 5 speedups) is on `roberto`
 
@@ -21,11 +21,17 @@ To finish 1.6.44:
 2. *(#1706 and the setup-script deletion are no longer in 1.6.44: see Future work.)*
 3. **Maybe trim the spec further** (§2.1): it keeps spaCy, pandas and the rest for the language advisor, which since #1732 runs on `python-env` instead. Probe build first.
 4. **Re-sync the dev env** before testing: `pip install -r requirements.txt -r requirements-mac.txt --upgrade` in NLP310 (on 17 Nov it had transformers 4.51.3, the pin was 4.41.2; on the branch the pin is now 4.51.3).
-5. **Checks on a candidate** (`build-installers.yml`, workflow_dispatch on `release/v1.6.44`, after setting `lib/release_version.txt` and the CHANGELOG heading there):
-   - `bundle_gate.py` against 1.6.43 on the Mac zip: the spec trim is what its menu-archive check is for.
-   - The HW 5 sweep (`qtm446/assignments/hw5/hw5_suite_run.py`) on the candidate's own `python-env`: transformers moves to 4.51.3 under BERT sentiment and Shape of Stories. Use the 60-document sample for Shape of Stories (under 50 documents it asks "TOO FEW!", which silent mode answers No).
-   - §2.5: zip sizes on both OSes; the menu from each zip; one tool per family on `python-env` (BERT NER, BERTopic, coreference with fastcoref, a CoreNLP parse with the bundled JRE, a GIS map, wordclouds, an Excel chart). Launch the menu, Setup external software and the welcome screen by hand: `gui_smoke.py` skips them, and the copy pass changed their text.
-   - The self-updater 1.6.43 → 1.6.44: the first update that drops files from the release (`NLP_Suite_previous` holds them until the next start).
+5. **Checks on the candidate.** Run 44956055378 (21 Nov, commit `387b9ec2`, version and CHANGELOG heading set) built both zips: Mac 721 MB, Windows 829 MB (1.6.43: 1,332 and 1,541).
+
+   **Done on the Mac zip (21 Nov):**
+   - `bundle_gate.py` against the published 1.6.43: unzipped 4,417 → 2,227 MB (`python-env` 3,226 → 1,783, `_internal/` 831 → 148). Every GUI that built still builds, no new popup at opening, the frozen menu starts with no new traceback; about 30 GUIs no longer load IPython, h5py, ipywidgets and the like when they open. 3 FAILs, all expected: `SPARQLWrapper`, `gmaps`, `googlemaps` no longer import, and only the dead `knowledge_graphs_DBpedia_util_SPARQL` and `GIS_heatMapIntegration*` use them (§1.1; nothing references those modules). They go away with the dead files. 3 REVIEW notes (`stanza`, `huggingface_hub`, `pdfminer` reachable from the menu, not in its archive): the spec excludes them on purpose, and they are imported only inside functions that tools call on `python-env`.
+   - The HW 5 sweep on each zip's own `python-env` and JRE, the 60-document sample, every job (sa, sa_star, sa_to_sos, sos, sos_csv, style, wordnet), 1.6.43 against the candidate: all 40 steps have the same status and file count, and about the same time (37 min each). Output contents: 127 csvs identical, and every difference explained. BERT scores move by at most 4e-6 (transformers 4.51.3), with no label changed, which moves one best-k dispersion coefficient in the 4th decimal (k = 10). One Character Emotion Arcs row names "Elliot" where 1.6.43 had "Lady Elliot", with the same scores. Language detection's langdetect confidence and lexical diversity's vocd-D sample at random, so they differ run to run. CoreNLP's speed assessment is timing. Shape of Stories' cluster csvs differ only in output paths. VADER in Shape of Stories is EMPTY on both (not offered since 1.6.43).
+   - By hand: the menu, Setup external software and the welcome screen open.
+
+   **Still to do:**
+   - Windows: the menu from the zip, and one tool per family on `python-env` (§2.5: BERT NER, BERTopic, coreference with fastcoref, a CoreNLP parse with the bundled JRE, a GIS map, wordclouds, an Excel chart).
+   - Mac, outside the sweep: BERT NER, BERTopic, fastcoref coreference, a GIS map, wordclouds (the sweep covered CoreNLP with the bundled JRE and Excel charts).
+   - After the tag, the self-updater 1.6.43 → 1.6.44: the first update that drops files from the release (`NLP_Suite_previous` holds them until the next start).
 6. **The release job is untested until the tag:** the branch moves the actions to Node 24, `download-artifact` and `action-gh-release` too, which only run on a tag. If the release job fails, the zips are still in the run's artifacts; rerun the job or attach them by hand.
 7. Promote **`release/v1.6.44` itself** to `current-stable` (a fast-forward: `current-stable` is its ancestor), not `roberto`, which would bring the 1.6.45 speedups with it. Tag `v1.6.44` there, then merge `release/v1.6.44` into `roberto` (the only conflict is the `## Unreleased` heading in CHANGELOG.md: one list, the 1.6.44 bullets under `## v1.6.44`). HW 5 is due Sun 6 Dec: tag after that unless the checks are clean well before, so students do not take a large update in the middle of the homework. Then delete `spike/1.6.43-bundle-size-rc` and its fork copies.
 
