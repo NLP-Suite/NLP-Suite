@@ -447,7 +447,7 @@ def capture(record, recipe):
     for kind in ("askyesno", "askokcancel", "askyesnocancel", "askquestion", "askretrycancel"):
         silent = getattr(mb, kind)
 
-        def ask(title="", message="", *a, _kind=kind, _silent=silent, **k):
+        def ask_yes_no(title="", message="", *a, _kind=kind, _silent=silent, **k):
             text = f"{title} {message}"
             yes = any(key in text for key in recipe.yes)
             if yes:
@@ -457,7 +457,7 @@ def capture(record, recipe):
             record["dialogs"].append(f"{_kind} | {title} | {' '.join(str(message).split())[:200]} -> {answer}")
             return answer
 
-        setattr(mb, kind, ask)
+        setattr(mb, kind, ask_yes_no)
     import GUI_IO_util
 
     def no_box(window, message_title, message_text, buttonType="OK", timeout=3000):
@@ -465,14 +465,14 @@ def capture(record, recipe):
         return ""
 
     GUI_IO_util.message_box_widget = no_box
-    ask = GUI_IO_util.enter_value_widget
+    enter_value = GUI_IO_util.enter_value_widget
 
     def answer(masterTitle, textCaption, *a, **k):
         for key, value in recipe.answers.items():
             if key in str(masterTitle) or key in str(textCaption):
                 record["dialogs"].append(f"answered | {masterTitle} | {value}")
                 return (value, "") if not isinstance(value, tuple) else value
-        return ask(masterTitle, textCaption, *a, **k)
+        return enter_value(masterTitle, textCaption, *a, **k)
 
     GUI_IO_util.enter_value_widget = answer
     import webbrowser
