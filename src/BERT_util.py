@@ -20,10 +20,8 @@ if (
             "sklearn",
             "summarizer",
             "sacremoses",
-            "contextualSpellCheck",
             "sentencepiece",
             "sentence_transformers",
-            "tensorflow",
         ],
     )
     == False

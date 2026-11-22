@@ -144,7 +144,7 @@ def check_Stanza_annotator_availability(annotator_params, short_lang, long_lang,
                     + " annotator for "
                     + long_lang
                     + "."
-                    + '\n\nYou can change the selected language using the Setup dropdown menu at the bottom of this GUI, select the "Setup NLP package and corpus language" to open the GUI where you can change the language option.',
+                    + '\n\nYou can change the selected language using the Setup dropdown menu at the bottom of this GUI, select the "Setup NLP package (parsers & annotators) and corpus language" to open the GUI where you can change the language option.',
                     [long_lang],
                 )
             annotator_available = False
@@ -684,7 +684,7 @@ def convertStanzaDoctoDf(stanza_doc, inputFilename, inputDir, tail, docID, annot
             if "NER" in annotator_params and language == "la":
                 open_Stanza_website(
                     "Stanza does not currently support the NER annotator for Latin."
-                    + '\n\nYou can change the selected language using the Setup dropdown menu at the bottom of this GUI, select the "Setup NLP package and corpus language" to open the GUI where you can change the language option.'
+                    + '\n\nYou can change the selected language using the Setup dropdown menu at the bottom of this GUI, select the "Setup NLP package (parsers & annotators) and corpus language" to open the GUI where you can change the language option.'
                 )
             if ("NER" in annotator_params or "depparse" in str(annotator_params)) and language != "la":
                 curr_ner = str(out_df.at[i, "NER"])

@@ -1414,7 +1414,7 @@ def activate_NLP_options(*args):
                 title="Warning",
                 message="The WordNet algorithms only work for the English language. Your selected language is "
                 + language
-                + '.\n\nYou can use the Setup dropdown menu at the bottom of this GUI and select "Setup NLP package and corpus language" option to select a differnt language if have an English-language corpus.',
+                + '.\n\nYou can use the Setup dropdown menu at the bottom of this GUI and select "Setup NLP package (parsers & annotators) and corpus language" option to select English if your corpus is in English.',
             )
         do_not_repeat_language_warning = True
 

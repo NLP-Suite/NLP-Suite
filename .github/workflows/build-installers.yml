@@ -7,8 +7,15 @@ on:
     tags:
       - 'v*'
 
+# Read-only by default; only the release job below asks for write access.
+permissions:
+  contents: read
+
 jobs:
   build:
+    # A normal build takes about 20 minutes; this stops a hung download or pip install from holding
+    # the runner for GitHub's default 6 hours.
+    timeout-minutes: 90
     strategy:
       fail-fast: false
       matrix:
@@ -29,7 +36,7 @@ jobs:
       # anything sitting on roberto shipped to external users on the next tag, with no promotion step.
       # The release job below already checks out the tag, so the two now agree.
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       # A v* tag MUST ship a matching lib/release_version.txt. The app's exit-time check compares the
       # INSTALLED file against the copy on current-stable, so when the two drift the check silently lies:
@@ -50,8 +57,26 @@ jobs:
           fi
           echo "OK: release_version.txt matches the tag."
 
+      # The release job pastes the TOP CHANGELOG.md section (without its heading) into the release page
+      # as "What's new". If the top is still an "## Unreleased" section, the page shows it under the wrong
+      # version, and a second section below it (there were two "Unreleased" sections on the 1.6.43 and
+      # 1.6.44 branches) is left out without any sign. Check the heading here, before the long build.
+      - name: Verify the top CHANGELOG.md section is this release
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: bash
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          TOP="$(grep -m1 '^## ' CHANGELOG.md | tr -d '\r')"
+          echo "tag=${GITHUB_REF_NAME} | top CHANGELOG heading: '${TOP}'"
+          # "## v1.6.43" alone or followed by text ("## v1.6.43: a smaller download"), but not "## v1.6.430"
+          if ! printf '%s\n' "${TOP}" | grep -Eq "^## v${TAG_VERSION//./\\.}([^0-9.]|$)"; then
+            echo "::error::The top CHANGELOG.md heading is '${TOP}', but the tag is '${GITHUB_REF_NAME}'. Merge this release's sections into one, headed '## ${GITHUB_REF_NAME}', commit it, delete and re-create the tag on that commit. Otherwise the release page shows the wrong notes."
+            exit 1
+          fi
+          echo "OK: the top CHANGELOG.md section is ${GITHUB_REF_NAME}."
+
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -95,8 +120,31 @@ jobs:
             PBS_URL="https://github.com/indygreg/python-build-standalone/releases/download/${PBS_TAG}/cpython-3.10.15+${PBS_TAG}-x86_64-pc-windows-msvc-install_only_stripped.tar.gz"
           fi
 
+          # SHA256 of each file this step may download, copied from that release's SHA256SUMS. The project
+          # moved to astral-sh/python-build-standalone; GitHub redirects the indygreg/ URLs above, and the
+          # files are the same. 3.11.10 is listed ahead of the Python 3.11 move (#1688). Changing PBS_TAG
+          # or the Python version means adding its line here, from
+          # https://github.com/astral-sh/python-build-standalone/releases/download/<PBS_TAG>/SHA256SUMS
+          PBS_FILE="$(basename "$PBS_URL")"
+          case "$PBS_FILE" in
+            cpython-3.10.15+20241002-aarch64-apple-darwin-install_only_stripped.tar.gz)  PBS_SHA=1f753073b2333b2977922387fe016255ebde0f8558c567ffb960b7f50477fd34 ;;
+            cpython-3.10.15+20241002-x86_64-pc-windows-msvc-install_only_stripped.tar.gz) PBS_SHA=50a39a5a09dd8786b154b116dbdbf7d6292fdf63b1683f6006d43246c0b9aad9 ;;
+            cpython-3.11.10+20241002-aarch64-apple-darwin-install_only_stripped.tar.gz)  PBS_SHA=263b1b50ff705ab064c50c3165de9df2ed712a77cd81c55dd340c3172e103687 ;;
+            cpython-3.11.10+20241002-x86_64-pc-windows-msvc-install_only_stripped.tar.gz) PBS_SHA=15a14bdc15a43119d74b7e3bde00031011d49d2a6068fe9743da92ba0c3d7b87 ;;
+            *) echo "::error::No SHA256 listed for $PBS_FILE. Add it to this step from the release's SHA256SUMS."; exit 1 ;;
+          esac
+
           echo "Downloading portable Python from $PBS_URL"
           curl -fSL "$PBS_URL" -o /tmp/python-portable.tar.gz
+          # sha256sum on the Windows runner (Git Bash), shasum on the Mac runner
+          if command -v sha256sum >/dev/null; then GOT=$(sha256sum /tmp/python-portable.tar.gz | cut -d' ' -f1)
+          else GOT=$(shasum -a 256 /tmp/python-portable.tar.gz | cut -d' ' -f1); fi
+          GOT="${GOT#\\}"   # GNU sha256sum may prefix the line with a backslash
+          if [ "$GOT" != "$PBS_SHA" ]; then
+            echo "::error::$PBS_FILE has SHA256 $GOT, expected $PBS_SHA. The download is corrupt or was changed; do not ship it."
+            exit 1
+          fi
+          echo "SHA256 OK: $PBS_FILE"
           mkdir -p "$DIST"
           tar -xzf /tmp/python-portable.tar.gz -C "$DIST" --strip-components=1
 
@@ -118,7 +166,7 @@ jobs:
           # spacy download installs the model wheel matching the installed spaCy version.
           "$PYTHON" -m spacy download en_core_web_sm
           # Verify (including that the spaCy English model actually loads)
-          "$PYTHON" -c "import pandas, requests, numpy, matplotlib, scipy, sklearn, stanza, spacy, nltk, plotly, seaborn, folium, gensim, wordcloud, transformers, sentence_transformers, tensorflow, bertopic, PIL; spacy.load('en_core_web_sm'); print('All critical packages + en_core_web_sm OK')"
+          "$PYTHON" -c "import pandas, requests, numpy, matplotlib, scipy, sklearn, stanza, spacy, nltk, plotly, seaborn, folium, gensim, wordcloud, transformers, sentence_transformers, bertopic, PIL; spacy.load('en_core_web_sm'); print('All critical packages + en_core_web_sm OK')"
           echo "Bundled portable Python environment"
 
       - name: Bundle Java runtime (JRE) for Stanford CoreNLP tools
@@ -129,20 +177,38 @@ jobs:
           # gender, sentiment, all CoreNLP parsers) need it. Bundle a Temurin JRE at dist/NLP_Suite/jre;
           # IO_libraries_util.get_java_executable() finds <app>/jre/bin/java at runtime.
           JRE_DIR="dist/NLP_Suite/jre"
-          JAVA_MAJOR="17"
+          # A pinned release with its published SHA256, so every build of a tag ships the same Java. (The
+          # Adoptium "latest" URL used before could ship a different JRE on a rebuild, unchecked.)
+          # 17.0.21+9 is what v1.6.41 shipped. To update: the release names are listed at
+          #   https://api.adoptium.net/v3/info/release_names?release_type=ga&version=%5B17%2C18%29&image_type=jre
+          # and each file's name and checksum at
+          #   https://api.adoptium.net/v3/assets/release_name/eclipse/<release, + as %2B>?image_type=jre&os=<mac|windows>
+          JRE_RELEASE="jdk-17.0.21+9"
           if [ "$RUNNER_OS" = "macOS" ]; then
-            OS="mac"; EXT="tar.gz"
-            if [ "$(uname -m)" = "arm64" ]; then ARCH="aarch64"; else ARCH="x64"; fi
+            if [ "$(uname -m)" != "arm64" ]; then echo "::error::Only the Apple Silicon JRE is listed in this step."; exit 1; fi
+            EXT="tar.gz"
+            JRE_FILE="OpenJDK17U-jre_aarch64_mac_hotspot_17.0.21_9.tar.gz"
+            JRE_SHA="a5ab5bacd6e719d5a5570580ed14dceb2ed532208a39af927906b9742da1745e"
           else
-            OS="windows"; ARCH="x64"; EXT="zip"
+            EXT="zip"
+            JRE_FILE="OpenJDK17U-jre_x64_windows_hotspot_17.0.21_9.zip"
+            JRE_SHA="fe4656bd78fb09812dc38c49da777f79cc33e7ee435a254be82f9e7f40d9d117"
           fi
-          URL="https://api.adoptium.net/v3/binary/latest/${JAVA_MAJOR}/ga/${OS}/${ARCH}/jre/hotspot/normal/eclipse"
-          echo "Downloading Temurin JRE ${JAVA_MAJOR}: $URL"
+          URL="https://github.com/adoptium/temurin17-binaries/releases/download/${JRE_RELEASE/+/%2B}/${JRE_FILE}"
+          echo "Downloading Temurin JRE ${JRE_RELEASE}: $URL"
           # Use WORKSPACE-RELATIVE paths, NOT /tmp. On the Windows runner, Git Bash's curl writes to
           # the MSYS /tmp, but native Windows python resolves '/tmp/jre.zip' as C:\tmp\jre.zip -- a
           # different location -- so extraction failed with FileNotFoundError. Relative paths resolve
           # to the same working directory for both the MSYS and native toolchains.
           curl -fSL "$URL" -o "jre_dl.${EXT}"
+          if command -v sha256sum >/dev/null; then GOT=$(sha256sum "jre_dl.${EXT}" | cut -d' ' -f1)
+          else GOT=$(shasum -a 256 "jre_dl.${EXT}" | cut -d' ' -f1); fi
+          GOT="${GOT#\\}"
+          if [ "$GOT" != "$JRE_SHA" ]; then
+            echo "::error::$JRE_FILE has SHA256 $GOT, expected $JRE_SHA. The download is corrupt or was changed; do not ship it."
+            exit 1
+          fi
+          echo "SHA256 OK: $JRE_FILE"
           rm -rf jre_extract; mkdir -p jre_extract
           if [ "$EXT" = "zip" ]; then
             python -c "import zipfile; zipfile.ZipFile('jre_dl.zip').extractall('jre_extract')"
@@ -157,7 +223,7 @@ jobs:
           cp -R "$HOME_DIR/." "$JRE_DIR/"
           "$JRE_DIR/bin/$(basename "$JAVA_BIN")" -version
           rm -rf jre_extract "jre_dl.${EXT}"   # keep the workspace clean for the archive step
-          echo "Bundled Temurin JRE ${JAVA_MAJOR} at $JRE_DIR"
+          echo "Bundled Temurin JRE ${JRE_RELEASE} at $JRE_DIR"
 
       - name: Bundle VC++ runtime DLLs into portable env (Windows only)
         if: runner.os == 'Windows'
@@ -177,20 +243,23 @@ jobs:
           )
           # DLLs that sklearn specifically loads from its own .libs folder
           $sklearnDlls = @("msvcp140.dll", "vcomp140.dll", "vcruntime140.dll", "vcruntime140_1.dll")
-          $searchPaths = @("C:\Windows\System32", "C:\Windows\SysWOW64")
+          # System32 ONLY. On 64-bit Windows, SysWOW64 holds the 32-bit DLLs; one copied into this 64-bit
+          # env would fail to load on users' machines. A missing DLL or a failed copy stops the build
+          # (all 16 were found on the v1.6.41 build), instead of printing a warning nobody reads.
+          $ErrorActionPreference = 'Stop'
+          $missing = @()
           function Copy-Dll($dll, $dest) {
-            foreach ($sp in $searchPaths) {
-              $src = Join-Path $sp $dll
-              if (Test-Path $src) {
-                Copy-Item $src $dest -Force -ErrorAction SilentlyContinue
-                Write-Host "Copied $dll -> $dest"
-                return
-              }
-            }
-            Write-Host "WARNING: $dll not found in System32/SysWOW64"
+            $src = Join-Path "C:\Windows\System32" $dll
+            if (-not (Test-Path $src)) { $script:missing += $dll; return }
+            Copy-Item $src $dest -Force
+            Write-Host "Copied $dll -> $dest"
           }
           foreach ($d in $rootDlls)    { Copy-Dll $d $envDir }
           foreach ($d in $sklearnDlls) { Copy-Dll $d $sklearnLibs }
+          if ($missing.Count -gt 0) {
+            Write-Host "::error::VC++ runtime DLLs not found in C:\Windows\System32: $($missing -join ', ')"
+            exit 1
+          }
 
       - name: Copy data directories to dist (all platforms)
         shell: python
@@ -234,21 +303,28 @@ jobs:
         run: |
           $pythonDir = Split-Path (Get-Command python).Source
           $dist = "dist/NLP_Suite"
-          # Copy any missing DLLs that PyInstaller warns about
+          # Copy any missing DLLs that PyInstaller warns about. A DLL not found, or a failed copy, stops
+          # the build (all three were found on the v1.6.41 build).
           $dlls = @("tk86t.dll", "tcl86t.dll", "sqlite3.dll")
+          $missing = @()
           foreach ($dll in $dlls) {
+            # SilentlyContinue here only skips unreadable folders during the search
             $found = Get-ChildItem $pythonDir -Recurse -Filter $dll -ErrorAction SilentlyContinue | Select-Object -First 1
-            if ($found) {
-              Copy-Item $found.FullName $dist -ErrorAction SilentlyContinue
-              Write-Host "Copied $dll"
-            }
+            if (-not $found) { $missing += $dll; continue }
+            Copy-Item $found.FullName $dist -ErrorAction Stop
+            Write-Host "Copied $dll"
+          }
+          if ($missing.Count -gt 0) {
+            Write-Host "::error::Not found under ${pythonDir}: $($missing -join ', ')"
+            exit 1
           }
 
+      # Ad-hoc signature on the frozen launcher. No --deep: it only reaches inside .app bundles, and this
+      # is a bare executable. No xattr here either: files on the runner never carry the quarantine flag
+      # (macOS adds it when the USER downloads the zip), so the launcher .command below clears it there.
       - name: Sign Mac executable
         if: runner.os == 'macOS'
-        run: |
-          codesign --force --deep -s - dist/NLP_Suite/NLP_Suite
-          xattr -dr com.apple.quarantine dist/NLP_Suite/ || true
+        run: codesign --force -s - dist/NLP_Suite/NLP_Suite
 
       - name: Add Mac one-click launcher (clears quarantine + launches)
         if: runner.os == 'macOS'
@@ -264,6 +340,42 @@ jobs:
             'exec ./NLP_Suite' > "$L"
           chmod +x "$L"
           echo "Added Mac one-click launcher: $L"
+
+      # The automatable part of the pre-tag checklist in CLAUDE.md: every entry point is in the folder,
+      # and every src/*.py compiles under the BUNDLED Python (catches syntax that the bundled version
+      # rejects, e.g. after a Python version change). compile() writes no files, so dist/ is unchanged
+      # for the file list below. A person still has to launch the app before tagging.
+      - name: Check the build has its entry points and the code compiles
+        shell: bash
+        run: |
+          set -euo pipefail
+          D="dist/NLP_Suite"
+          if [ "$RUNNER_OS" = "macOS" ]; then
+            PY="$D/python-env/bin/python3"
+            NEED=("$D/NLP_Suite" "$D/Launch NLP Suite (Mac).command" "$PY" "$D/jre/bin/java")
+          else
+            PY="$D/python-env/python.exe"
+            NEED=("$D/NLP_Suite.exe" "$PY" "$D/jre/bin/java.exe")
+          fi
+          NEED+=("$D/src/NLP_menu_main.py" "$D/lib/release_version.txt" "$D/GETTING_STARTED.txt" "$D/config")
+          MISSING=0
+          for f in "${NEED[@]}"; do
+            if [ -e "$f" ]; then echo "found: $f"; else echo "::error::missing from the build: $f"; MISSING=1; fi
+          done
+          [ "$MISSING" = 0 ] || exit 1
+          "$PY" -I -c "
+          import glob, sys
+          files = sorted(glob.glob('$D/src/*.py'))
+          bad = []
+          for f in files:
+              try:
+                  compile(open(f, 'rb').read(), f, 'exec')
+              except SyntaxError as e:
+                  bad.append(f'{f}: {e}')
+          print(len(files), 'files compiled,', len(bad), 'errors')
+          print(*bad, sep='\n')
+          sys.exit(1 if bad or len(files) < 100 else 0)
+          "
 
       # Last step before zipping: the release's own file list (path, size, hash) in lib/. The in-app
       # self-updater compares the installed folder against it to find the user's own files (added
@@ -296,8 +408,26 @@ jobs:
           Compress-Archive -Path "dist/NLP_Suite" -DestinationPath "${{ matrix.artifact }}.zip" -Force
           Write-Host "Created ${{ matrix.artifact }}.zip"
 
+      # GitHub refuses a release file of 2 GiB or more. Without this check both builds pass and the
+      # release job fails at the very end with an upload error that does not name the cause. v1.6.41's
+      # zips were 1.61 GB (Windows) and 1.40 GB (Mac). Warn from 1.8 GiB so there is time to act.
+      - name: Check the zip fits GitHub's 2 GiB release limit
+        shell: bash
+        run: |
+          ZIP="${{ matrix.artifact }}.zip"
+          SIZE=$(wc -c < "$ZIP" | tr -d ' ')
+          LIMIT=2147483648      # 2 GiB
+          WARN=1932735283       # 1.8 GiB
+          echo "$ZIP: $SIZE bytes ($((SIZE / 1048576)) MiB); limit $((LIMIT / 1048576)) MiB"
+          if [ "$SIZE" -ge "$LIMIT" ]; then
+            echo "::error::$ZIP is $((SIZE / 1048576)) MiB; GitHub does not accept a release file of 2048 MiB or more. Shrink the build (docs/future-work.md section 2) before tagging."
+            exit 1
+          elif [ "$SIZE" -ge "$WARN" ]; then
+            echo "::warning::$ZIP is $((SIZE / 1048576)) MiB, close to GitHub's 2048 MiB release-file limit."
+          fi
+
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.artifact }}
           path: ${{ matrix.artifact }}.zip
@@ -308,18 +438,19 @@ jobs:
     needs: build
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     permissions:
       contents: write
 
     steps:
-# Checkout MUST run before download-artifact: actions/checkout cleans the workspace,
+      # Checkout MUST run before download-artifact: actions/checkout cleans the workspace,
       # which would delete the downloaded artifacts if it ran afterwards. It also gives the
       # release step access to docs/release_body_header.md and CHANGELOG.md.
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Download all artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
 
       # Assemble the release body: fixed download instructions (docs/release_body_header.md)
       # followed by the newest CHANGELOG.md section as the human-readable "What's new".
@@ -340,7 +471,7 @@ jobs:
       # download-artifact@v4 places each into a directory named after the artifact, so attach
       # those zips directly - do NOT re-zip (re-zipping on Linux would strip the Mac exec bits).
       - name: Create Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v3   # v3: Node 24 (v1 ran on Node 16, v2 on Node 20)
         with:
           name: ${{ github.ref_name }} (${{ steps.notes.outputs.date }})
           body_path: RELEASE_BODY.md

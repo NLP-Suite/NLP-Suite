@@ -76,6 +76,8 @@ def assess_language(language):
     in_stanza = lang in stanza_langs or st_ud or st_ner or st_senti
     in_spacy = lang in spacy_langs
     is_english = lang.lower() == "english"
+    # coreference_main: CoreNLP resolves English and Chinese; Stanza and BERT (fastcoref) English only
+    coref_corenlp = in_corenlp and lang.lower() in ("english", "chinese")
 
     def _pkgs(*flags_names):
         got = [n for f, n in flags_names if f]
@@ -160,6 +162,11 @@ def assess_language(language):
                     _pkgs((st_ner, "Stanza"), (in_spacy, "spaCy"), (in_corenlp, "CoreNLP")),
                 ),
                 (
+                    "Coreference resolution (pronominal)",
+                    coref_corenlp or is_english,
+                    _pkgs((coref_corenlp, "CoreNLP"), (is_english, "Stanza"), (is_english, "BERT (fastcoref)")),
+                ),
+                (
                     "Sentiment analysis + Shape of Stories (sentiment arc)",
                     can_sentiment,
                     _pkgs(
@@ -183,7 +190,6 @@ def assess_language(language):
                 ),
                 ("Dialogue / quote extraction (speaker attribution)", in_corenlp, ""),
                 ("Normalized dates & time expressions", in_corenlp, ""),
-                ("Coreference resolution (pronominal)", in_corenlp, ""),
             ],
         )
     )
@@ -253,7 +259,7 @@ def build_report(language, outputDir):
         "<h1>What can I run on a <span class='lang'>%s</span> corpus?</h1>" % lang_disp,
         "<p>Availability below is derived from each NLP package’s own language coverage "
         "(Stanford CoreNLP, Stanza, spaCy). Change your corpus language in "
-        "<b>Setup ▸ NLP package &amp; language</b>.</p>",
+        "the NLP Suite menu: <b>Set up</b> next to <b>Parser &amp; language</b>.</p>",
     ]
     if info["stanza_problem"]:
         parts.append(

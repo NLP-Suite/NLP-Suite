@@ -268,9 +268,7 @@ GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(
     increment=2,
 )  # to be added for full display
 
-GUI_label = (
-    "Graphical User Interface (GUI) for Coreference PRONOMINAL Resolution (via CoreNLP/Stanza) and Manual Editing"
-)
+GUI_label = "Graphical User Interface (GUI) for Coreference PRONOMINAL Resolution (via CoreNLP, Stanza or BERT) and Manual Editing"
 config_filename = "NLP_default_IO_config.csv"
 head, scriptName = os.path.split(os.path.basename(__file__))
 
@@ -361,7 +359,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(
     False,
     90,
     GUI_IO_util.labels_x_coordinate,
-    "Select the NLP package for coreference resolution.\n\nStanford CoreNLP: requires Java and CoreNLP installed; supports English and Chinese.\nStanza: pure Python, no Java needed; currently supports English only.",
+    "Select the NLP package for coreference resolution.\n\nStanford CoreNLP: requires Java and CoreNLP installed; supports English and Chinese.\nStanza: pure Python, no Java needed; currently supports English only.\nBERT (fastcoref): English only; the first run downloads its model (about 500 MB).",
 )
 
 
@@ -589,7 +587,7 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
         help_button_x_coordinate,
         y_multiplier_integer,
         "NLP Suite Help",
-        "Please, using the dropdown menu, select the NLP ackage you wuld like to use for coreference resolution.\n\nThe Stanford CoreNLP coreference resolution annotator usesa neural network approach.\n\nOnly pronominal, and not nominal, coreference resolution is implemented for four different types of PRONOUNS:\n   nominative: I, you, he/she, it, we, they;\n   possessive: my, mine, our(s), his/her(s), their, its, yours;\n   objective: me, you, him, her, it, them;\n   reflexive: myself, yourself, himself, herself, oneself, itself, ourselves, yourselves, themselves.\n\nPlease, BE PATIENT. Depending upon size and number of documents to be coreferenced the algorithm may take a long a time.\n\nIn INPUT the algorithm expects a single txt file or a directory of txt files.\n\nIn OUTPUT the algorithm will produce txt-format copies of the same input txt files but co-referenced.",
+        "Please, using the dropdown menu, select the NLP package you would like to use for coreference resolution: Stanford CoreNLP (needs Java and CoreNLP; English and Chinese), Stanza (English) or BERT (fastcoref; English).\n\nAll three use neural networks. Only pronominal, and not nominal, coreference resolution is implemented for four different types of PRONOUNS:\n   nominative: I, you, he/she, it, we, they;\n   possessive: my, mine, our(s), his/her(s), their, its, yours;\n   objective: me, you, him, her, it, them;\n   reflexive: myself, yourself, himself, herself, oneself, itself, ourselves, yourselves, themselves.\n\nPlease, BE PATIENT. Depending upon size and number of documents to be coreferenced the algorithm may take a long a time.\n\nIn INPUT the algorithm expects a single txt file or a directory of txt files.\n\nIn OUTPUT the algorithm will produce txt-format copies of the same input txt files but co-referenced.",
     )
     y_multiplier_integer = GUI_IO_util.place_help_button(
         window,
@@ -632,7 +630,7 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
 y_multiplier_integer = help_buttons(window, GUI_IO_util.help_button_x_coordinate, 0)
 
 # change the value of the readMe_message
-readMe_message = "This set of Python 3 scripts implement different options to carry out coreference resolution.\n\nStanford CoreNLP uses a neural network approach to coreference resolution for four different types of PRONOUNS:\n   nominative: I, you, he/she, it, we, they;\n   possessive: my, mine, our(s), his/her(s), their, its, yours;\n   objective: me, you, him, her, it, them;\n   reflexive: myself, yourself, himself, herself, oneself, itself, ourselves, yourselves, themselves.\n\nFor Stanford CoreNLP the NLP Suite implements only PRONOMINAL coreference but NOT NOMINAL.\n\nIn INPUT the scripts expect either a single txt file or a set of txt files in a directory.\n\nIn OUTPUT, the scripts will produce\n   1. coreferenced txt file(s);\n   2. a csv file coref_table with each pronoun (antecedent) and its referent;\n   3. bar charts of frequency distributions of antecedents and referents;\n   4. a Sankey flowchart of pronouns (antecedents) and their referents.\n\nIf manual edit is selected, the script will also display a split-screen file for manual editing. On the left-hand side, pronouns cross-referenced by CoreNLP are tagged in YELLOW; pronouns NOT cross-referenced by CoreNLP are tagged in BLUE. On the right-hand side, pronouns cross-referenced by CoreNLP are tagged in RED, with the pronouns replaced by the referenced nouns.\n\nThe user can edit any unresolved or wrongly resolved pronominal cases directly on the right panel, as if it were any text editor and then save the changes."
+readMe_message = "This set of Python 3 scripts implement different options to carry out coreference resolution, with one of three packages: Stanford CoreNLP, Stanza or BERT (fastcoref). All three use neural networks; the NLP Suite resolves four different types of PRONOUNS:\n   nominative: I, you, he/she, it, we, they;\n   possessive: my, mine, our(s), his/her(s), their, its, yours;\n   objective: me, you, him, her, it, them;\n   reflexive: myself, yourself, himself, herself, oneself, itself, ourselves, yourselves, themselves.\n\nThe NLP Suite implements only PRONOMINAL coreference but NOT NOMINAL.\n\nIn INPUT the scripts expect either a single txt file or a set of txt files in a directory.\n\nIn OUTPUT, the scripts will produce\n   1. coreferenced txt file(s);\n   2. a csv file coref_table with each pronoun (antecedent) and its referent;\n   3. bar charts of frequency distributions of antecedents and referents;\n   4. a Sankey flowchart of pronouns (antecedents) and their referents.\n\nIf manual edit is selected, the script will also display a split-screen file for manual editing. On the left-hand side, pronouns resolved by the selected package are tagged in YELLOW; pronouns NOT resolved are tagged in BLUE. On the right-hand side, resolved pronouns are tagged in RED, with the pronouns replaced by the referenced nouns.\n\nThe user can edit any unresolved or wrongly resolved pronominal cases directly on the right panel, as if it were any text editor and then save the changes."
 readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(
     config_filename,

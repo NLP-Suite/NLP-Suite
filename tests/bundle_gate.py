@@ -170,7 +170,10 @@ def bundle_python(bundle):
 
 
 def _env(home):
-    env = dict(os.environ, HOME=home, USERPROFILE=home, PYTHONDONTWRITEBYTECODE="1", PYTHONIOENCODING="utf-8")
+    # DO_NOT_TRACK: otherwise the first-run usage question covers the frozen menu for the whole check
+    env = dict(
+        os.environ, HOME=home, USERPROFILE=home, PYTHONDONTWRITEBYTECODE="1", PYTHONIOENCODING="utf-8", DO_NOT_TRACK="1"
+    )
     env.pop("PYTHONPATH", None)
     return env
 
@@ -321,6 +324,18 @@ def seed_config(bundle):
         json.dump({"count": 99}, f)
 
 
+# CustomTkinter's DPI-scaling timer can fire after the gate has closed the menu (1.6.42 does it too, 1 run in 2)
+_SHUTDOWN_NOISE = "application has been destroyed"
+
+
+def menu_tracebacks(log_text):
+    """The last line of each traceback in the frozen menu's log, without the one CustomTkinter prints at shutdown."""
+    lasts = [
+        b.strip().splitlines()[-1][:300] for b in log_text.split("Traceback (most recent call last):")[1:] if b.strip()
+    ]
+    return [line for line in lasts if _SHUTDOWN_NOISE not in line]
+
+
 def check_frozen_menu(bundle, home, seconds=40):
     exe = frozen_program(bundle)
     if exe is None:
@@ -345,9 +360,7 @@ def check_frozen_menu(bundle, home, seconds=40):
         _close_tree(p)
     with open(log, encoding="utf-8", errors="replace") as f:
         text = f.read()
-    tracebacks = [
-        b.strip().splitlines()[-1][:300] for b in text.split("Traceback (most recent call last):")[1:] if b.strip()
-    ]
+    tracebacks = menu_tracebacks(text)
     error = "" if runs else "exited with code " + str(p.returncode) + ": " + _last_line(text)
     return {"runs": runs, "error": error, "tracebacks": tracebacks}
 
