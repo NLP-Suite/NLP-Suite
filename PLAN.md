@@ -2,9 +2,9 @@
 
 What to do before tagging the next release, and what comes after it. The findings behind each future item (evidence, line numbers, proposed fixes) are in [docs/future-work.md](docs/future-work.md). How to fix an issue is in [CLAUDE.md](CLAUDE.md#fixing-an-issue). What has shipped is in [CHANGELOG.md](CHANGELOG.md).
 
-**Last updated:** 21 Nov 2026 (evening). v1.6.44 released 21 Nov (tagged on `current-stable` at `140672db`). v1.6.43 released 18 Nov. Releases are now Cora's (handed over by Roberto).
+**Last updated:** 22 Nov 2026. v1.6.45 released 22 Nov (the HW 5 speedups). v1.6.44 released 21 Nov (tagged on `current-stable` at `140672db`). v1.6.43 released 18 Nov. Releases are now Cora's (handed over by Roberto).
 
-## Now: 1.6.44 (bundle size) is out; 1.6.45 (HW 5 speedups) is on `roberto`
+## Now: 1.6.45 (HW 5 speedups) is out
 
 1.6.44 changes only what the build ships (smaller zips, faster window opening, transformers 4.51.3, copy); the dead files and the HW 5 speedups are separate releases, so a regression points to one of them. HW 5 is due Sun 6 Dec: students who update mid-homework get the same tool code as 1.6.43 (the HW 5 sweep matched it step for step). 1.6.45 (the speedups) is on `roberto`.
 
@@ -26,15 +26,17 @@ On the Mac zip (21 Nov):
 
 Still to check on 1.6.44, on the published zips:
 1. **Windows:** the menu from the zip, and one tool per family on `python-env` (§2.5: BERT NER, BERTopic, coreference with fastcoref, a CoreNLP parse with the bundled JRE, a GIS map, wordclouds, an Excel chart). Nothing has been checked on Windows since 1.6.42.
-2. **The self-updater 1.6.43 → 1.6.44,** on Windows and on a Mac: the first update that drops files from the release (`NLP_Suite_previous` holds them until the next start).
+2. **The self-updater 1.6.43 → 1.6.44 on Windows.** *(Mac done 22 Nov: the published 1.6.43 zip's own `update_zip_install`, on its `python-env`, its dialogs answered Yes by a driver, against the live release. Downloaded, unpacked and swapped in 8 s; the new folder is a clean 1.6.44 file for file plus the added word list, corpus folder, config file and changed config line; the files 1.6.44 dropped are gone; `remove_previous_version` deleted `NLP_Suite_previous`. Not exercised: the real close-and-Yes click, and the deletion through a menu start, since the welcome screen of a first launch waits for a click before the menu runs.)*
 3. *(Done: the release job passed on the Node 24 actions, run 44965238993; the zips are 721 MB (Mac) and 790 MB (Windows). The size line in the release notes was corrected by hand from the 13 Nov test build's numbers.)*
 4. Mac, not run: a GIS map and wordclouds (their code did not change; `bundle_gate.py` checked their imports).
 
 Then delete `spike/1.6.43-bundle-size-rc` and its fork copies, and the local `backup/release-v1.6.44-with-dead-files`.
 
-Next, **1.6.45, the HW 5 speedups**, from `roberto` (1.6.44 is merged into it): first re-sync the dev env: `pip install -r requirements.txt -r requirements-mac.txt --upgrade` in NLP310 (on 17 Nov it had transformers 4.51.3, the pin was 4.41.2; on the branch the pin is now 4.51.3).
+**Checked on 1.6.45 before the tag** (22 Nov, run 45065397429 on `release/v1.6.45`, Mac zip). Only the seven `src` files of #1734, #1735 and #1736 differ from 1.6.44, and `python-env` has the same 184 packages at the same versions, so the full HW 5 sweep was not rerun: `sa` and `sos` on the 60-document sample, each zip on its own `python-env` and JRE. Every step has the same status and file count. 107 of 111 csv and Excel outputs are identical; best k's `best_topic_estimation_stats.csv` (BERT, spaCy, Stanza) differs by at most 9e-15; Character Emotion Arcs differs only in which of a sentence's characters comes first and "Lady Elliot"/"Elliot" in one row, with the same scores (set order, as on 1.6.44). Shape of Stories took 6.7 min (1.6.44: 12.6). CoreNLP steps are EMPTY on both (no CoreNLP path in a fresh unzip's config). `bundle_gate.py` against 1.6.44: 0 failures, sizes unchanged (menu archive not listed: no PyInstaller in NLP310). Zips 756 MB (Mac) and 810 MB (Windows).
 
-For 1.6.45: set the version and the CHANGELOG heading, build a candidate, and run the HW 5 sweep on its `python-env` (sentiment dictionaries, Shape of Stories best k, a Stanza run on the 60-document sample), and `bundle_gate.py` against 1.6.44. The usual promote and tag.
+Still to check on 1.6.45: the self-updater 1.6.44 → 1.6.45 on the published zips (Mac, then Windows), and the speedups on the 958-document corpus. Dev env: re-sync with `pip install -r requirements.txt -r requirements-mac.txt --upgrade` in NLP310.
+
+Next: the dead files (§1.1, #1706), then 1.6.46.
 
 ## Future work
 

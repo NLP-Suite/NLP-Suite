@@ -4,7 +4,7 @@ The most recent release is at the top. Each release's bullets are shown as **"Wh
 on the corresponding GitHub Release page (the top section is added automatically by the
 release workflow). Keep the newest version's section at the very top and update it before tagging.
 
-## Unreleased
+## v1.6.45
 - **Sentiment analysis with ANEW, hedonometer, SentiWordNet or VADER is much faster.** Each tool ran Stanza on every word of every document to find its dictionary form; it now does that once for each different word. The scores are the same.
 - **Shape of Stories: best k is much faster on large corpora.** For each k it compared every pair of documents in slow loops: on 958 documents, about 4 minutes per k and 9 to 12 hours for the whole run. It now compares them all at once, with the same results.
 - **Stanza runs on many documents no longer chart the same table over and over.** The lemma, sentiment, SVO and location tables were charted once for every input document, though each run writes one table: on a 958-document corpus, charting the lemma table alone took about 10 hours. Each table is now charted once, and the charts are the same.
