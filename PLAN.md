@@ -27,7 +27,7 @@ On the Mac zip (21 Nov):
 Still to check on 1.6.44, on the published zips:
 1. **Windows:** the menu from the zip, and one tool per family on `python-env` (§2.5: BERT NER, BERTopic, coreference with fastcoref, a CoreNLP parse with the bundled JRE, a GIS map, wordclouds, an Excel chart). Nothing has been checked on Windows since 1.6.42.
 2. **The self-updater 1.6.43 → 1.6.44,** on Windows and on a Mac: the first update that drops files from the release (`NLP_Suite_previous` holds them until the next start).
-3. **The release job** (run 44965238993): the first on the Node 24 actions (`download-artifact` v8, `action-gh-release` v3). If it fails, the zips are in the run's artifacts; rerun the job or attach them by hand.
+3. *(Done: the release job passed on the Node 24 actions, run 44965238993; the zips are 721 MB (Mac) and 790 MB (Windows). The size line in the release notes was corrected by hand from the 13 Nov test build's numbers.)*
 4. Mac, not run: a GIS map and wordclouds (their code did not change; `bundle_gate.py` checked their imports).
 
 Then delete `spike/1.6.43-bundle-size-rc` and its fork copies, and the local `backup/release-v1.6.44-with-dead-files`.
