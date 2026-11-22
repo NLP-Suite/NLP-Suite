@@ -397,6 +397,7 @@ All 2026 PRs are by coralynnkc and target `roberto`.
 
 | # | Title | Kind | Note |
 |---|---|---|---|
+| — | BERTopic crashes on a small corpus of whole documents (found 21 Nov, no issue yet) | Bug | On the 60-document HW 5 sample with "split documents" off, BERTopic finds no topic (every document is an outlier) and `hierarchical_topics` stops with "Found array with 0 sample(s)". The same on 1.6.43 and 1.6.44; with split on it runs. `topic_modeling_bert_util.run_BERTopic` should skip the hierarchy and say why when there are no topics. Open an issue |
 | 1671 | BERT word embeddings are context-free | Design | Each word is encoded alone, so vectors don't depend on the corpus. Affects a homework question. Decide: keep, document, or encode in context |
 | 1653 | Windows zip: JavaScript paths too long under `AppData\Local\Programs` | Bug | MAX_PATH in bundled node_modules. Shorten in the build or document the install location. Also matters for the self-updater's `_update` folder |
 | 1623 | Boxplot: asks for an option but none appear | Bug | |
