@@ -1,13 +1,13 @@
 name: publish-wiki
 
 # docs/wiki/ is the source of the GitHub wiki (docs/future-work.md §8).
-# On current-stable, copy it over the wiki: pages that are not in docs/wiki/ are deleted.
+# On roberto, copy it over the wiki: pages that are not in docs/wiki/ are deleted.
 # On a pull request to roberto, do the same without pushing and print what would change.
 
 on:
   push:
-    branches: [current-stable]
-    paths: ["docs/wiki/**"]
+    branches: [roberto]
+    paths: ["docs/wiki/**", ".github/workflows/publish-wiki.yml"]
   pull_request:
     branches: [roberto]
     paths: ["docs/wiki/**", ".github/workflows/publish-wiki.yml"]
