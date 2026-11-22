@@ -1,7 +1,7 @@
 """Compare two tool sweeps (tool_sweep.py run): a baseline release and a candidate.
 
-Standard library only, so pytest can test it without the Suite's heavy libraries; Excel files need
-openpyxl, which the bundle's python-env has (tool_sweep.py compare runs on it).
+Standard library only, so pytest can test it without the Suite's heavy libraries; comparing Excel files needs
+openpyxl in the Python that runs `compare` (any zip's python-env has it); without it each Excel file is listed as an error.
 
 A recipe REGRESSES when the candidate lost something the baseline had: the baseline ran (ok or WARNED)
 and the candidate did not, or the candidate wrote fewer files, or a file the baseline wrote is missing.
