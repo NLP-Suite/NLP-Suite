@@ -1,0 +1,49 @@
+name: publish-wiki
+
+# docs/wiki/ is the source of the GitHub wiki (docs/future-work.md §8).
+# On current-stable, copy it over the wiki: pages that are not in docs/wiki/ are deleted.
+# On a pull request to roberto, do the same without pushing and print what would change.
+
+on:
+  push:
+    branches: [current-stable]
+    paths: ["docs/wiki/**"]
+  pull_request:
+    branches: [roberto]
+    paths: ["docs/wiki/**", ".github/workflows/publish-wiki.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publish-wiki
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7
+        with:
+          repository: ${{ github.repository }}.wiki
+          path: wiki
+      - name: Copy docs/wiki over the wiki
+        run: |
+          rsync -a --delete --exclude .git docs/wiki/ wiki/
+          cd wiki
+          git add -A
+          git status --short
+      - name: Push
+        if: github.event_name != 'pull_request'
+        run: |
+          cd wiki
+          if git diff --cached --quiet; then
+            echo "The wiki already matches docs/wiki/."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Publish docs/wiki from ${GITHUB_SHA::8}"
+          git push

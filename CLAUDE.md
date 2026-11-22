@@ -12,7 +12,7 @@ A Tkinter-GUI toolkit for text analysis in the social sciences and humanities. A
 | `lib/` | Data: word lists (`lib/wordLists`), dictionaries, reference CSVs, `release_version.txt`. Resolve via `GUI_IO_util.libPath` |
 | `TIPS/`, `TIPS docx/` | PDF help files shown by each GUI's TIPS menu, and their editable `.docx` sources |
 | `tests/` | pytest suite plus standalone GUI checks |
-| `docs/` | Design notes and `future-work.md`. `docs/wiki/` is the source of the GitHub wiki (one file per page, exact wiki names): edit there, then copy it to the wiki (docs/future-work.md §8) |
+| `docs/` | Design notes and `future-work.md`. `docs/wiki/` is the source of the GitHub wiki (one file per page, exact wiki names): edit there; `publish-wiki.yml` copies it to the wiki when it reaches `current-stable` |
 | `setup_Windows/`, `setup_Mac/` | Legacy Anaconda install scripts (STEP1-3), not shipped in the zip; only `setup_Windows/NLP_Suite.ico` is used (by the spec) |
 | `NLP_Suite.spec` | PyInstaller build (`dist/`, `build/` are output) |
 | `CHANGELOG.md` | Release notes; the top section becomes the GitHub release text |

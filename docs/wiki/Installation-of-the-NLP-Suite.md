@@ -26,7 +26,7 @@ No GitHub account needed.
 | Component | Size | When downloaded |
 |-----------|------|-----------------|
 | Release zip | About 750 MB (Mac) to 800 MB (Windows) | Initial download |
-| Extracted application | A few GB | On extraction |
+| Extracted application | About 2.3 GB | On extraction |
 | Stanza English model | About 1 GB | First time you run a Stanza analysis |
 | spaCy English model | ~50 MB | First time you run a spaCy analysis |
 | NLTK data (wordnet, punkt, etc.) | A few MB | Downloaded automatically the first time a tool needs it |

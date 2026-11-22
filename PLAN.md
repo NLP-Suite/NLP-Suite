@@ -53,7 +53,6 @@ Details in [docs/future-work.md](docs/future-work.md); section numbers below ref
 - Retest and close the recent issues that releases may have fixed; fix the open recent bugs (§10). Triage the 2021–2024 backlog (§11).
 - Performance, in §6.10's order (next: pandas out of `GUI_util`, §6.3; `requests` and §6.7 come with 1.6.44).
 - The updater's known limits: long paths, no checksum or resume, the GitHub API rate limit, and the silent `git stash` (§15).
-- The GitHub wiki: a workflow that publishes `docs/wiki/` on push, so it cannot drift again (§8).
 - UI overhaul (§7), as its own releases.
 - Tech debt in §12's order, and the missing chart regression tests (§12.6).
 - Stale remote branches (§13): delete Cora's merged ones; the others are Roberto's call.
