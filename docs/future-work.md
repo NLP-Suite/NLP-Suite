@@ -12,7 +12,6 @@ Moved out of PLAN.md on 11 Nov 2026. The sections keep their scan dates; nothing
 - [5. Outdated copy and flows (scan of 9 Nov 2026)](#5-outdated-copy-and-flows-scan-of-9-nov-2026)
 - [6. Performance: slow GUI opening and "downloading"](#6-performance-slow-gui-opening-and-downloading)
 - [7. UI overhaul: findings (10 Nov 2026)](#7-ui-overhaul-findings-10-nov-2026)
-- [8. The GitHub wiki](#8-the-github-wiki)
 - [9. Open pull requests](#9-open-pull-requests)
 - [10. Recent issues (2025–2026)](#10-recent-issues-20252026)
 - [11. The 2021–2024 backlog](#11-the-20212024-backlog)
@@ -328,14 +327,6 @@ Most of these are about content and chrome, not the widget toolkit; CTk alone fi
 
 Each PR carries before/after screenshots from a gallery script. Add one to `tests/` that runs on a Mac too (the branch's `gui_gallery.py` reads Windows screen scaling; on a Mac `screencapture -R` works, and the GUIs that build only under `__main__` need `runpy`).
 
-## 8. The GitHub wiki
-
-`docs/wiki/` is the source of the wiki since 22 Nov 2026: each file has its wiki page's exact name, plus `_Sidebar.md` and `_Footer.md`, and the wiki was published from it the same day (the scan of 10 Nov and its fixes are in that commit). To publish a change: clone `NLP-Suite.wiki`, copy `docs/wiki/*.md` over it, delete any page that is not in `docs/wiki/`, push. The wiki is live once pushed.
-
-Left:
-- **A workflow that publishes on push to `current-stable`** (or a release step), so the two cannot drift again. Until then, publish by hand in the PR that changes `docs/wiki/`. Then add it to §14.
-- The install page's "Extracted application" size says "a few GB": measure it on the next release's unzipped folder.
-
 ## 9. Open pull requests
 
 Reviewed 9 Nov 2026. The older PRs conflict only because v1.6.40 reformatted all of `src/` (PR #1687).
@@ -488,6 +479,7 @@ Deleting someone else's remote branch is Roberto's call.
 - **`src/` is Ruff-formatted** (v1.6.40). PRs opened before that need a rebase, not a hand merge.
 - **Update order matters.** The in-app check reads `current-stable`'s `lib/release_version.txt`, which changes before the tag's zips finish building. The self-updater and the launch popup both wait until that version's zip is on the release page.
 - **Before every tag:** build, unzip both artifacts, confirm `Launch NLP Suite (Mac).command` and the Windows entry point exist, run `tests/bundle_gate.py` (`snapshot` the last release and the candidate, then `compare`), then draft the CHANGELOG section.
+- **The wiki is published from `docs/wiki/`** (one file per page, exact wiki names, plus `_Sidebar.md` and `_Footer.md`). `publish-wiki.yml` copies it over the wiki on every push to `current-stable` that touches it, deleting pages that are not there, so edit `docs/wiki/`, never the wiki. On a PR to `roberto` it prints what would change without pushing. Run it by hand from the Actions tab after a promotion if needed.
 - **`bundle_gate.py` sets `DO_NOT_TRACK=1`** for every program it runs, and ignores CustomTkinter's `application has been destroyed` traceback when it closes the menu (both were false alarms on 17 Nov). `lib/release_version.txt` must equal the tag (CI enforces it).
 
 ## 15. The updater: known limits
