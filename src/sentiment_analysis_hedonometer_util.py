@@ -56,7 +56,10 @@ stops = set(fin.read().splitlines())
 database = GUI_IO_util.sentiment_libPath + os.sep + "hedonometer.json"
 if not os.path.isfile(database):
     print(
-        "The file './lib/hedonometer.json' could not be found. The hedonemeter sentiment analysis routine expects a JSON dictionary file 'hedonometer.json' in a directory 'lib' expected to be a subdirectory of the directory where the sentiment_analysis_hedonometer.py script is stored.\n\nPlease, check your lib directory and try again."
+        "The file "
+        + database
+        + " could not be found. Hedonometer sentiment analysis needs it. Please, download the NLP Suite again, or"
+        " restore lib/sentimentLib/hedonometer.json from the NLP Suite GitHub repository."
     )
     sys.exit()
 

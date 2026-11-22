@@ -608,7 +608,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(
     False,
     90,
     GUI_IO_util.labels_x_coordinate,
-    "Options currently available only for Stanford CoreNLP.\nSelect the NER tag(s) you wish to search for. Click on the + or Reset buttons when the widget is disabled to add new NER tags or to start fresh.",
+    "Select the NER tag(s) you wish to search for. Click on the + or Reset buttons when the widget is disabled to add new NER tags or to start fresh.",
 )
 
 add_NER_button = tk.Button(
@@ -631,7 +631,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(
     False,
     90,
     GUI_IO_util.labels_x_coordinate,
-    "Click on the + button, when available, to add a new NEW tag. Option currently available only for Stanford CoreNLP.\nSelect the NER tag(s) you wish to search for. Click on the + or Reset buttons when the widget is disabled to add new NER tags or to start fresh.",
+    "Click on the + button, when available, to add a new NER tag.\nSelect the NER tag(s) you wish to search for. Click on the + or Reset buttons when the widget is disabled to add new NER tags or to start fresh.",
 )
 # y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.setup_pop_up_text_widget,y_multiplier_integer,add_NER_button, True)
 
@@ -655,7 +655,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(
     False,
     90,
     GUI_IO_util.labels_x_coordinate,
-    "Click the 'Reset ' button, to clear all currently selected NER tags and start fresh, selecting and adding new NER tags. The option is currently available only for Stanford CoreNLP.",
+    "Click the 'Reset ' button, to clear all currently selected NER tags and start fresh, selecting and adding new NER tags.",
 )
 
 # y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.NER_reset_NER_button_pos,y_multiplier_integer,reset_NER_button,True)

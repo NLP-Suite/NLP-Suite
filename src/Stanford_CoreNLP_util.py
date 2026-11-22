@@ -1393,7 +1393,7 @@ CoreNLP_available_lang = ["Arabic, Chinese, English, French, German, Hungarian, 
 #         if not silent:
 #             mb.showerror("Warning",
 #                          "Stanford CoreNLP does not currently support the " + str(
-#                              annotator_params) + " annotator for " + language + ".\n\nPlease, select a different annotator or a different language.\n\nYou can change the selected language using the Setup dropdown menu at the bottom of this GUI, select the 'Setup NLP package and corpus language' to open the GUI where you can change the language option.")
+#                              annotator_params) + " annotator for " + language + ".\n\nPlease, select a different annotator or a different language.\n\nYou can change the selected language using the Setup dropdown menu at the bottom of this GUI, select the 'Setup NLP package (parsers & annotators) and corpus language' to open the GUI where you can change the language option.")
 #         annotator_available = False
 #     else:
 #         annotator_available = True

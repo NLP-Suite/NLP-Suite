@@ -22,6 +22,39 @@ if not getattr(sys, "frozen", False):
         print("The NLP Suite menu needs customtkinter. Installing it now (one time only)...")  # noqa: T201 (no window yet)
         subprocess.call([sys.executable, "-m", "pip", "install", "customtkinter==6.0.0"])
 
+# Show welcome screen for the first 3 launches, then go straight to the menu.
+# --from-welcome flag is passed by NLP_welcome_main to avoid a redirect loop.
+# This runs BEFORE import GUI_util: the redirect needs only json, os and run_script_util, and importing GUI_util
+# first cost the new user several seconds and left a second Tk process waiting while the welcome screen was
+# open (docs/future-work.md 6.7).
+import json as _json
+import os as _os
+
+if "--from-welcome" not in sys.argv:
+    _launch_count_file = _os.path.join(
+        _os.path.dirname(_os.path.abspath(__file__)), "..", "config", "launch_count.json"
+    )
+    try:
+        with open(_launch_count_file) as _f:
+            _launch_data = _json.load(_f)
+        _launch_count = _launch_data.get("count", 0)
+    except (FileNotFoundError, ValueError):
+        _launch_count = 0
+
+    _launch_count += 1
+    try:
+        _os.makedirs(_os.path.dirname(_launch_count_file), exist_ok=True)
+        with open(_launch_count_file, "w") as _f:
+            _json.dump({"count": _launch_count}, _f)
+    except Exception:
+        pass
+
+    if _launch_count <= 3:
+        import run_script_util as _rsu
+
+        _rsu.run_script("NLP_welcome_main.py")
+        sys.exit(0)
+
 import GUI_util
 import IO_libraries_util
 
@@ -79,33 +112,6 @@ def run():
 
 # the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 GUI_util.run_button.configure(command=run)
-
-# Show welcome screen for the first 3 launches, then go straight to the menu.
-# --from-welcome flag is passed by NLP_welcome_main to avoid a redirect loop.
-import json as _json
-
-if "--from-welcome" not in sys.argv:
-    _launch_count_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "config", "launch_count.json")
-    try:
-        with open(_launch_count_file) as _f:
-            _launch_data = _json.load(_f)
-        _launch_count = _launch_data.get("count", 0)
-    except (FileNotFoundError, ValueError):
-        _launch_count = 0
-
-    _launch_count += 1
-    try:
-        os.makedirs(os.path.dirname(_launch_count_file), exist_ok=True)
-        with open(_launch_count_file, "w") as _f:
-            _json.dump({"count": _launch_count}, _f)
-    except Exception:
-        pass
-
-    if _launch_count <= 3:
-        import run_script_util as _rsu
-
-        _rsu.run_script("NLP_welcome_main.py")
-        sys.exit(0)
 
 # GUI section ______________________________________________________________________________________________________________________________________________________
 
@@ -593,8 +599,8 @@ external_software_setup_help = (
     "The NLP_setup_external_software_config.csv file has three columns (with headers Software, Path, Download_link) and 6 rows, one for each of the external software and with the following expected labels: Stanford CoreNLP, MALLET, Java (JDK), WordNet, Gephi, Google Earth Pro and where "
     "Path refers to the installation path of the software on your machine. "
     "As an example, the three fields for the Stanford CoreNLP software would look like this: "
-    "Stanford CoreNLP   C:/Program Files (x86)/stanford-corenlp-4.3.1   https://stanfordnlp.github.io/CoreNLP/download.html. "
-    "Needless to say C:/Program Files (x86)/stanford-corenlp-4.3.1 will change, depending upon where you install CoreNLP locally."
+    "Stanford CoreNLP   C:/Program Files (x86)/stanford-corenlp-4.6.0   https://stanfordnlp.github.io/CoreNLP/download.html. "
+    "Needless to say C:/Program Files (x86)/stanford-corenlp-4.6.0 will change, depending upon where you install CoreNLP locally."
 )
 
 # the card is as tall as its content, so the start buttons sit right under the setup rows, not at the

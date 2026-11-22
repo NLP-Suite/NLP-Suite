@@ -244,7 +244,7 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
         help_button_x_coordinate,
         y_multiplier_integer,
         "NLP Suite Help",
-        "Please, click on the button to open the GUI for all options for sentiment analysis available in the NLP Suite.\n   Neural network: BERT, spaCy, Stanford CoreNLP, Stanza.\n   Dictionary based algorithms: ANEW, hedonometer, SentiWordnet, VADER.\n\nNeural network approaches are far better but slower, since they take context into account. Since meaning for many words is in context, dictionary-based approaches, developed for restricted domains (e.g., media-based texts, such as tweeter/X), are less accurate for texts from wider domains.",
+        "Please, click on the button to open the GUI for all options for sentiment analysis available in the NLP Suite.\n   Neural network: BERT, Stanford CoreNLP, Stanza.\n   Dictionary based algorithms: ANEW, hedonometer, NRC, SentiWordNet, spaCy (TextBlob), VADER.\n\nNeural network approaches are far better but slower, since they take context into account. Since meaning for many words is in context, dictionary-based approaches, developed for restricted domains (e.g., media-based texts, such as tweeter/X), are less accurate for texts from wider domains.",
     )
     y_multiplier_integer = GUI_IO_util.place_help_button(
         window,

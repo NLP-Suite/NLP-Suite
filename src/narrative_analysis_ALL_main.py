@@ -440,7 +440,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(
 dialogue_coref_var.set(0)
 dialogue_coref_checkbox = tk.Checkbutton(
     window,
-    text="Who are all those he/she? Coreference resolution (CoreNLP)",
+    text="Who are all those he/she? Coreference resolution",
     variable=dialogue_coref_var,
     onvalue=1,
     offvalue=0,
@@ -456,7 +456,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(
     False,
     90,
     GUI_IO_util.labels_x_indented_coordinate,
-    "Resolve pronouns (he, she, they) to the characters they refer to, using CoreNLP coreference resolution.",
+    "Resolve pronouns (he, she, they) to the characters they refer to: opens the Coreference GUI (Stanford CoreNLP, Stanza or BERT).",
 )
 
 characters_semantic_space_var.set(0)
@@ -924,7 +924,7 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
         help_button_x_coordinate,
         y_multiplier_integer,
         "NLP Suite Help",
-        "Please, tick the checkbox to resolve coreferences: who do all those 'he', 'she', 'they' refer to? (via CoreNLP). Or tick 'Characters in their semantic space' to explore how close characters are to other words (actions, places, concepts) using BERT embeddings.",
+        "Please, tick the checkbox to resolve coreferences: who do all those 'he', 'she', 'they' refer to? (opens the Coreference GUI: Stanford CoreNLP, Stanza or BERT). Or tick 'Characters in their semantic space' to explore how close characters are to other words (actions, places, concepts) using BERT embeddings.",
     )
     # 2. Action: What (section title takes its own grid row)
     y_multiplier_integer = y_multiplier_integer + 1  # Action section-title row

@@ -122,3 +122,31 @@ class TestMenuRunsTheAdvisorOutsideTheFrozenMenu:
             and getattr(n.args[0], "value", "") == "language_tools_advisor_util.py"
         ]
         assert len(calls) == 1
+
+
+class TestCoreference:
+    """Coreference is not CoreNLP-only: Stanza and BERT (fastcoref) resolve it for English; CoreNLP for English and
+    Chinese (coreference_main), not for every CoreNLP parser language."""
+
+    @staticmethod
+    def _row(language, monkeypatch):
+        monkeypatch.setattr(advisor, "_stanza_languages", lambda: ([], ""))
+        sections, _ = advisor.assess_language(language)
+        for title, rows in sections:
+            for cap, ok, note in rows:
+                if cap.startswith("Coreference"):
+                    return title, ok, note
+        raise AssertionError("no coreference row")
+
+    def test_not_in_the_corenlp_only_section(self, monkeypatch):
+        title, _, _ = self._row("English", monkeypatch)
+        assert "CoreNLP-only" not in title
+
+    def test_english_and_chinese_yes_italian_no(self, monkeypatch):
+        assert self._row("English", monkeypatch)[1]
+        assert self._row("Chinese", monkeypatch)[1]
+        assert not self._row("Italian", monkeypatch)[1]
+
+    def test_english_names_the_three_packages(self, monkeypatch):
+        note = self._row("English", monkeypatch)[2]
+        assert "Stanza" in note and "BERT" in note and "CoreNLP" in note

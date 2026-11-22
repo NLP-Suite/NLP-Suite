@@ -1212,7 +1212,7 @@ message = (
     + str(language)
     + ".\nYour selected NLP package for basic functions (e.g., sentence splitting, tokenizing, lemmatizing) is "
     + str(package_basics)
-    + ".\n\nYou can always view your default selection saved in the config file NLP_default_package_language_config.csv by hovering over the Setup widget at the bottom of this GUI and change your default options by selecting Setup NLP package and corpus language."
+    + ".\n\nYou can always view your default selection saved in the config file NLP_default_package_language_config.csv by hovering over the Setup widget at the bottom of this GUI and change your default options by selecting Setup NLP package (parsers & annotators) and corpus language."
 )
 reminders_util.checkReminder(scriptName, title, message)
 
