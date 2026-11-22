@@ -169,7 +169,9 @@ def compare_file(recipe, rel, path_a, path_b, roots_a, roots_b):  # noqa: PLR091
     unordered = rule == "unordered"
     try:
         if ext == ".csv":
-            return compare_rows(read_csv_table(path_a), read_csv_table(path_b), roots_a, roots_b, ignore=columns, unordered=unordered)
+            return compare_rows(
+                read_csv_table(path_a), read_csv_table(path_b), roots_a, roots_b, ignore=columns, unordered=unordered
+            )
         if ext == ".xlsx":
             sheets_a, sheets_b = read_xlsx_tables(path_a), read_xlsx_tables(path_b)
             if list(sheets_a) != list(sheets_b):
@@ -177,7 +179,9 @@ def compare_file(recipe, rel, path_a, path_b, roots_a, roots_b):  # noqa: PLR091
             order = ["identical", "numbers", "text", "shape", "columns"]
             verdict, details = "identical", []
             for name in sheets_a:
-                v, d = compare_rows(sheets_a[name], sheets_b[name], roots_a, roots_b, ignore=columns, unordered=unordered)
+                v, d = compare_rows(
+                    sheets_a[name], sheets_b[name], roots_a, roots_b, ignore=columns, unordered=unordered
+                )
                 if v != "identical":
                     details.append(f"{name}: {d}")
                     verdict = max(verdict, v, key=order.index)
@@ -202,7 +206,8 @@ def compare_sweeps(base_dir, cand_dir):
             results.append((recipe, ["new in the candidate: {}".format(b["status"])], []))
             continue
         if a is None or b is None:
-            results.append((recipe, ["not run in the candidate (baseline: {})".format(a["status"])], []))
+            status = a["status"] if a is not None else "?"
+            results.append((recipe, [f"not run in the candidate (baseline: {status})"], []))
             continue
         if a["status"] in RAN and b["status"] not in RAN:
             problems.append(

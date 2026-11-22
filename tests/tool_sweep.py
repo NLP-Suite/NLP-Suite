@@ -39,6 +39,7 @@ import subprocess
 import sys
 import time
 import traceback
+from typing import Any
 import warnings
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -149,7 +150,7 @@ def run_sweep(bundle, sweep, only=(), skip=(), external_config=None, timeout_sca
         if external_config:
             cmd += ["--external-config", os.path.abspath(external_config)]
         start = time.time()
-        record = None
+        record: dict[str, Any] | None = None
         with open(log, "w", encoding="utf-8") as f:
             try:
                 proc = subprocess.run(
@@ -281,7 +282,7 @@ def run_one(name, bundle, sweep, external_config=None):
     shutil.copytree(os.path.join(bundle, "config"), config_dir)
     if external_config:
         shutil.copy(external_config, os.path.join(config_dir, "NLP_setup_external_software_config.csv"))
-    record = dict(
+    record: dict[str, Any] = dict(
         recipe=name,
         module=r.module,
         status="ok",
@@ -448,7 +449,7 @@ def capture(record, recipe):
     IO_files_util.open_in_desktop = opened
     webbrowser.open = webbrowser.open_new = webbrowser.open_new_tab = opened
     if hasattr(os, "startfile"):
-        os.startfile = opened
+        setattr(os, "startfile", opened)  # noqa: B010 (os.startfile exists on Windows only)
     import run_script_util
 
     def handoff(name, *a, **k):
@@ -463,7 +464,7 @@ def capture(record, recipe):
 
 
 def main(argv=None):
-    p = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
+    p = argparse.ArgumentParser(description=(__doc__ or "").split("\n\n")[0])
     sub = p.add_subparsers(dest="cmd", required=True)
     sub.add_parser("list")
     pr = sub.add_parser("run")
