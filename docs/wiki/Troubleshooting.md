@@ -18,7 +18,7 @@
 |---------|----------|
 | **"NLP_Suite cannot be opened because it is from an unidentified developer"** | Start the NLP Suite with **Launch NLP Suite (Mac).command** (included in the download); it removes the quarantine. The first time, right-click it → **Open** → **Open**. |
 | **"NLP_Suite is damaged and can't be opened"** or **"code signature not valid"** | You started the `NLP_Suite` file directly. Use **Launch NLP Suite (Mac).command** instead. If that doesn't work, open Terminal and run: `xattr -cr /path/to/NLP_Suite` (drag the extracted NLP_Suite folder into Terminal to get the path). |
-| **"NLP_Suite cannot be opened because Apple cannot check it for malicious software"** | Same fix — start it with **Launch NLP Suite (Mac).command**. |
+| **"NLP_Suite cannot be opened because Apple cannot check it for malicious software"** | Same fix: start it with **Launch NLP Suite (Mac).command**. |
 | **The launcher itself is blocked** | Right-click **Launch NLP Suite (Mac).command** in Finder → **Open** → click **Open** in the dialog. This is only needed once. |
 | **App crashes on launch with no error** | Open Terminal, drag **Launch NLP Suite (Mac).command** into it and press Enter to see the error output. |
 
@@ -26,13 +26,13 @@
 
 | Problem | Solution |
 |---------|----------|
-| **First run: "No config file found"** | Normal — the app creates default config files automatically on first launch. If it fails, check that your Documents folder exists and is writable. |
+| **First run: "No config file found"** | Normal: the app creates default config files automatically on first launch. If it fails, check that your Documents folder exists and is writable. |
 | **Stanza model download fails** | Stanza downloads language models on first use (~525 MB for English). Check your internet connection. If behind a proxy, set the `HTTPS_PROXY` environment variable. |
-| **spaCy model download fails** | Same as Stanza — requires internet on first use (~50 MB for the English model). Run the NLP Suite once with a working connection to download the models. |
+| **spaCy model download fails** | Same as Stanza: requires internet on first use (~50 MB for the English model). Run the NLP Suite once with a working connection to download the models. |
 | **BERT model download is slow** | BERT models (up to ~3 GB total) are downloaded from Hugging Face on first use of each BERT feature. This is normal and only happens once per model. Check your internet connection if the download stalls. |
 | **Charts/visualizations don't open** | Check that your default browser is set. Plotly charts open as HTML files in your browser. PNG charts open in your default image viewer. |
 | **"No module named X" error** | This should not happen with the standalone build. If it does, [report the issue](https://github.com/NLP-Suite/NLP-Suite/issues) with the full error message. |
-| **Output files are empty** | Check that your input files are valid (UTF-8 encoded txt or csv). Check the output folder — files may have been written to a subdirectory. |
+| **Output files are empty** | Check that your input files are valid (UTF-8 encoded txt or csv). Check the output folder: files may have been written to a subdirectory. |
 
 ### Updating
 

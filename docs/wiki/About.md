@@ -14,14 +14,14 @@ The **Unique Selling Proposition (USP)** of the NLP Suite is its **easiness of u
 - `reminder messages` users can customize
 - `videos` and over 150 `TIPS files` with detailed explanations
 
-The NLP Suite is distributed as a **standalone application** for Windows and macOS — no Python, Anaconda, or Java installation required. **Download, extract, and double-click.**
+The NLP Suite is distributed as a **standalone application** for Windows and macOS: no Python, Anaconda, or Java installation required. **Download, extract, and double-click.**
 
 ---
 
 ## Learn More
 
 - [What the NLP Suite does](What-the-NLP-Suite-Does)
-- [The History](The-History)
+- [The History](A-Brief-History-of-the-NLP-Suite)
 - [License](License)
 - [How to Cite the NLP Suite](How-to-Cite-the-NLP-Suite)
 - [The Team](The-NLP-Suite-Team)

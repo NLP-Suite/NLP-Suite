@@ -1,13 +1,11 @@
 ### NLP Suite  ![GitHub release (latest by date)](https://img.shields.io/github/v/release/NLP-Suite/NLP-Suite?color=Green&label=Latest%20Version)  
 
-# Supported Systems & Languages
-
 ## Supported Operating Systems
 
 | Platform | Status | Notes |
 |----------|--------|-------|
 | **Windows 10/11** (64-bit) | Fully supported | Standalone build available |
-| **macOS** (Apple Silicon — M1/M2/M3/M4/M5) | Fully supported | Standalone build available |
+| **macOS** (Apple Silicon: M1/M2/M3/M4/M5) | Fully supported | Standalone build available |
 | **macOS** (Intel) | Run from source | No standalone build currently provided; may be added if needed |
 | **Linux** | Run from source | Not tested extensively; should work with the developer setup |
 

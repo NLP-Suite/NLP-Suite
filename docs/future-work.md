@@ -12,7 +12,7 @@ Moved out of PLAN.md on 11 Nov 2026. The sections keep their scan dates; nothing
 - [5. Outdated copy and flows (scan of 9 Nov 2026)](#5-outdated-copy-and-flows-scan-of-9-nov-2026)
 - [6. Performance: slow GUI opening and "downloading"](#6-performance-slow-gui-opening-and-downloading)
 - [7. UI overhaul: findings (10 Nov 2026)](#7-ui-overhaul-findings-10-nov-2026)
-- [8. The GitHub wiki (scan of 10 Nov 2026)](#8-the-github-wiki-scan-of-10-nov-2026)
+- [8. The GitHub wiki](#8-the-github-wiki)
 - [9. Open pull requests](#9-open-pull-requests)
 - [10. Recent issues (2025–2026)](#10-recent-issues-20252026)
 - [11. The 2021–2024 backlog](#11-the-20212024-backlog)
@@ -328,49 +328,13 @@ Most of these are about content and chrome, not the widget toolkit; CTk alone fi
 
 Each PR carries before/after screenshots from a gallery script. Add one to `tests/` that runs on a Mac too (the branch's `gui_gallery.py` reads Windows screen scaling; on a Mac `screencapture -R` works, and the GUIs that build only under `__main__` need `runpy`).
 
-## 8. The GitHub wiki (scan of 10 Nov 2026)
+## 8. The GitHub wiki
 
-**How it was looked at:** cloned `NLP-Suite.wiki` (19 pages, last edit 23 Jun 2026), compared each page with its `docs/` copy, and grepped `src/`, `README.md`, the setup readmes and the wiki itself for `wiki/` links. Em dashes counted with `grep -o '—'`.
+`docs/wiki/` is the source of the wiki since 22 Nov 2026: each file has its wiki page's exact name, plus `_Sidebar.md` and `_Footer.md`, and the wiki was published from it the same day (the scan of 10 Nov and its fixes are in that commit). To publish a change: clone `NLP-Suite.wiki`, copy `docs/wiki/*.md` over it, delete any page that is not in `docs/wiki/`, push. The wiki is live once pushed.
 
-**The main problem is two copies.** `docs/` holds 11 pages that mirror the wiki (moved there 21 Jun) plus `Watch-YouTube-Videos.md`, which the wiki lacks. Nothing copies one to the other, so the `docs/` fixes merged in PR #1705 have not reached the wiki. The names do not match either, despite the 21 Jun commit "Standardize docs/ filenames to match GitHub wiki naming": `Installing-the-NLP-Suite` is `Installation-of-the-NLP-Suite` on the wiki, `The-History` is `A-Brief-History-of-the-NLP-Suite`, `How-to-Cite` is `How-to-Cite-the-NLP-Suite`, `Installing-External-Software` is `Install-External-Software`. `NLP-Suite-Architecture` exists only on the wiki.
-
-### 8.1 Delete from the wiki (needs Roberto's yes)
-
-| Page | Evidence |
-|---|---|
-| `Installation-Instructions-for-the-NLP-Suite` | Byte-identical to `Installation-of-the-NLP-Suite`; linked nowhere |
-| `Supported-Systems-&-Languages` | Byte-identical to `Supported-Systems-Languages`; linked nowhere |
-| `Download,-Install,-Update,-Run-the-NLP-Suite` | Linked nowhere; overlaps the install page. Its Update and Config Folder sections are not on the install page: merge them in (from the #1705 version of `docs/Download-Install-Update-Run.md`), then delete both the wiki page and the `docs/` file |
-| `Install-Git`, `pip-install` | Feb 2022; for the Anaconda STEP2 install and git-based updates, both gone (§5.1 #1). Linked nowhere |
-
-**Replace, not delete:** `Install-External-Software` (Oct 2022) tells users to install the Java JDK and CoreNLP. The #1705 version of `docs/Installing-External-Software.md` is current (optional tools, bundled fallbacks). Publish it under the wiki name and link it from the sidebar.
-
-### 8.2 Broken links
-
-| Link | Where | Fix |
-|---|---|---|
-| `wiki/NLP-Suite-Release-History` (no such page) | wiki `Home` | `CHANGELOG.md` |
-| `Watch-YouTube-Videos` (no such page) | Wiki `_Sidebar` | Publish `docs/Watch-YouTube-Videos.md`, or drop the entry |
-
-### 8.3 Pages in use that are out of date
-
-| Page | Problem | Em dashes |
-|---|---|---|
-| `Installation-of-the-NLP-Suite`, `Troubleshooting` | Tell Mac users to use the "NLP Suite Mac Setup" app, removed in 1.6.33 for `Launch NLP Suite (Mac).command`. Fixed in `docs/` by #1705 | 12, 4 |
-| `Home` | Says the build bundles BERT; models download on first use (README, §5.1). Links the missing Release History page | 16 |
-| `What-the-NLP-Suite-Does` | spaCy (TextBlob) sentiment described wrongly; fixed in `docs/` by #1705 | 15 |
-| `NLP-Suite-Architecture` | Linked from `README.md:40` but not in `docs/`. Broken image path (`images/lib/nlp-welcome.png`, should be `lib/images/`), "INDIPENDENTLY", and a section on running `*_main.py` from the command line that only applies to source installs | 0 |
-| `About`, `Supported-Systems-Languages` | One em dash each; otherwise fine | 1, 1 |
-
-Fine as they are: `How-to-Cite-the-NLP-Suite`, `License`, `A-Brief-History-of-the-NLP-Suite`, `The-NLP-Suite-Team`, `_Footer`.
-
-About 50 em dashes on user-facing pages. The design notes in `docs/` have more (`CustomTkinter-Migration-Plan` 53, `Semantic_Aggregation_GUI_design` 41, `corpus_profiler_spec` 29, `Narrative_Symbolic_Space_design` 21, `Annotation_join_engine_design` 11), but no user sees them; leave them.
-
-### 8.4 Proposed order
-
-1. **Make `docs/` the source.** One PR: rename the `docs/` pages to the exact wiki names (so publishing is a plain copy), add `NLP-Suite-Architecture.md` from the wiki, fix 12.3 and the em dashes, merge the Download page into the install page (12.1), fix the remaining 8.2 links.
-2. **Publish to the wiki** by hand: clone `NLP-Suite.wiki`, copy `docs/` over, delete the 8.1 pages, update `_Sidebar` (Install External Software in, Watch YouTube Videos in or out). The wiki is live once pushed, so Roberto looks first.
-3. Later: a release step (or workflow on `current-stable`) that copies `docs/` to the wiki, so the two cannot drift again. Add it to §14.
+Left:
+- **A workflow that publishes on push to `current-stable`** (or a release step), so the two cannot drift again. Until then, publish by hand in the PR that changes `docs/wiki/`. Then add it to §14.
+- The install page's "Extracted application" size says "a few GB": measure it on the next release's unzipped folder.
 
 ## 9. Open pull requests
 
