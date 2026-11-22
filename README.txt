@@ -4,4 +4,4 @@ To use the NLP Suite, download the zip for your computer (Windows, or Mac with A
 
 For more information, see README.md and the Wiki at https://github.com/NLP-Suite/NLP-Suite/wiki
 
-To run from source code (developers), see the "Developer Setup" section of https://github.com/NLP-Suite/NLP-Suite/wiki/Install-the-NLP-Suite
+To run from source code (developers), see the "Developer Setup" section of https://github.com/NLP-Suite/NLP-Suite/wiki/Installation-of-the-NLP-Suite#developer-setup-run-from-source

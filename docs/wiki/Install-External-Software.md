@@ -1,8 +1,6 @@
 ### NLP Suite  ![GitHub release (latest by date)](https://img.shields.io/github/v/release/NLP-Suite/NLP-Suite?color=Green&label=Latest%20Version)  
 
-# Install External Software
-
-The standalone NLP Suite build bundles most of what you need. The tools listed below are **optional** — install them only if you need the specific functionality they provide.
+The standalone NLP Suite build bundles most of what you need. The tools listed below are **optional**: install them only if you need the specific functionality they provide.
 
 ## Optional External Software
 
@@ -21,7 +19,7 @@ The following tools were previously required but are now bundled or replaced:
 | Tool | Status |
 |------|--------|
 | **Java** | A Java runtime is bundled in the standalone build for the Stanford CoreNLP tools. Install Java yourself only when running from source |
-| **WordNet** | Downloaded automatically via NLTK the first time it is needed — no separate install |
+| **WordNet** | Downloaded automatically via NLTK the first time it is needed; no separate install |
 | **Anaconda / Python** | Bundled in the standalone build |
 | **Git** | Only needed for developer setup (running from source) |
 | **Microsoft C++ Redistributable** | Usually pre-installed on Windows 10/11. Install only if you get a DLL error (see [Troubleshooting](https://github.com/NLP-Suite/NLP-Suite/wiki/Troubleshooting)) |

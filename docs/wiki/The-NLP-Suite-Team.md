@@ -1,7 +1,5 @@
 ### NLP Suite  ![GitHub release (latest by date)](https://img.shields.io/github/v/release/NLP-Suite/NLP-Suite?color=Green&label=Latest%20Version)  
 
-# The NLP Suite Team
-
 [**Join the team!!!**](#Join-the-team)
 
 The NLP Suite was developed by **Roberto Franzosi** at **Emory University** with the help of many current and past **Emory undergraduate students**:
