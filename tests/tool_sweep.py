@@ -144,6 +144,7 @@ def run_sweep(bundle, sweep, only=(), skip=(), external_config=None, timeout_sca
         version=version,
         started=time.strftime("%Y-%m-%d %H:%M"),
         input=os.path.abspath(corpus) if corpus else "lib/sampleData",
+        out=sweep,
     )
     with open(os.path.join(sweep, "meta.json"), "w", encoding="utf-8") as f:
         json.dump(meta, f, indent=1)

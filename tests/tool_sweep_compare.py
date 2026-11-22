@@ -78,6 +78,8 @@ def read_meta(sweep_dir):
 def roots_of(sweep_dir):
     meta = read_meta(sweep_dir)
     roots = [(os.path.abspath(sweep_dir), "<OUT>")]
+    if meta.get("out") and meta["out"] != os.path.abspath(sweep_dir):  # the sweep was moved after it ran
+        roots.append((meta["out"], "<OUT>"))
     if meta.get("bundle"):
         roots.append((meta["bundle"], "<BUNDLE>"))
     # longest first, so a root inside another is replaced before it

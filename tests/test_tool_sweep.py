@@ -106,3 +106,12 @@ def test_slower_only_when_both_ratio_and_seconds_are_crossed():
     assert tc.timing({"status": "ok", "secs": 2}, {"status": "ok", "secs": 8}) == ""  # 4x but only 6 s more
     assert tc.timing({"status": "ok", "secs": 100}, {"status": "ok", "secs": 130}) == ""  # 30 s more but 1.3x
     assert tc.timing({"status": "ok", "secs": 10}, {"status": "FAILED", "secs": 40}) == ""
+
+
+def test_a_moved_sweep_still_normalizes_its_original_folder(tmp_path):
+    moved = tmp_path / "moved"
+    moved.mkdir()
+    (moved / "meta.json").write_text(json.dumps({"out": "/scratch/sweep"}))
+    roots = tc.roots_of(str(moved))
+    assert tc.norm_path("/scratch/sweep/a.csv", roots) == "<OUT>/a.csv"
+    assert tc.norm_path(str(moved / "a.csv"), roots) == "<OUT>/a.csv"
