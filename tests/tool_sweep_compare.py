@@ -21,6 +21,10 @@ import math
 import os
 
 RAN = ("ok", "WARNED")
+# a recipe is listed as SLOWER (for review, not a failure) when the candidate took both this many times as
+# long and this many seconds more; timings depend on the machine's load and on first-run model downloads
+SLOWER_RATIO = 1.5
+SLOWER_SECONDS = 10
 TABLES = (".csv", ".xlsx")
 # absolute and relative tolerance under which two numbers count as the same (floating-point noise)
 ABS_TOL = 1e-9
@@ -218,6 +222,9 @@ def compare_sweeps(base_dir, cand_dir):
         lost = [f for f in files_a if f not in files_b]
         if lost:
             problems.append(f"{len(lost)} file(s) missing: {', '.join(lost[:5])}")
+        slower = timing(a, b)
+        if slower:
+            file_results.append(("(time)", "slower", slower))
         gained = [f for f in files_b if f not in files_a]
         if gained:
             file_results.append(("(new files)", "new", ", ".join(gained[:5])))
@@ -227,6 +234,15 @@ def compare_sweeps(base_dir, cand_dir):
                 file_results.append((rel, v, d))
         results.append((recipe, problems, file_results))
     return results
+
+
+def timing(a, b):
+    """'12s -> 40s (3.3x)' when the candidate ran clearly slower, else ''."""
+    secs_a, secs_b = a.get("secs") or 0, b.get("secs") or 0
+    if a.get("status") in RAN and b.get("status") in RAN and secs_a > 0:
+        if secs_b >= secs_a * SLOWER_RATIO and secs_b - secs_a >= SLOWER_SECONDS:
+            return f"{secs_a:.0f}s -> {secs_b:.0f}s ({secs_b / secs_a:.1f}x)"
+    return ""
 
 
 def format_comparison(results, base_label="baseline", cand_label="candidate"):

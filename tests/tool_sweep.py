@@ -19,14 +19,17 @@ changes.
 USAGE
   python tests/tool_sweep.py list
   python tests/tool_sweep.py run <unzipped NLP_Suite> -o <sweep dir> [--only a,b] [--skip a,b]
-         [--external-config <NLP_setup_external_software_config.csv>]
+         [--external-config <NLP_setup_external_software_config.csv>] [--input <folder of .txt>]
+         [--timeout-scale N]
   python tests/tool_sweep.py compare <baseline sweep dir> <candidate sweep dir>
   python tests/tool_sweep.py report <sweep dir>
 
-`run` can also take a source checkout (a folder with src/ and lib/ and no python-env): it then uses this
+--input runs every recipe on another corpus, to see what grows with its size (raise --timeout-scale with
+it). `compare` lists a recipe as SLOWER when it took 1.5x as long and 10 s more (for review: timings depend
+on the machine's load). `run` can also take a source checkout (a folder with src/ and lib/ and no python-env): it then uses this
 Python. --only and --skip take recipe names or fnmatch patterns (e.g. 'sentiment_*'). `compare` exits 1 when
 the candidate lost something the baseline had (docs/future-work.md §14 lists the known noise).
-Set DO_NOT_TRACK=1 is done for you. Outputs: <sweep dir>/<recipe>/, logs/, report.jsonl, report.md.
+NLP_SILENT=1 and DO_NOT_TRACK=1 are set for you. Outputs: <sweep dir>/<recipe>/, logs/, report.jsonl, report.md.
 """
 
 import argparse
@@ -95,8 +98,12 @@ def ordered(recipes):
     return result
 
 
-def prepare_inputs(bundle, sweep):
-    """Copies of the sample data inside the sweep, so tools never write next to the bundle's own files."""
+def prepare_inputs(bundle, sweep, corpus=None):
+    """Copies of the sample data inside the sweep, so tools never write next to the bundle's own files.
+
+    corpus: a folder of .txt files used for every recipe instead of the sample data (--input), to see how
+    the tools scale: 5 documents do not show what grows with the corpus (1.6.45's fixes showed only at 958).
+    """
     lib = os.path.join(bundle, "lib", "sampleData")
     inputs = os.path.join(sweep, "_inputs")
     articles = os.path.join(inputs, "articles")
@@ -104,6 +111,12 @@ def prepare_inputs(bundle, sweep):
     for d in (articles, stories):
         shutil.rmtree(d, ignore_errors=True)
         os.makedirs(d)
+    if corpus:
+        for name in sorted(os.listdir(corpus)):
+            if name.endswith(".txt"):
+                shutil.copy(os.path.join(corpus, name), articles)
+                shutil.copy(os.path.join(corpus, name), stories)
+        return inputs
     for name in sorted(os.listdir(os.path.join(lib, "newspaperArticles"))):
         if name.endswith(".txt"):
             shutil.copy(os.path.join(lib, "newspaperArticles", name), articles)
@@ -114,7 +127,7 @@ def prepare_inputs(bundle, sweep):
     return inputs
 
 
-def run_sweep(bundle, sweep, only=(), skip=(), external_config=None, timeout_scale=1.0):  # noqa: PLR0917
+def run_sweep(bundle, sweep, only=(), skip=(), external_config=None, timeout_scale=1.0, corpus=None):  # noqa: PLR0917
     bundle, sweep = os.path.abspath(bundle), os.path.abspath(sweep)
     if not os.path.isdir(os.path.join(bundle, "src")):
         sys.exit("not an NLP Suite folder (no src/): " + bundle)
@@ -125,10 +138,16 @@ def run_sweep(bundle, sweep, only=(), skip=(), external_config=None, timeout_sca
     if os.path.isfile(vfile):
         with open(vfile, encoding="utf-8") as f:
             version = f.read().strip()
-    meta = dict(bundle=bundle, python=python, version=version, started=time.strftime("%Y-%m-%d %H:%M"))
+    meta = dict(
+        bundle=bundle,
+        python=python,
+        version=version,
+        started=time.strftime("%Y-%m-%d %H:%M"),
+        input=os.path.abspath(corpus) if corpus else "lib/sampleData",
+    )
     with open(os.path.join(sweep, "meta.json"), "w", encoding="utf-8") as f:
         json.dump(meta, f, indent=1)
-    prepare_inputs(bundle, sweep)
+    prepare_inputs(bundle, sweep, corpus)
     recipes = ordered(
         [
             r
@@ -209,6 +228,9 @@ def write_report(sweep):
                 r["recipe"], r["status"], r.get("secs", ""), r.get("files", ""), problem.replace("|", "/")[:200]
             )
         )
+    ran = sorted((r for r in rows if r.get("secs")), key=lambda r: -r["secs"])[:10]
+    lines += ["", "## Slowest recipes", "", "| recipe | s |", "|---|---|"]
+    lines += [f"| {r['recipe']} | {r['secs']:.0f} |" for r in ran]
     lines += ["", "## Details", ""]
     for r in rows:
         if r["status"] in ("ok", "SKIPPED"):
@@ -474,6 +496,7 @@ def main(argv=None):
     pr.add_argument("--skip", default="")
     pr.add_argument("--external-config", default=None)
     pr.add_argument("--timeout-scale", type=float, default=1.0)
+    pr.add_argument("--input", default=None, help="a folder of .txt files to use instead of lib/sampleData")
     pc = sub.add_parser("compare")
     pc.add_argument("base")
     pc.add_argument("cand")
@@ -499,6 +522,7 @@ def main(argv=None):
             a.skip.split(",") if a.skip else (),
             a.external_config,
             a.timeout_scale,
+            a.input,
         )
     elif a.cmd == "report":
         write_report(a.sweep)

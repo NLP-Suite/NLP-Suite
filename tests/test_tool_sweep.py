@@ -99,3 +99,10 @@ def test_compare_flags_lost_status_and_lost_files_only(tmp_path):
     assert results["c"][0] == []  # a recipe that now runs is not a regression
     text, regressions = tc.format_comparison(tc.compare_sweeps(base, cand))
     assert regressions == 2 and "REGRESSION  a" in text and "REGRESSION  b" in text
+
+
+def test_slower_only_when_both_ratio_and_seconds_are_crossed():
+    assert tc.timing({"status": "ok", "secs": 10}, {"status": "ok", "secs": 40}) == "10s -> 40s (4.0x)"
+    assert tc.timing({"status": "ok", "secs": 2}, {"status": "ok", "secs": 8}) == ""  # 4x but only 6 s more
+    assert tc.timing({"status": "ok", "secs": 100}, {"status": "ok", "secs": 130}) == ""  # 30 s more but 1.3x
+    assert tc.timing({"status": "ok", "secs": 10}, {"status": "FAILED", "secs": 40}) == ""
