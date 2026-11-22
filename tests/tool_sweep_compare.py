@@ -34,6 +34,8 @@ REL_TOL = 1e-9
 #   skip       the file's contents are not compared (its name still is)
 #   ignore     these columns are not compared
 #   unordered  rows are compared as a multiset, after dropping the columns given
+#   names      the file names themselves vary from run to run: such files are compared by count, not name
+# Found by running the same zip twice (22 Nov, 1.6.45): everything else was identical.
 NOISE = [
     # langdetect's confidence and vocd-D's sampling are random
     ("*", "*anguage*detect*", "ignore", ("Probability", "Confidence", "langdetect probability")),
@@ -42,7 +44,15 @@ NOISE = [
     ("*", "*speed*assess*", "skip", ()),
     # Character Emotion Arcs builds a sentence's characters from a set: their order, and which of
     # "Lady Elliot" / "Elliot" names a row, change from run to run (same scores)
-    ("*", "*character_emotion_arcs*", "unordered", ("Character",)),
+    ("*", "*character_emotion*", "unordered", ("Character",)),
+    # ... and so the per-character charts are named after "Robin" one run, "Robin Ellacott" the next
+    ("*", "emotion_arc_*.png", "names", ()),
+    ("*", "dominant_emotion_timeline_*.png", "names", ()),
+    # BERTopic (UMAP), MALLET and WSI (k-means) are seeded at random on every run: topics, keywords and
+    # clusters change, so only that they ran and what files they wrote is compared
+    ("topics_BERTopic_*", "*", "skip", ()),
+    ("topics_MALLET*", "*", "skip", ()),
+    ("semantic_WSI_*", "*", "skip", ()),
 ]
 
 
@@ -221,6 +231,14 @@ def compare_sweeps(base_dir, cand_dir):
             )
         out_a, out_b = os.path.join(base_dir, recipe), os.path.join(cand_dir, recipe)
         files_a, files_b = files_of(out_a), files_of(out_b)
+        unstable_a = [f for f in files_a if rule_for(recipe, f)[0] == "names"]
+        unstable_b = [f for f in files_b if rule_for(recipe, f)[0] == "names"]
+        if len(unstable_b) < len(unstable_a):
+            problems.append(
+                f"{len(unstable_a) - len(unstable_b)} fewer per-name file(s) ({len(unstable_a)} -> {len(unstable_b)})"
+            )
+        files_a = [f for f in files_a if f not in unstable_a]
+        files_b = [f for f in files_b if f not in unstable_b]
         lost = [f for f in files_a if f not in files_b]
         if lost:
             problems.append(f"{len(lost)} file(s) missing: {', '.join(lost[:5])}")

@@ -115,3 +115,17 @@ def test_a_moved_sweep_still_normalizes_its_original_folder(tmp_path):
     roots = tc.roots_of(str(moved))
     assert tc.norm_path("/scratch/sweep/a.csv", roots) == "<OUT>/a.csv"
     assert tc.norm_path(str(moved / "a.csv"), roots) == "<OUT>/a.csv"
+
+
+def test_files_named_after_unstable_names_are_compared_by_count(tmp_path):
+    rec = [{"recipe": "sentiment_Character_Emotion_Arcs", "status": "ok"}]
+    base = _sweep(tmp_path, "base", rec, {"sentiment_Character_Emotion_Arcs/emotion_arc_Robin.png": "x"})
+    same = _sweep(tmp_path, "same", rec, {"sentiment_Character_Emotion_Arcs/emotion_arc_Robin_Ellacott.png": "x"})
+    fewer = _sweep(tmp_path, "fewer", rec, {"sentiment_Character_Emotion_Arcs/other.txt": "x"})
+    assert tc.compare_sweeps(base, same)[0][1] == []
+    assert "fewer per-name" in tc.compare_sweeps(base, fewer)[0][1][0]
+
+
+def test_random_tools_are_compared_by_files_only():
+    assert tc.rule_for("topics_BERTopic_split", "TM-BERTopic_articles/topic_info.csv")[0] == "skip"
+    assert tc.rule_for("topics_Gensim", "x/topics.csv")[0] is None
