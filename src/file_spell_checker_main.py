@@ -51,11 +51,6 @@ def run(
 
     if spelling_checker_var:
         if checker_value_var == "*" or checker_value_var == "Spell checker (via NLTK unusual words)":
-            print("checker_value_var", checker_value_var)
-            if checker_value_var == "*":
-                silent = True
-            else:
-                silent = False
             # openOutputFiles=False
             filesToOpen = file_spell_checker_util.nltk_unusual_words(
                 GUI_util.window,
@@ -66,9 +61,9 @@ def run(
                 False,
                 chartPackage,
                 dataTransformation,
-                silent,
-                config_filename,
             )
+            if filesToOpen is None:  # no txt files in input
+                filesToOpen = []
 
         if checker_value_var == "*" or "detector" in checker_value_var:
             file_spell_checker_util.language_detection(
