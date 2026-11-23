@@ -35,8 +35,6 @@ On a Mac (1.6.43 → 1.6.44 and 1.6.44 → 1.6.45 self-updates pass, 22 Nov; 1.6
 
 Ask students who report update problems to send the update log to coralynn.yang@emory.edu.
 
-Once the Windows pass is done: delete `spike/1.6.43-bundle-size-rc` (origin), `spike/1.6.43-bundle-size` (local and fork), and the local `backup/release-v1.6.44-with-dead-files`.
-
 ## After 1.6.47
 
 - **Fold the tests into one file per `src/` module** (`test_<module>.py`): about 105 files today, some modules spread over three (`config_util`, `IO_files_util`, `topic_modeling_gensim_util`) and GIS over about a dozen, some named after a bug or a person. Its own PR, a pure move: `pytest --collect-only` counts the same tests before and after. Watch the GIS tests that load functions from the source with their own module-level setup. #1683 and #1682 add `test_gender_dictionary_persons.py` and `test_spaCy_conll_head.py`: rename them after they merge. Can go before 1.6.47.
