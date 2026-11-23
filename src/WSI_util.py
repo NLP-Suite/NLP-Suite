@@ -168,7 +168,7 @@ def get_data(inputFilename, inputDir, Word2Vec_Dir, u_vocab=[], fileType=".txt",
         all_vocab += vocab
         docs[doc] = sentences
         o_paths[doc] = o_path
-    all_vocab = list(set(all_vocab))
+    all_vocab = sorted(set(all_vocab))  # set order changes with each run's hash seed
 
     return all_sent, all_vocab, Word2Vec_Dir, docs, o_paths
 
@@ -227,7 +227,7 @@ def get_centroids(all_sent, all_vocab, Word2Vec_Dir, k_range, sample=None):
         if sample is None:
             seq = [tpl for tpl in all_sent if w in tpl[1].split()]
         else:
-            seq = random.sample([tpl for tpl in all_sent if w in tpl[1].split()], sample)
+            seq = random.Random(SEED).sample([tpl for tpl in all_sent if w in tpl[1].split()], sample)
         batched_data, batched_words, batched_masks, batched_users = model.get_batches(seq, batch_size)
         embeddings, do_wordpiece = model.get_embeddings(batched_data, batched_words, batched_masks, batched_users, w)
         data = model.group_wordpiece(embeddings, w, do_wordpiece)
@@ -262,7 +262,7 @@ def get_cluster_sentences(Word2Vec_Dir):
     s_paths = []
     with open(f"{Word2Vec_Dir}/output/senses") as f:
         tokens = f.read().split("\n")[:-1]
-    vocab = list(set([tok.split("\t")[1] for tok in tokens]))
+    vocab = sorted(set([tok.split("\t")[1] for tok in tokens]))
     tokens = [tok.split("\t") for tok in tokens]
     d = {}
     for w in vocab:
