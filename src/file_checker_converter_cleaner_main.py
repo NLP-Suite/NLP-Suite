@@ -161,7 +161,7 @@ function_to_run = ""
 menu_option = ""
 
 pydict = {}
-pydict["Document converter (csv --> txt)"] = ["file_converter_util.csv_converter"]
+# "Document converter (csv --> txt)" is not offered: file_converter_util's csv converter is unfinished (#1768)
 pydict["Document converter (docx --> txt)"] = ["file_converter_util.docx_converter"]
 pydict["Document converter (pdf --> txt) (via pdfminer)"] = ["file_converter_util.pdf_converter"]
 pydict["Document converter (pdf --> txt) (SCANNED pdf, via pytesseract OCR)"] = [
@@ -264,7 +264,6 @@ y_multiplier_integer = GUI_IO_util.placeWidget(
 convert_menu = tk.OptionMenu(
     window,
     convert_tools_var,
-    "Document converter (csv --> txt)",
     "Document converter (docx --> txt)",
     "Document converter (pdf --> txt) (via pdfminer)",
     "Document converter (pdf --> txt) (SCANNED pdf, via pytesseract OCR)",
