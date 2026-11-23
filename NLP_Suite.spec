@@ -24,7 +24,7 @@ SRC_DIR = os.path.join(PROJECT_ROOT, 'src')
 if sys.platform == 'darwin':
     APP_ICON = os.path.join(PROJECT_ROOT, 'lib', 'images', 'NLP_Suite.icns')
 else:
-    APP_ICON = os.path.join(PROJECT_ROOT, 'setup_Windows', 'NLP_Suite.ico')
+    APP_ICON = os.path.join(PROJECT_ROOT, 'lib', 'images', 'NLP_Suite.ico')
 
 # ── What the frozen executable runs ─────────────────────────────────────────
 # The PyInstaller executable runs ONLY the menu (NLP_menu_main) and what it does in its own process: the setup

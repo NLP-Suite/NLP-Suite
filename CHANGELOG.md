@@ -4,6 +4,9 @@ The most recent release is at the top. Each release's bullets are shown as **"Wh
 on the corresponding GitHub Release page (the top section is added automatically by the
 release workflow). Keep the newest version's section at the very top and update it before tagging.
 
+## Unreleased
+- **Removed the 2021 Anaconda setup scripts** (`setup_Windows/`, `setup_Mac/`: STEP1–3, the run and shortcut scripts, the beta readmes) and the files only they used (`src/NLP_setup_shortcut_add.py`, `src/NLP_setup_shortcut_remove.py`, `src/requirements.txt`, `src/requirements_mac.txt`). They installed Python 3.8 with Anaconda 2021.05 and were replaced by the downloadable zip; nothing a tool does changes. The Windows app icon moved to `lib/images/`.
+
 ## v1.6.46
 - **MALLET topic modeling works in the downloaded NLP Suite.** On the Mac zip it stopped with "Failed to import tkagg backend" at the first chart. Its charts are now drawn the way every other tool's are.
 - **Coreference with Stanza works in the downloaded NLP Suite.** In the zip it stopped with "No module named 'peft'", a package Stanza's coreference model needs that was not installed. It is now included.

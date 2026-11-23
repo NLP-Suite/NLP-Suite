@@ -6,8 +6,6 @@ exclude = [
     "TIPS/",
     "TIPS docx/",
     "reminders/",
-    "setup_Mac/",
-    "setup_Windows/",
 ]
 
 line-length = 120

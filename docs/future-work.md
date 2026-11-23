@@ -28,12 +28,10 @@ Moved out of PLAN.md on 11 Nov 2026. The sections keep their scan dates; nothing
 
 ### 1.1 Delete in a later release, with PR #1706 (needs Roberto's yes)
 
-Held out of 1.6.44 (21 Nov) so the bundle-size release changes only what the build ships: nothing below is deleted yet. The deletion was commit `c21e33de` on the old `release/v1.6.44`; it also moved the Windows icon to `lib/images/` and updated the spec and pyproject's ruff excludes. Rebase PR #1706 onto `roberto` once 1.6.44 is merged and do it all in one PR. Each file below was checked: nothing imports it, launches it with `run_script`, or names it in a workflow.
+Held out of 1.6.44 (21 Nov) so the bundle-size release changes only what the build ships: nothing below is deleted yet. The deletion was commit `c21e33de` on the old `release/v1.6.44`; it also moved the Windows icon to `lib/images/` and updated the spec and pyproject's ruff excludes. The legacy setup scripts, the two `src/requirements*` files and the icon move went first, on their own, in `chore/remove-legacy-setup` (1.6.47, 23 Nov); the rest waits until it is clear nothing the family viewer builds needs it. Rebase PR #1706 onto `roberto` after that and drop what is already gone. Each file below was checked: nothing imports it, launches it with `run_script`, or names it in a workflow.
 
 | Group | Files | Evidence |
 |---|---|---|
-| Legacy setup scripts | `setup_Windows/`, `setup_Mac/` (all but the two icons), `src/NLP_setup_shortcut_add.py`, `src/NLP_setup_shortcut_remove.py`, `src/requirements.txt`, `src/requirements_mac.txt` | §5.1 #1. Not in the zip. The two `src/requirements*` files are read only by STEP2, and carry 108 Dependabot alerts (§3.1) |
-| Icons (move, don't delete) | `setup_Windows/NLP_Suite.ico`, `logo.ico` | `NLP_Suite.spec` uses `NLP_Suite.ico` for the app icon; `logo.ico` is used nowhere. Move the first to `lib/images/`, update the spec, drop the second |
 | PC-ACE debugging scripts (June 2026) | `src/_add_indexes.py`, `_add_indexes_now.py`, `_check_idx.py`, `_check_path.py`, `_debug_hops.py`, `_debug_xref.py`, `_test_actor_process.py`, `_test_cross_join.py` | One-off scripts with a hard-coded `C:/Users/rfranzo/Desktop/...sqlite` path; imported nowhere |
 | Unused modules | `GIS_heatMapIntegration.py`, `GIS_heatMapintegration_ver2.py`, `html_annotator_extractor_util_NEW.py`, `knowledge_graphs_DBpedia_util_SPARQL.py` (440 lines), `nyt_api_call.py`, `TensorFlow_semantic_analysis.py`, `POTUS_webscraper.py` (2023), `pandas_compat_util.py`, `videos_util.py`, `NLP_setup_download_jars.py` | Imported nowhere. `pandas_compat_util` (July 2026) is a shim for pandas < 1.3 that nothing ever adopted; pandas 2 is pinned. `videos_util` is imported only in commented-out lines (`GUI_util`, `NLP_welcome_main`); `NLP_setup_download_jars` was named only in the old spec's hidden imports |
 | Repo root and workflows | `post_build_fixup.py`, `wiki-draft-About.md`, `.github/workflows/build-family-viewer.yml` | §5.1 #14. The spec mentions `post_build_fixup` only in a comment |
@@ -88,8 +86,8 @@ Dependabot alerts on `current-stable`, read 11 Nov 2026 with `gh api repos/NLP-S
 | Manifest | Pillow | transformers | stanza | protobuf | Closed by |
 |---|---|---|---|---|---|
 | `requirements.txt` (what the build installs) | 52 (4 critical) | 18 (6 high) | — | — | Pillow: #1688. transformers: §3.2 |
-| `src/requirements.txt` | 51 | — | 1 | 2 | Deleting the file (§1.1, after 1.6.44) |
-| `src/requirements_mac.txt` | 50 | — | 1 | 3 | Deleting the file (§1.1, after 1.6.44) |
+| `src/requirements.txt` | 51 | — | 1 | 2 | Deleted in `chore/remove-legacy-setup` (1.6.47) |
+| `src/requirements_mac.txt` | 50 | — | 1 | 3 | Deleted in `chore/remove-legacy-setup` (1.6.47) |
 
 - **108 of the 178 are in the two stale `src/` files**, which no build reads. Deleting both (§1.1, held out of 1.6.44) closes them once it reaches `current-stable` (Dependabot reads the default branch, not `roberto`). The stanza and protobuf alerts are only there: the root file leaves both unpinned, and today they resolve to stanza 1.15.0 and protobuf 7.36.2, above every fixed version.
 - **Pillow 13.0.0 fixes all 52 in the root file**, and it needs Python 3.11 (no 3.10 wheels). That is #1688.
@@ -119,7 +117,7 @@ Planned as 1.6.46 until the tool sweep's fixes took that number (23 Nov).
 The Python bump means users download a new bundled Python (the whole env is rebuilt), so if something breaks it should be clear it was the bump. Proposal: this release carries the bump and nothing else, after 1.6.44 (bundle size), 1.6.45 (HW 5 speedups), 1.6.46 (sweep fixes) and the dead files (§1.1) have shipped; #1682 and §6.3 wait for the release after it. Roberto's call.
 
 Prerequisites, in order:
-1. #1706 is merged (§1.1, after 1.6.45). It deletes `src/requirements*.txt` and the STEP1–3 scripts, which also settles two of #1688's open review points: its `src/requirements.txt` hunk goes away, and nothing left creates a `python=3.8` env.
+1. `chore/remove-legacy-setup` is merged (§1.1; the narrow part of #1706). It deletes `src/requirements*.txt` and the STEP1–3 scripts, which also settles two of #1688's open review points: its `src/requirements.txt` hunk goes away, and nothing left creates a `python=3.8` env.
 2. The summarizer PR (§3.2), on its own.
 3. Rebase #1688 onto `roberto` after both (its `requirements.txt` hunk sits next to #1705's lines; its `src/requirements.txt` hunk becomes a modify/delete conflict: drop it).
 
