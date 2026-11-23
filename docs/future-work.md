@@ -415,8 +415,6 @@ Re-measured 18 Nov 2026 over `src/` (223 files). The 16 Jul figures are in brack
 | File | Why it is left |
 |---|---|
 
-Found while fixing, not fixed (no recipe reaches them, so the change could not be checked): `charts_Excel_main.run` and `sentence_analysis_util.dictionary_items_bySentenceID` passed their arguments to `charts_Excel_util.create_excel_chart` in the wrong order (the output folder got the chart title). The second is fixed on the same branch; the first is not, pending `charts_Excel_line` in the tool sweep.
-
 ### 12.3 Silent failures: 212 bare `except:` [221]
 
 Largest reliability lever. Convert to `except Exception`, and on user-facing paths report via `messagebox`. Worst files in July: `IO_files_util`, `GIS_geocode_util`, `file_filename_util`, `charts_util`, `Stanford_CoreNLP_util`.
