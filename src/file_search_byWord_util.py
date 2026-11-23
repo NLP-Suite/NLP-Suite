@@ -27,11 +27,10 @@ import os
 import shutil  # for copy of files
 import tkinter.messagebox as mb
 
-import stanza
-
 import charts_util
 import IO_csv_util
 import IO_files_util
+import IO_internet_util
 import IO_user_interface_util
 
 
@@ -148,7 +147,7 @@ def get_words_minus_K_plus_K(
 # not used
 def get_lemma(form_lemma_pair, lang, keyword):
     if keyword not in form_lemma_pair:
-        nlp = stanza.Pipeline(lang=lang, processors="tokenize, lemma")
+        nlp = IO_internet_util.stanza_pipeline(lang=lang, processors="tokenize, lemma")
         doc = nlp(keyword)
         lemma_value = doc.sentences[0].words[0].lemma
         form_lemma_pair[keyword] = lemma_value

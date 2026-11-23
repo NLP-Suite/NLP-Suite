@@ -25,7 +25,6 @@ import IO_libraries_util
 if not IO_libraries_util.install_all_Python_packages(GUI_util.window, "Stanza_functions_util", ["tkinter", "stanza"]):
     sys.exit(0)
 
-import stanza
 
 import IO_internet_util
 
@@ -40,7 +39,7 @@ import IO_internet_util
 def _build_stanza_pipeline():
     if not IO_internet_util.ensure_stanza_model("Stanza_functions_util.py", lang="en", window=GUI_util.window):
         return None  # the download failure has been shown; LazyModel raises
-    return stanza.Pipeline(lang="en", processors="tokenize, lemma")
+    return IO_internet_util.stanza_pipeline(lang="en", processors="tokenize, lemma")
 
 
 stanzaPipeLine = IO_internet_util.LazyModel(

@@ -69,3 +69,6 @@ buck-out/
 
 # Test data (junction to local PC-ACE databases)
 test_data/
+
+# Each user's own settings and counters (first-run defaults are in lib/config_defaults/)
+/config/

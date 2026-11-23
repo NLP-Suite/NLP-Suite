@@ -48,6 +48,9 @@ from topic_modeling_corpus_size_util import corpus_size_advice
 # iterations between hyperparameter optimizations: MALLET's documentation and the Programming Historian
 # lesson cited below both use a fixed small number. The GUI used to pass the NUMBER OF TOPICS here.
 OPTIMIZE_INTERVAL = 20
+# MALLET's Gibbs sampler is seeded from the clock unless --random-seed is given (0 also means the clock):
+#   with a fixed seed the same corpus gives the same topics on every RUN
+RANDOM_SEED = 1
 
 
 def mallet_commands(
@@ -68,6 +71,8 @@ def mallet_commands(
     if optimize:
         train_cmd += ["--optimize-interval", str(OPTIMIZE_INTERVAL)]
     train_cmd += [
+        "--random-seed",
+        str(RANDOM_SEED),
         "--output-state",
         state_file,
         "--output-topic-keys",

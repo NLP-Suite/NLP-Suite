@@ -48,16 +48,17 @@ def fsc():
         yield module
 
 
+# the pipeline is built through IO_internet_util.stanza_pipeline, which reuses local models (#1764)
 def test_only_the_langid_processor_is_loaded(fsc):
-    with patch.object(fsc, "stanza") as stanza:
+    with patch.object(fsc, "stanza") as stanza, patch.object(fsc.IO_internet_util, "stanza_pipeline") as build:
         fsc.stanza_langid_pipeline()
-    stanza.Pipeline.assert_called_once_with(lang="multilingual", processors="langid", verbose=False)
+    build.assert_called_once_with(lang="multilingual", processors="langid", verbose=False)
     stanza.download.assert_not_called()
 
 
 def test_the_model_is_downloaded_when_missing(fsc):
-    with patch.object(fsc, "stanza") as stanza:
-        stanza.Pipeline.side_effect = [FileNotFoundError("no model"), MagicMock()]
+    with patch.object(fsc, "stanza") as stanza, patch.object(fsc.IO_internet_util, "stanza_pipeline") as build:
+        build.side_effect = [FileNotFoundError("no model"), MagicMock()]
         fsc.stanza_langid_pipeline()
     stanza.download.assert_called_once_with(lang="multilingual", verbose=False)
-    assert stanza.Pipeline.call_count == 2
+    assert build.call_count == 2

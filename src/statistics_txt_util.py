@@ -596,9 +596,7 @@ def compute_sentence_length(inputFilename, inputDir, outputDir, configFileName, 
         if not IO_internet_util.ensure_stanza_model("statistics_txt_util.py", lang="en", window=GUI_util.window):
             return
         try:
-            import stanza
-
-            _sent_pipe = stanza.Pipeline(lang="en", processors="tokenize", verbose=False)
+            _sent_pipe = IO_internet_util.stanza_pipeline(lang="en", processors="tokenize", verbose=False)
             _count_units = lambda sent: sent.tokens  # tokenize-only: count tokens
         except Exception:
             from Stanza_functions_util import stanzaPipeLine as _sent_pipe
@@ -2579,14 +2577,14 @@ def compute_sentence_complexity(
         "Document",
     ]
     try:
-        nlp = stanza.Pipeline(lang="en", processors="tokenize,pos,constituency", use_gpu=False)
+        nlp = IO_internet_util.stanza_pipeline(lang="en", processors="tokenize,pos,constituency", use_gpu=False)
     except Exception:
         # The first load can fail when stanza's resources.json or the English models are missing/stale.
         # Download them (the real remedy) and retry. Do NOT pip-install an old pinned stanza at runtime:
         # you cannot downgrade the running interpreter (it fails with CalledProcessError), the current
         # stanza is 1.10+, and pip is not available in the frozen build.
         stanza.download("en", verbose=False)
-        nlp = stanza.Pipeline(lang="en", processors="tokenize,pos,constituency", use_gpu=False)
+        nlp = IO_internet_util.stanza_pipeline(lang="en", processors="tokenize,pos,constituency", use_gpu=False)
     op = pd.DataFrame(columns=columns)
     for idx, txt in enumerate(all_input_docs.items()):
         doc = nlp(txt[1])
@@ -2726,11 +2724,11 @@ def compute_subordination_ratio(
     columns = ["Subordination Ratio", "Sentence ID", "Sentence", "Document ID", "Document"]
 
     try:
-        nlp = stanza.Pipeline(lang="en", processors="tokenize,pos,depparse", use_gpu=False)
+        nlp = IO_internet_util.stanza_pipeline(lang="en", processors="tokenize,pos,depparse", use_gpu=False)
     except Exception:
         # download the stanza models and retry -- never pip-downgrade stanza at runtime (see note above)
         stanza.download("en", verbose=False)
-        nlp = stanza.Pipeline(lang="en", processors="tokenize,pos,depparse", use_gpu=False)
+        nlp = IO_internet_util.stanza_pipeline(lang="en", processors="tokenize,pos,depparse", use_gpu=False)
 
     op = pd.DataFrame(columns=columns)
 
@@ -2861,11 +2859,11 @@ def compute_dependency_distance(
     columns = ["Avg Dependency Distance", "Sentence ID", "Sentence", "Document ID", "Document"]
 
     try:
-        nlp = stanza.Pipeline(lang="en", processors="tokenize,pos,depparse", use_gpu=False)
+        nlp = IO_internet_util.stanza_pipeline(lang="en", processors="tokenize,pos,depparse", use_gpu=False)
     except Exception:
         # download the stanza models and retry -- never pip-downgrade stanza at runtime (see note above)
         stanza.download("en", verbose=False)
-        nlp = stanza.Pipeline(lang="en", processors="tokenize,pos,depparse", use_gpu=False)
+        nlp = IO_internet_util.stanza_pipeline(lang="en", processors="tokenize,pos,depparse", use_gpu=False)
 
     op = pd.DataFrame(columns=columns)
 

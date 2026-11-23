@@ -43,7 +43,6 @@ from sentence_transformers import SentenceTransformer
 
 ##from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
-import stanza
 from summarizer import Summarizer
 from transformers import (
     AutoModelForTokenClassification,
@@ -320,10 +319,10 @@ def word_embeddings_BERT(
     #   this needs to be implemented similarly to Word2Vec_Gensim_util
     # DONE
     if lemmatize_var:
-        stanzaPipeLine = stanza.Pipeline(lang="en", processors="tokenize, lemma")
+        stanzaPipeLine = IO_internet_util.stanza_pipeline(lang="en", processors="tokenize, lemma")
         print("Tokenizing and Lemmatizing...")
     else:
-        stanzaPipeLine = stanza.Pipeline(lang="en", processors="tokenize")
+        stanzaPipeLine = IO_internet_util.stanza_pipeline(lang="en", processors="tokenize")
         print("Tokenizing...")
 
     # per document: (document path, [(sentence, words), ...]). Kept so the csv below is built from EACH
