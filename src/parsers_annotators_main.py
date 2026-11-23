@@ -160,10 +160,17 @@ def run():
                 return
 
             if parser_var:
-                if "PCFG" in parser_menu_var:
-                    annotator = "parser (pcfg)"
-                elif parser_menu_var == "Neural Network":
-                    annotator = "parser (nn)"
+                annotator = Stanford_CoreNLP_util.CoreNLP_parser_annotator(parser_menu_var)
+                if annotator == "":
+                    mb.showwarning(
+                        "Warning",
+                        'The selected parser "'
+                        + parser_menu_var
+                        + '" is not available in Stanford CoreNLP, your default NLP package.\n\n'
+                        + "Please, select Probabilistic Context Free Grammar (PCFG) or Neural Network in the parser "
+                        + "dropdown menu and try again.",
+                    )
+                    return
             elif annotators_var and annotators_menu_var != "":
                 if "NER annotator" in annotators_menu_var:
                     annotator = "NER"
@@ -225,6 +232,12 @@ def run():
                         else:
                             filesToOpen.extend(outputFiles)
                 else:
+                    mb.showwarning(
+                        "Warning",
+                        'The selected annotator "'
+                        + annotators_menu_var
+                        + '" is not available in Stanford CoreNLP.\n\nPlease, select a different annotator and try again.',
+                    )
                     return
 
             if len(annotator) > 0:
