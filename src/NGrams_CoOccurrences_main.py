@@ -130,6 +130,17 @@ def run():
 
     if Ngrams_compute_var:
         print("N-grams options:", ngrams_options_list)
+        # statistics_txt_util.compute_character_word_ngrams computes word N-grams only (its wordgram flag is unused)
+        if ngrams_menu_var != "Word":
+            mb.showwarning(
+                title="Warning",
+                message="Only word N-grams are available; "
+                + ngrams_menu_var.lower()
+                + ' N-grams ("'
+                + ngrams_menu_var
+                + '") are not.\n\nPlease, select "Word" as the N-grams type and try again.',
+            )
+            return
         ngrams_word_var = False
         ngrams_character_var = False
         lemmatize = False
@@ -624,7 +635,8 @@ y_multiplier_integer = GUI_IO_util.placeWidget(
 ngrams_menu_var.set("Word")
 # ngrams_menu_lb = tk.Label(window, text='N-grams type')
 # y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.style_ngrams_menu_pos,y_multiplier_integer,ngrams_menu_lb,True)
-ngrams_menu = tk.OptionMenu(window, ngrams_menu_var, "Character", "Word")  # ,'DEPREL','POSTAG')
+# "Character" was offered but never computed (word N-grams only); 'DEPREL','POSTAG' not available either
+ngrams_menu = tk.OptionMenu(window, ngrams_menu_var, "Word")
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(
     window,
@@ -1426,7 +1438,7 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
         help_button_x_coordinate,
         y_multiplier_integer,
         "NLP Suite Help",
-        "Please, tick the checkbox if you wish to compute N-grams.\n\nN-grams can be computed for character and word values. Use the dropdown menu to select the desired option.\n\nN-grams frequencies are exported by document and by corpus in all case-sensitive variations (e.g., It is necessary, it Is necessary, It is Necessary,...).\n\nIn INPUT the script expects a single txt file or a directory containing a set of txt files.\n\nIn OUTPUT, the script generates a set of csv files each containing word N-grams between 1 and 3.\n\nWhen N-grams are computed by sentence index, the sentence displayed in output is always the first occurring sentence.",
+        "Please, tick the checkbox if you wish to compute N-grams.\n\nN-grams are computed for words (character N-grams are not available).\n\nN-grams frequencies are exported by document and by corpus in all case-sensitive variations (e.g., It is necessary, it Is necessary, It is Necessary,...).\n\nIn INPUT the script expects a single txt file or a directory containing a set of txt files.\n\nIn OUTPUT, the script generates a set of csv files each containing word N-grams between 1 and 3.\n\nWhen N-grams are computed by sentence index, the sentence displayed in output is always the first occurring sentence.",
     )
     y_multiplier_integer = GUI_IO_util.place_help_button(
         window,

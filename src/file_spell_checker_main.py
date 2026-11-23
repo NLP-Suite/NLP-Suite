@@ -51,11 +51,6 @@ def run(
 
     if spelling_checker_var:
         if checker_value_var == "*" or checker_value_var == "Spell checker (via NLTK unusual words)":
-            print("checker_value_var", checker_value_var)
-            if checker_value_var == "*":
-                silent = True
-            else:
-                silent = False
             # openOutputFiles=False
             filesToOpen = file_spell_checker_util.nltk_unusual_words(
                 GUI_util.window,
@@ -66,9 +61,9 @@ def run(
                 False,
                 chartPackage,
                 dataTransformation,
-                silent,
-                config_filename,
             )
+            if filesToOpen is None:  # no txt files in input
+                filesToOpen = []
 
         if checker_value_var == "*" or "detector" in checker_value_var:
             file_spell_checker_util.language_detection(
@@ -97,16 +92,15 @@ def run(
             )
             autocorrect_df.to_csv(autocorrect_file_name, encoding="utf-8", index=False)
             filesToOpen.append(autocorrect_file_name)
-        if checker_value_var == "*" or "BERT" in checker_value_var:
-            pyspellchecker_file_name = IO_files_util.generate_output_file_name(
-                inputFilename, inputDir, outputDir, ".csv", "spell_pyspellchecker"
+        if "BERT" in checker_value_var:
+            # BERT_util.spell_checker_bert no longer exists (the pre-processing pipeline dropped it too); the
+            # option was still in the menu, and "*" stopped there with AttributeError, so nothing after it ran
+            mb.showwarning(
+                title="Option not available",
+                message="The BERT spell checker is no longer available.\n\nPlease, select another spell checker "
+                "(or * for all of them) and try again.",
             )
-            import BERT_util
-
-            BERT_output = BERT_util.spell_checker_bert(
-                window, inputFilename, inputDir, outputDir, "", chartPackage, dataTransformation
-            )
-            filesToOpen.append(BERT_output)
+            return
         if checker_value_var == "*" or "pyspellchecker" in checker_value_var:
             pyspellchecker_file_name = IO_files_util.generate_output_file_name(
                 inputFilename, inputDir, outputDir, ".csv", "spell_pyspellchecker"
@@ -554,7 +548,6 @@ spelling_checker_value = tk.OptionMenu(
     "*",
     "Language detector",
     "Spell checker (via autocorrect)",
-    "Spell checker (via BERT)",
     "Spell checker (via NLTK unusual words)",
     "Spell checker (via pyspellchecker)",
     "Spell checker (via textblob)",

@@ -82,6 +82,22 @@ def deps_index(deps):
     return deps_list
 
 
+def dependency_heads(token):
+    """The indexes of a token's heads: from Deps (enhanced dependencies, e.g. "7:conj:and|11:conj:and"), which only
+    Stanford CoreNLP tables have, else from Head. Stanza and spaCy tables have no Deps, so a search through Deps
+    alone found no related words in them (issue #1765)."""
+    heads = deps_index(token[SearchField.DEPS.value])
+    if not heads:
+        head = str(token[SearchField.HEAD.value]).strip()
+        try:  # Stanza tables write Head as a float ("14.0")
+            index = float(head)
+        except ValueError:
+            index = None
+        if index is not None and index == int(index) and index > 0:
+            heads = [int(index)]
+    return heads
+
+
 # Chen
 def search_deps(token_id_in_sentence, sentence_CoNLL_records, searchedCoNLLField):
     """
@@ -106,11 +122,8 @@ def search_deps(token_id_in_sentence, sentence_CoNLL_records, searchedCoNLLField
         )
         # sys.exit(0)
         return []
-    if len(token[SearchField.DEPS.value]) == 0:
-        return []
-
     res = []
-    deps_list = deps_index(token[SearchField.DEPS.value])
+    deps_list = dependency_heads(token)
     for index in deps_list:
         if index != token[SearchField.ID.value] and index != 0:
             if searchedCoNLLField == "FORM":
@@ -151,7 +164,7 @@ def search_governors(sentence_CoNLL_records, searchedCoNLLField, target, target_
         if token[SearchField.FORM.value] == target or token[SearchField.LEMMA.value] == target:  # skip the target word
             continue
 
-        deps_list = deps_index(token[SearchField.DEPS.value])
+        deps_list = dependency_heads(token)
         for index in deps_list:
             if index in target_index_list:
                 target_index = index

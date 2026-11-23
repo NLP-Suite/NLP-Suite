@@ -20,6 +20,7 @@ import numpy as np
 import pandas as pd
 
 import IO_files_util
+import IO_internet_util
 import IO_user_interface_util
 import statistics_statistical_tests_util
 
@@ -180,10 +181,10 @@ def main(inputFilename, inputDir, outputDir, chartPackage="Excel", dataTransform
         GUI_util.window, 2000, "Analysis start", "Started running NER Entity Timeline at", True
     )
 
-    import stanza
-
     try:
-        nlp = stanza.Pipeline(lang="en", processors="tokenize,ner", use_gpu=False, logging_level="WARNING")
+        nlp = IO_internet_util.stanza_pipeline(
+            lang="en", processors="tokenize,ner", use_gpu=False, logging_level="WARNING"
+        )
     except Exception as e:
         mb.showerror(title="Stanza Error", message=f"Could not initialize Stanza NER pipeline.\n\n{str(e)}")
         return filesToOpen

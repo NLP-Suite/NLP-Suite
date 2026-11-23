@@ -25,6 +25,7 @@ import stanza
 
 import IO_csv_util
 import IO_files_util
+import IO_internet_util
 import IO_user_interface_util
 import string_similarity_util
 
@@ -41,10 +42,14 @@ def _get_stanza_pipeline():
     global _stannlp
     if _stannlp is None:
         try:
-            _stannlp = stanza.Pipeline(lang="en", processors="tokenize,ner,mwt,pos,lemma", use_gpu=False, verbose=False)
+            _stannlp = IO_internet_util.stanza_pipeline(
+                lang="en", processors="tokenize,ner,mwt,pos,lemma", use_gpu=False, verbose=False
+            )
         except Exception:
             stanza.download("en", verbose=False)
-            _stannlp = stanza.Pipeline(lang="en", processors="tokenize,ner,mwt,pos,lemma", use_gpu=False, verbose=False)
+            _stannlp = IO_internet_util.stanza_pipeline(
+                lang="en", processors="tokenize,ner,mwt,pos,lemma", use_gpu=False, verbose=False
+            )
     return _stannlp
 
 
