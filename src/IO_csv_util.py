@@ -609,34 +609,6 @@ def sort_by_column(input, column):
     return df_list
 
 
-def align_dataframes(df_list):
-    max = 0
-    for df in df_list:
-        header = list(df.columns)
-        if "Sentence ID" in header:
-            sentenceID = "Sentence ID"
-        if df[sentenceID].max() > max:
-            max = df[sentenceID].max()
-    new_list = []
-    for df in df_list:
-        if df.empty:
-            continue
-        temp = df.iloc[-1, :]
-        if temp[sentenceID] != max:
-            # TODO solve warning issue
-            # https://www.dataquest.io/blog/settingwithcopywarning/
-            # ​​​​SettingwithCopyWarning
-            temp[sentenceID] = max
-            temp["Frequency"] = 0
-            new_df = pd.concat([df, temp], ignore_index=True)
-        else:
-            new_df = df
-        new_list.append(new_df)
-
-    df_list = [add_missing_IDs(data) for data in new_list if not data.empty]
-    return df_list
-
-
 def slicing_dataframe(df, columns):
     df = df[columns]
     return df

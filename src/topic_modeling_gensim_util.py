@@ -41,15 +41,11 @@ import pyLDAvis.gensim
 # spacy for lemmatization
 import spacy
 
-try:
-    matplotlib.use("TkAgg")  # may be necessary for your system
-    import matplotlib.pyplot as plt
-except Exception:
-    # The portable/frozen build (python-build-standalone) has no working Tk backend
-    # ("Failed to import tkagg backend"). Fall back to the non-interactive Agg backend, which
-    # renders figures to files just fine -- which is all the Suite needs (it saves charts, not show()).
-    matplotlib.use("Agg")
-    import matplotlib.pyplot as plt
+# Agg, not TkAgg: the Suite saves charts to files and never calls show(). matplotlib.use("TkAgg") does not
+# load the backend, so a try/except around it never falls back; in the zip's python-env (python-build-standalone)
+# the first figure then failed with "Failed to import tkagg backend" (MALLET topic modeling).
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
 
 # enable logging for gensim
 import logging

@@ -51,6 +51,11 @@ bert-extractive-summarizer
 # NOTE: coreferee (the former 'spaCy' option) was removed - it pins spacy<3.6, which forces the
 # whole suite's spaCy stack down into un-buildable source dists and breaks the PyInstaller build.
 fastcoref
+# peft -> the 'Stanza' option: Stanza's coreference model is XLM-RoBERTa with LoRA adapters, loaded through peft.
+# stanza lists peft only under its "transformers" extra, so a plain `stanza` install leaves it out and the zip's
+# Stanza coreference stopped with "No module named 'peft'". peft declares no transformers bound; 0.21.3 imports
+# with the transformers 4.51.3 pin above and also handles transformers 5 (1.6.46). 0.22 needs Python 3.11.
+peft==0.21.3
 
 # Topic modeling
 bertopic
