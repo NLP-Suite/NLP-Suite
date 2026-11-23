@@ -53,6 +53,9 @@ NOISE = [
     ("topics_BERTopic_*", "*", "skip", ()),
     ("topics_MALLET*", "*", "skip", ()),
     ("semantic_WSI_*", "*", "skip", ()),
+    # the Wikipedia knowledge graph names its outputs after the time they were written
+    # ("..._Wikipedia_output_Nov_23_2026_04_40_30_..."), and Wikipedia itself changes between runs
+    ("*", "*_output_*_20[0-9][0-9]_[0-9][0-9]_[0-9][0-9]_[0-9][0-9]*", "names", ()),
 ]
 
 
@@ -219,7 +222,10 @@ def compare_sweeps(base_dir, cand_dir):
         a, b = base.get(recipe), cand.get(recipe)
         problems, file_results = [], []
         if a is None and b is not None:
-            results.append((recipe, ["new in the candidate: {}".format(b["status"])], []))
+            # a recipe added after the baseline ran: nothing to lose, so it is listed for review only
+            results.append(
+                (recipe, [], [("(recipe)", "new", "not in the baseline; {} in the candidate".format(b["status"]))])
+            )
             continue
         if a is None or b is None:
             status = a["status"] if a is not None else "?"
