@@ -18,7 +18,6 @@ if (
             "time",
             "stanza",
             "sklearn",
-            "summarizer",
             "sacremoses",
             "sentencepiece",
             "sentence_transformers",
@@ -43,7 +42,6 @@ from sentence_transformers import SentenceTransformer
 
 ##from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
-from summarizer import Summarizer
 from transformers import (
     AutoModelForTokenClassification,
     AutoTokenizer,
@@ -180,50 +178,6 @@ def NER_tags_BERT(
         )
 
         return filesToOpen
-
-
-# provides summary of text per doc and stores in a csv file
-def doc_summary_BERT(
-    window, inputFilename, inputDir, outputDir, mode, chartPackage, dataTransformation, configFileName
-):
-
-    result_summary_list = []
-
-    header = ["Document Name", "Summary", "Document ID", "Document"]
-
-    inputDocs = IO_files_util.getFileList(
-        inputFilename, inputDir, fileType=".txt", silent=False, configFileName=configFileName
-    )
-
-    Ndocs = str(len(inputDocs))
-
-    documentID = 0
-    for doc in inputDocs:
-        head, tail = os.path.split(doc)
-        documentID = documentID + 1
-        # doc_summary
-        print("Processing file " + str(documentID) + "/" + str(Ndocs) + " " + tail)
-
-        with open(doc, encoding="utf-8", errors="ignore") as f:
-            fullText = f.read()
-            fullText = fullText.replace("\n", " ")
-
-        bert_model = Summarizer()
-        bert_summary = "".join(bert_model(fullText, min_length=60))
-
-        result_summary_list.append(
-            [inputFilename, bert_summary, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)]
-        )
-
-    result_summary_list.insert(0, header)
-
-    tempOutputFiles = IO_files_util.generate_output_file_name(
-        inputFilename, inputDir, outputDir, ".csv", "Doc_Summary_BERT"
-    )
-    IO_error = IO_csv_util.list_to_csv(window, result_summary_list, tempOutputFiles)
-    if not IO_error:
-        return tempOutputFiles
-    return tempOutputFiles
 
 
 def stanza_words(stanza_doc, lemmatize):
