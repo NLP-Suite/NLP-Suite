@@ -4,7 +4,7 @@ The most recent release is at the top. Each release's bullets are shown as **"Wh
 on the corresponding GitHub Release page (the top section is added automatically by the
 release workflow). Keep the newest version's section at the very top and update it before tagging.
 
-## Unreleased
+## v1.6.46
 - **MALLET topic modeling works in the downloaded NLP Suite.** On the Mac zip it stopped with "Failed to import tkagg backend" at the first chart. Its charts are now drawn the way every other tool's are.
 - **Coreference with Stanza works in the downloaded NLP Suite.** In the zip it stopped with "No module named 'peft'", a package Stanza's coreference model needs that was not installed. It is now included.
 - **Parsers & annotators tells you when a choice cannot run.** With Stanford CoreNLP as your package, a parser CoreNLP does not offer (for example "Dependency parser", left in the menu from Stanza or spaCy) or an annotator it does not have (Word embeddings) made RUN do nothing, with no message. You now get a warning that says what to pick instead.
