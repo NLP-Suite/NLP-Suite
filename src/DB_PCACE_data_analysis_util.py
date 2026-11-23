@@ -72,6 +72,7 @@ import tkinter.messagebox as mb
 import pandas as pd
 
 import IO_files_util
+import IO_internet_util
 import IO_user_interface_util
 
 # pkl version: bump this whenever reading_list rename mappings change.
@@ -4154,7 +4155,7 @@ def lemmatize_simplex_values(inputDir, outputDir, simplex_name="", language="en"
         stanza.download(language, processors="tokenize,pos,lemma", verbose=False)
     except Exception:
         pass
-    nlp = stanza.Pipeline(lang=language, processors="tokenize,mwt,pos,lemma", verbose=False)
+    nlp = IO_internet_util.stanza_pipeline(lang=language, processors="tokenize,mwt,pos,lemma", verbose=False)
 
     results = []
 

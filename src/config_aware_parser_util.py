@@ -29,6 +29,7 @@
 
 import basic_NLP_util
 import config_util
+import IO_internet_util
 
 
 class ConfigParser:
@@ -62,9 +63,8 @@ class ConfigParser:
             self._corenlp = StanfordCoreNLP(CoreNLPDir)
         else:  # Stanza is the NLP Suite's default Python parser
             self.kind = "stanza"
-            import stanza
 
-            self._pipe = stanza.Pipeline(
+            self._pipe = IO_internet_util.stanza_pipeline(
                 basic_NLP_util._lang_code(language), processors="tokenize,pos,ner", verbose=False
             )
 

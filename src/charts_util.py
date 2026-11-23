@@ -37,6 +37,7 @@ import pandas as pd
 import charts_Excel_util
 import charts_Plotly_util
 import IO_csv_util
+import IO_internet_util
 import IO_user_interface_util
 
 # Esri tiles: OpenStreetMap refuses a map page opened from disk (map_tiles_util)
@@ -1158,13 +1159,12 @@ def process_sentenceID_record(
 # output is a csv file
 # TODO Samir very slow
 def add_missing_IDs(input, outputFilename):
-    import stanza
 
     # Count each document's sentences with a TOKENIZE-ONLY pipeline (built once here). The old code ran
     # the shared tokenize+lemma pipeline and lemmatized every word of every document just to count its
     # sentences -- lemmatization does not affect sentence segmentation, so this gives the SAME count while
     # dropping the per-word neural lemmatizer inference (the dominant cost that made this 'VERY SLOW').
-    sentence_counter = stanza.Pipeline(lang="en", processors="tokenize", use_gpu=False, verbose=False)
+    sentence_counter = IO_internet_util.stanza_pipeline(lang="en", processors="tokenize", use_gpu=False, verbose=False)
     # TODO temporary to measure process time
     startTime = IO_user_interface_util.timed_alert(
         GUI_util.window, 2000, "Analysis start", "Started running Excel Add missing IDs at", True, "", True, "", True

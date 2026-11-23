@@ -32,7 +32,6 @@ import warnings
 
 import pandas as pd
 import stanza
-from stanza.pipeline.multilingual import MultilingualPipeline
 
 import constants_util
 import GUI_IO_util
@@ -245,7 +244,7 @@ def Stanza_annotate(
             "Stanza_util.py", lang=short_lang, window=GUI_util.window, language_name=long_lang
         ):
             return filesToOpen
-        nlp = stanza.Pipeline(short_lang, processors="tokenize", verbose=False)
+        nlp = IO_internet_util.stanza_pipeline(short_lang, processors="tokenize", verbose=False)
 
         if "Lemma" in annotator_params:
             annotator = "Lemma"
@@ -327,13 +326,13 @@ def Stanza_annotate(
             False,
         )
 
-        nlp = stanza.Pipeline(lang=short_lang, processors=processors, verbose=False)
+        nlp = IO_internet_util.stanza_pipeline(lang=short_lang, processors=processors, verbose=False)
 
     # if only 'multilingual' is selected
     elif len(language) == 1 and language[0] == "multilingual":
         lang_list = []
         lang_list.append("multilingual")
-        nlp = MultilingualPipeline()
+        nlp = IO_internet_util.stanza_multilingual_pipeline()
 
     # if more than one language is selected (with manual selection).
     elif len(language) > 1:
@@ -342,7 +341,7 @@ def Stanza_annotate(
             if v in language:
                 lang_list.append(k)
                 # stanza.download(k) # no need to manually download language package after Stanza v1.4.0
-        nlp = MultilingualPipeline(lang_id_config={"langid_lang_subset": lang_list})
+        nlp = IO_internet_util.stanza_multilingual_pipeline(lang_id_config={"langid_lang_subset": lang_list})
 
     # different outputFilename if SVO is selected
     if "SVO" in annotator_params:
@@ -403,7 +402,9 @@ def Stanza_annotate(
         except:
             if "multilingual" in language:
                 try:
-                    nlp = MultilingualPipeline(lang_id_config={"langid_lang_subset": ["en", "multilingual"]})
+                    nlp = IO_internet_util.stanza_multilingual_pipeline(
+                        lang_id_config={"langid_lang_subset": ["en", "multilingual"]}
+                    )
                     Stanza_output = nlp(text)
                 except:
                     mb.showinfo(
@@ -1736,7 +1737,9 @@ def Stanza_coref(
 
     # Build pipeline with coref
     try:
-        nlp = stanza.Pipeline(lang="en", processors="tokenize,mwt,pos,lemma,depparse,coref", verbose=False)
+        nlp = IO_internet_util.stanza_pipeline(
+            lang="en", processors="tokenize,mwt,pos,lemma,depparse,coref", verbose=False
+        )
     except Exception as e:
         mb.showerror(
             title="Stanza coref pipeline error",
