@@ -4,7 +4,7 @@ The most recent release is at the top. Each release's bullets are shown as **"Wh
 on the corresponding GitHub Release page (the top section is added automatically by the
 release workflow). Keep the newest version's section at the very top and update it before tagging.
 
-## Unreleased
+## v1.6.47
 - **Security: the NLP Suite now runs on Python 3.11, with Pillow 13 and transformers 5.** These fix every open security advisory in the packages the download installs (Pillow's image decoders, transformers' model loading). The update replaces the whole bundled Python, so it is a larger download than usual. Results should not change; if a tool behaves differently after updating, please report it.
 - **Removed the 2021 Anaconda setup scripts** (`setup_Windows/`, `setup_Mac/`: STEP1–3, the run and shortcut scripts, the beta readmes) and the files only they used (`src/NLP_setup_shortcut_add.py`, `src/NLP_setup_shortcut_remove.py`, `src/requirements.txt`, `src/requirements_mac.txt`). They installed Python 3.8 with Anaconda 2021.05 and were replaced by the downloadable zip; nothing a tool does changes. The Windows app icon moved to `lib/images/`.
 - **Removed the unused BERT document summary** (`BERT_util.doc_summary_BERT`) and the `bert-extractive-summarizer` package it needed. No GUI offered it. The package held transformers below 4.52, so removing it lets transformers move to a version without known security problems.
