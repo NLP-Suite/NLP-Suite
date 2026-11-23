@@ -603,14 +603,14 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
             help_button_x_coordinate,
             y_multiplier_integer,
             "NLP Suite Help",
-            inputFileMsg + GUI_IO_util.msg_openFile,
+            GUI_IO_util.msg_txtFile,
         )
         y_multiplier_integer = GUI_IO_util.place_help_button(
             window,
             help_button_x_coordinate,
             y_multiplier_integer,
             "NLP Suite Help",
-            inputDirTXTCSVMsg + GUI_IO_util.msg_openExplorer,
+            GUI_IO_util.msg_corpusData,
         )
         y_multiplier_integer = GUI_IO_util.place_help_button(
             window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help", GUI_IO_util.msg_outputDirectory

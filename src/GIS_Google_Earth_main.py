@@ -69,8 +69,8 @@ def run():
     color_var_list = globals()["color_var_list"]
     color_style_var_list = globals()["color_style_var_list"]
     description_csv_field_var = globals()["description_csv_field_var"].get()
-    bold_var_list = italic_var_list
-    italic_var_list = bold_var_list
+    bold_var_list = globals()["bold_var_list"]
+    italic_var_list = globals()["italic_var_list"]
     description_var_list = globals()["description_var_list"]
     description_csv_field_var_list = globals()["description_csv_field_var_list"]
     heat_map_var = globals()["heat_map_var"].get()

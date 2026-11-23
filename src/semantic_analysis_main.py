@@ -972,7 +972,7 @@ WSIdictionary_file_var = tk.StringVar()  # dictionary file used to annotate
 
 def get_dictionary_file(window, title, fileType):
     # WSIdictionary_var.set('')
-    filePath = tk.filedialog.askopenfilename(title=title, initialdir=outputDir, filetypes=fileType)
+    filePath = tk.filedialog.askopenfilename(title=title, initialdir=GUI_util.output_dir_path.get(), filetypes=fileType)
     if len(filePath) > 0:
         # WSIdictionary_file.config(state='normal')
         WSI_keywords_var.set(filePath)
