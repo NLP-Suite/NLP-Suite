@@ -44,7 +44,7 @@ Once the Windows pass is done: delete `spike/1.6.43-bundle-size-rc` (origin), `s
 - PR #1682 (spaCy CoNLL IDs, a shared structure) and PR #1683, which needs changes (§9). Close the four stale 2024 PRs with a thank-you comment.
 - Smaller copy left from #1705 (§5.2); the repeated config warning on a first run from source (§5.3).
 - Roberto's decisions on outdated flows: SRL in the zip, Java row, coreference default, N-grams VIEWER, MALLET coherence, reminders (§5.1).
-- Retest and close recent issues that releases may have fixed; fix the open recent bugs (§10), including BERTopic on a small corpus of whole documents. Triage the 2021–2024 backlog (§11).
+- Retest and close recent issues that releases may have fixed; fix the open recent bugs (§10). Triage the 2021–2024 backlog (§11).
 - The updater's known limits: long paths, no checksum or resume, the GitHub API rate limit, the silent `git stash` (§15).
 - UI overhaul (§7), as its own releases.
 - Tech debt in §12's order, and the missing chart regression tests (§12.6).
