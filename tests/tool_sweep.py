@@ -86,8 +86,7 @@ def ordered(recipes):
     while pending:
         progressed = False
         for r in list(pending):
-            dep = r.input.split(":")[1] if r.input.startswith("from:") else None
-            if dep is None or dep in done or dep not in names:
+            if all(dep in done or dep not in names for dep in r.deps()):
                 result.append(r)
                 done.add(r.name)
                 pending.remove(r)
@@ -108,9 +107,12 @@ def prepare_inputs(bundle, sweep, corpus=None):
     inputs = os.path.join(sweep, "_inputs")
     articles = os.path.join(inputs, "articles")
     stories = os.path.join(inputs, "stories")
-    for d in (articles, stories):
+    for d in (articles, stories, os.path.join(inputs, "_own")):
         shutil.rmtree(d, ignore_errors=True)
         os.makedirs(d)
+    docs = os.path.join(inputs, "docs")
+    shutil.rmtree(docs, ignore_errors=True)
+    shutil.copytree(os.path.join(HERE, "fixtures", "sweep_docs"), docs)
     if corpus:
         for name in sorted(os.listdir(corpus)):
             if name.endswith(".txt"):
@@ -347,30 +349,65 @@ def run_one(name, bundle, sweep, external_config=None):
     GUI_util.charts_type_options_widget.set("Bar chart")
     capture(record, r)
 
-    input_dir, input_file = resolve_input(r, sweep, bundle)
+    input_dir, input_file = resolve_input(r.input, sweep, bundle)
+    csv_file = resolve_input(r.csv, sweep, bundle)[1] if r.csv else ""
+    # a recipe that reads another's output is SKIPPED with it (no CoreNLP, no internet), not FAILED
+    report = tool_sweep_compare.read_report(sweep)
+    for spec, found in ((r.input, input_file), (r.csv, csv_file)):
+        dep = spec.split(":")[1] if spec.startswith("from:") else ""
+        if dep and not found and report.get(dep, {}).get("status") == "SKIPPED":
+            record.update(status="SKIPPED", error=f"{dep} was skipped: {report[dep].get('error', '')}")
+            emit()
+            return
+    before = set()
+    if r.own_input and input_dir:
+        own = os.path.join(sweep, "_inputs", "_own", name, os.path.basename(input_dir))
+        shutil.rmtree(os.path.dirname(own), ignore_errors=True)
+        shutil.copytree(input_dir, own)
+        input_dir = own
+        before = {os.path.join(root, n) for root, _, names in os.walk(own) for n in names}
+    fill = {"{csv}": csv_file, "{input}": input_file, "{articles}": input_dir, "{lib}": os.path.join(bundle, "lib")}
     import importlib
 
     start = time.time()
     with warnings.catch_warnings(record=True) as caught:
         warnings.simplefilter("always")
         try:
-            if r.input.startswith("from:") and not input_file:
-                raise FileNotFoundError(
-                    "no {} in {}'s output (run it first)".format(*tuple(r.input.split(":")[2:0:-1]))
-                )
+            for spec, found in ((r.input, input_file), (r.csv, csv_file)):
+                if spec.startswith("from:") and not found:
+                    raise FileNotFoundError(
+                        "no {} in {}'s output (run it first)".format(*tuple(spec.split(":")[2:0:-1]))
+                    )
             gui = importlib.import_module(r.module)
             set_io(GUI_util, rec_out, input_dir, input_file)
             for var, value in r.set.items():
-                widget = getattr(gui, var, None)
-                if widget is None or not hasattr(widget, "set"):
+                if isinstance(value, str):
+                    for key, path in fill.items():
+                        value = value.replace(key, path)
+                if not hasattr(gui, var):
                     raise AttributeError(f"recipe sets {r.module}.{var}, which the GUI no longer has")
-                widget.set(value)
-            gui.run(*r.args)
+                widget = getattr(gui, var)
+                if hasattr(widget, "set") and not isinstance(widget, (list, dict, set)):
+                    widget.set(value)
+                else:  # a plain module-level list or string the GUI's run() reads
+                    setattr(gui, var, value)
+            if r.tab >= 0:
+                gui.notebook.select(r.tab)
+            getattr(gui, r.call)(*r.args)
         except SystemExit as e:  # the Suite calls sys.exit() on missing packages
             record.update(status="FAILED", error=f"SystemExit({e.code!r})", traceback=traceback.format_exc())
         except BaseException as e:  # noqa: BLE001 (the point is to record it)
             record.update(status="FAILED", error=f"{type(e).__name__}: {e}", traceback=traceback.format_exc())
     record["secs"] = round(time.time() - start, 1)
+    if r.own_input and input_dir:
+        moved = os.path.join(rec_out, "_written_in_input")
+        for root, _, names in os.walk(input_dir):
+            for n in names:
+                p = os.path.join(root, n)
+                if p not in before:
+                    dest = os.path.join(moved, os.path.relpath(p, input_dir))
+                    os.makedirs(os.path.dirname(dest), exist_ok=True)
+                    shutil.move(p, dest)
     files, empty = written(rec_out)
     record["files"] = len(files)
     record["empty"] = [os.path.relpath(p, rec_out) for p in empty][:20]
@@ -403,20 +440,23 @@ def set_package(config_dir, package):
         csv.writer(f).writerows(rows)
 
 
-def resolve_input(r, sweep, bundle):
+def resolve_input(spec, sweep, bundle):
+    """(input folder, input file) for a recipe's input or csv spec."""
     inputs = os.path.join(sweep, "_inputs")
-    if r.input in ("articles", "stories"):
-        return os.path.join(inputs, r.input), ""
-    if r.input.startswith("file:"):
-        return "", os.path.join(bundle, "lib", r.input[5:])
-    if r.input.startswith("from:"):
-        _, recipe, pattern = r.input.split(":", 2)
+    if spec in ("articles", "stories", "docs"):
+        return os.path.join(inputs, spec), ""
+    if spec.startswith("docs:"):  # one fixture file, e.g. docs:article.pdf
+        return "", os.path.join(inputs, "docs", spec[5:])
+    if spec.startswith("file:"):
+        return "", os.path.join(bundle, "lib", spec[5:])
+    if spec.startswith("from:"):
+        _, recipe, pattern = spec.split(":", 2)
         for root, _, names in os.walk(os.path.join(sweep, recipe)):
             for n in sorted(names):
                 if fnmatch.fnmatch(n, pattern):
                     return "", os.path.join(root, n)
         return "", ""
-    raise ValueError(f"unknown input {r.input!r}")
+    raise ValueError(f"unknown input {spec!r}")
 
 
 def set_io(GUI_util, out_dir, input_dir, input_file):

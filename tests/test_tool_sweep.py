@@ -22,11 +22,26 @@ def test_every_main_has_a_recipe_or_a_reason():
 def test_recipe_names_are_unique_and_inputs_known():
     names = [r.name for r in tr.RECIPES]
     assert len(names) == len(set(names))
+    fixtures = os.listdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), "fixtures", "sweep_docs"))
     for r in tr.RECIPES:
-        assert r.input in ("articles", "stories") or r.input.startswith(("file:", "from:")), r.name
-        if r.input.startswith("from:"):
-            assert r.input.split(":")[1] in names, r.name
+        assert r.input in ("articles", "stories", "docs") or r.input.startswith(("file:", "from:", "docs:")), r.name
+        assert r.csv == "" or r.csv.startswith("from:"), r.name
+        if r.input.startswith("docs:"):
+            assert r.input[5:] in fixtures, r.name
+        for dep in r.deps():
+            assert dep in names, r.name
         assert set(r.needs) <= {"corenlp", "mallet", "gephi", "internet"}, r.name
+        assert r.call.isidentifier(), r.name
+
+
+def test_dependent_recipes_run_after_the_ones_they_read():
+    import tool_sweep
+
+    a = tr.Recipe("a", "m")
+    b = tr.Recipe("b", "m", input="from:a:*.csv")
+    c = tr.Recipe("c", "m", csv="from:b:*.csv")
+    assert [r.name for r in tool_sweep.ordered([c, b, a])] == ["a", "b", "c"]
+    assert [r.name for r in tool_sweep.ordered([c])] == ["c"]  # its dependency was not selected
 
 
 ROOTS_A = [("/a/sweep", "<OUT>")]
@@ -129,3 +144,30 @@ def test_files_named_after_unstable_names_are_compared_by_count(tmp_path):
 def test_random_tools_are_compared_by_files_only():
     assert tc.rule_for("topics_BERTopic_split", "TM-BERTopic_articles/topic_info.csv")[0] == "skip"
     assert tc.rule_for("topics_Gensim", "x/topics.csv")[0] is None
+
+
+def test_a_recipe_the_baseline_never_ran_is_listed_for_review_not_as_a_regression(tmp_path):
+    base = _sweep(tmp_path, "base", [{"recipe": "a", "status": "ok"}], {"a/out.csv": "k\n1\n"})
+    cand = _sweep(
+        tmp_path,
+        "cand",
+        [{"recipe": "a", "status": "ok"}, {"recipe": "new_tool", "status": "EMPTY"}],
+        {"a/out.csv": "k\n1\n"},
+    )
+    results = {name: (problems, files) for name, problems, files in tc.compare_sweeps(base, cand)}
+    assert results["new_tool"][0] == []
+    assert ("(recipe)", "new", "not in the baseline; EMPTY in the candidate") in results["new_tool"][1]
+    text, regressions = tc.format_comparison(tc.compare_sweeps(base, cand))
+    assert regressions == 0 and "REVIEW      new_tool" in text
+    # the other way round, a recipe the candidate did not run, is still a regression
+    assert tc.format_comparison(tc.compare_sweeps(cand, base))[1] == 1
+
+
+def test_files_named_after_the_time_they_were_written_are_compared_by_count(tmp_path):
+    rec = [{"recipe": "knowledge_graph_Wikipedia", "status": "ok"}]
+    name = (
+        "knowledge_graph_Wikipedia/Wikipedia_articles/NLP_byDoc_freq_Wikipedia_output_Nov_23_2026_{}_no_hyperlinks.csv"
+    )
+    base = _sweep(tmp_path, "base", rec, {name.format("03_25_46"): "k\n1\n"})
+    later = _sweep(tmp_path, "later", rec, {name.format("04_40_30"): "k\n1\n"})
+    assert tc.compare_sweeps(base, later)[0][1] == []
