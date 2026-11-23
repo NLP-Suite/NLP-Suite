@@ -23,6 +23,7 @@ import tkinter as tk
 import tkinter.messagebox as mb
 
 import config_util
+import file_checker_util
 import GUI_IO_util
 import IO_files_util
 import reminders_util
@@ -82,32 +83,22 @@ def run():
             return
         outputFile = []
 
-        # different functions take a different number of arguments; check above in pydict and
-        #   go to the function to see which arguments it takes or...
-        #   standardize the number of arguments in all functions even if not used
-
-        # predict_encoding uses default first 20 lines
-        if (
-            "predict_encoding" in function_to_run
-            or "check_utf8" in function_to_run
-            or "convert_2_ASCII" in function_to_run
-            or "empty_file" in function_to_run
-            or "find_replace" in function_to_run
-        ):
-            func(GUI_util.window, inputFilename, inputDir, outputDir, config_filename)
-        elif "sentence_length" in function_to_run:
-            outputFile = func(inputFilename, inputDir, outputDir, config_filename, chartPackage, dataTransformation)
-        else:
-            func(
-                GUI_util.window,
-                inputFilename,
-                inputDir,
-                outputDir,
-                config_filename,
-                openOutputFiles,
-                chartPackage,
-                dataTransformation,
-            )
+        # different functions take different arguments; file_checker_util.dispatcher_arguments has the list
+        #   (tests/test_file_checker_dispatch.py checks it against every function in pydict)
+        args = file_checker_util.dispatcher_arguments(
+            function_to_run,
+            GUI_util.window,
+            inputFilename,
+            inputDir,
+            outputDir,
+            config_filename,
+            openOutputFiles,
+            chartPackage,
+            dataTransformation,
+        )
+        result = func(*args)
+        if "sentence_length" in function_to_run and result:
+            outputFile = result
 
         if len(outputFile) > 0:
             filesToOpen.append(outputFile)
