@@ -6,6 +6,7 @@ release workflow). Keep the newest version's section at the very top and update 
 
 ## Unreleased
 - **MALLET topic modeling works in the downloaded NLP Suite.** On the Mac zip it stopped with "Failed to import tkagg backend" at the first chart. Its charts are now drawn the way every other tool's are.
+- **Coreference with Stanza works in the downloaded NLP Suite.** In the zip it stopped with "No module named 'peft'", a package Stanza's coreference model needs that was not installed. It is now included.
 
 ## v1.6.45
 - **Sentiment analysis with ANEW, hedonometer, SentiWordNet or VADER is much faster.** Each tool ran Stanza on every word of every document to find its dictionary form; it now does that once for each different word. The scores are the same.
