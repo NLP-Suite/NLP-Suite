@@ -28,6 +28,7 @@ import run_script_util
 import Stanza_util
 import statistics_txt_util
 import style_analysis_abstract_concreteness_analysis_util
+import syntactic_analysis_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -42,9 +43,6 @@ def run():
     dataTransformation = GUI_util.data_transformation_options_widget.get()
     extra_GUIs_var = globals()["extra_GUIs_var"].get()
     extra_GUIs_menu_var = globals()["extra_GUIs_menu_var"].get()
-    WSI_var = globals()["WSI_var"].get()
-    WSI_keywords_var = globals()["WSI_keywords_var"].get()
-    WSIdictionary_file_var = globals()["WSIdictionary_file_var"].get()
     WSD_var = globals()["WSD_var"].get()
     SRL_var = globals()["SRL_var"].get()
     SSC_var = globals()["SSC_var"].get()
@@ -89,43 +87,28 @@ def run():
 
     if (
         extra_GUIs_var == False
-        and WSI_var == False
         and WSD_var == False
         and SRL_var == False
         and SSC_var == False
         and vocabulary_analysis_var == False
     ):
-        mb.showwarning("Warning", "No options have been selected.\n\nPlease, select an option and try again.")
+        mb.showwarning(
+            "Warning",
+            "No options have been selected.\n\nPlease, tick 'GUIs available for more analyses' and select a GUI, "
+            "or click one of the (Open GUI) buttons, and try again.",
+        )
         return
 
-    if WSI_var == 1:
-        if WSI_keywords_var == "":
+    if extra_GUIs_var:
+        script = syntactic_analysis_util.extra_GUI_script(extra_GUIs_menu_var)
+        if script == "":
             mb.showwarning(
-                title="Missing keywords",
-                message='The "Word Sense Induction" algorithm requires a comma-separated list of case-sensitive keywords taken from the corpus in order to run.\n\nPlease, enter the keywords and try again.',
+                "Warning",
+                "You have ticked 'GUIs available for more analyses' but selected no GUI.\n\n"
+                "Please, select a GUI in the dropdown menu and try again.",
             )
             return
-
-        import WSI_keyterms
-        import WSI_util
-        import WSI_viz
-
-        all_sent, all_vocab, Word2Vec_Dir, docs, paths = WSI_util.get_data(
-            inputFilename,
-            inputDir,
-            Word2Vec_Dir,
-            u_vocab=WSI_keywords_var.get(),
-            fileType=".txt",
-            configFileName=config_filename,
-        )
-        k_range = (k_means_min_var.get(), k_means_max_var.get())
-        WSI_util.get_centroids(all_sent, all_vocab, Word2Vec_Dir, k_range)
-        WSI_util.match_embeddings(all_sent, all_vocab, Word2Vec_Dir)
-        s_paths = WSI_util.get_cluster_sentences(Word2Vec_Dir)
-        v_paths = WSI_viz.sense_bar_chart(Word2Vec_Dir)
-        n = int(ngrams_menu_var.get().split("-")[0])
-        k_paths = WSI_keyterms.get_keyterms(Word2Vec_Dir, topn=top_keywords_var.get(), ngram_range=(1, n))
-        filesToOpen = s_paths + v_paths + k_paths
+        run_script_util.run_script(script)
 
     if WSD_var:
         if "CoNLL" not in inputFilename and "CoNLL" not in csv_file.get():
@@ -135,7 +118,7 @@ def run():
                 "Please, select a csv CoNLL file in I/O comfiguration or select a CoNLL file using the 'Select INPUT CSV file' button and try again.",
             )
             return
-        import SVO_util
+        import semantic_aggregation_util
 
         # WSD writes into a dedicated subdirectory (keeps the outputs out of the cluttered main output dir)
         wsd_outputDir = (
@@ -144,7 +127,7 @@ def run():
         )
         noun_verb_list = ["NOUN", "VERB"]
         for noun_verb in noun_verb_list:
-            outFiles = SVO_util.wsd_aggregate_WordNet(
+            outFiles = semantic_aggregation_util.wsd_aggregate_WordNet(
                 inputFilename, wsd_outputDir, noun_verb, chartPackage, dataTransformation
             )
             if outFiles:
@@ -687,7 +670,6 @@ GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_
 
 csv_file_var = tk.StringVar()
 extra_GUIs_var = tk.IntVar()
-WSI_var = tk.IntVar()
 WSD_var = tk.IntVar()
 SRL_var = tk.IntVar()
 SSC_var = tk.IntVar()  # semantic similarity & clustering
@@ -701,7 +683,6 @@ def clear(e):
     extra_GUIs_var.set(0)
     extra_GUIs_menu_var.set("")
 
-    WSI_var.set(0)
     WSD_var.set(0)
     SRL_var.set(0)
     SSC_var.set(0)
@@ -710,7 +691,6 @@ def clear(e):
 
     vocabulary_analysis_menu_var.set("*")
 
-    activate_all_options()
     GUI_util.clear("Escape")
 
 
@@ -809,13 +789,9 @@ y_multiplier_integer = GUI_IO_util.placeWidget(
 def open_GUI(*args):
     if extra_GUIs_var.get():
         extra_GUIs_menu.configure(state="normal")
-    if extra_GUIs_menu_var.get():
-        if "Ngrams" in extra_GUIs_menu_var.get():
-            run_script_util.run_script("NGrams_CoOccurrences_main.py")
-        if "Profile" in extra_GUIs_menu_var.get():
-            run_script_util.run_script("corpus_profiler_main.py")
-        if "Corpus" in extra_GUIs_menu_var.get():
-            run_script_util.run_script("statistics_txt_main.py")
+    script = syntactic_analysis_util.extra_GUI_script(extra_GUIs_menu_var.get())
+    if script:
+        run_script_util.run_script(script)
 
 
 extra_GUIs_menu_var.trace("w", open_GUI)

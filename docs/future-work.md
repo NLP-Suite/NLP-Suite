@@ -354,12 +354,9 @@ All 2026 PRs are by coralynnkc and target `roberto`.
 
 | # | Title | Kind | Note |
 |---|---|---|---|
-| — | Stanza coreference does not run in the zip: "No module named 'peft'" (found 22 Nov by `tool_sweep.py`, no issue yet) | Bug | On the 1.6.45 Mac zip, Coreference with Stanza stops with "Failed to create the Stanza coreference pipeline. No module named 'peft'": Stanza's coreference model needs `peft`, which `requirements.txt` does not list. Add `peft` to `requirements.txt` (check that it resolves with the transformers pin, and in 1.6.46 with transformers 5), and run `coreference_Stanza` in the sweep on both zips. Since when: check 1.6.43's zip |
 | — | MALLET topic modeling crashes in the Mac zip: "Failed to import tkagg backend" (found 22 Nov by `tool_sweep.py`, no issue yet) | Bug | `topic_modeling_gensim_util.py:45` calls `matplotlib.use("TkAgg")` inside a try that falls back to Agg, but `use()` does not load the backend, so it never fails there; the bundled Python's Tk backend then fails at the first figure (`plt.gca()` in the MALLET path). The Suite only saves charts to files: use `Agg` outright, as `charts_util`, `statistics_csv_util` and `GIS_symbolic_util` already do. Gensim's own run passed |
 | — | Topic models and WSI give different results on every run (found 22 Nov by running `tool_sweep.py` twice) | Design | BERTopic (UMAP), MALLET and WSI (k-means) set no random seed, so the same corpus gives different topics, keywords and sense clusters each time a student clicks RUN, which makes a homework answer impossible to reproduce. Gensim already gives the same result. Fix a seed (UMAP `random_state`, MALLET `--random-seed`, `KMeans(random_state=...)`), then drop their skip rules from `tool_sweep_compare.NOISE` |
 | — | Character Emotion Arcs names a character differently from run to run (found 22 Nov) | Bug | A sentence's characters come from a set, so which name variant labels a character ("Robin" or "Robin Ellacott", "Elliot" or "Lady Elliot") and the order of rows change between runs, and with them the names of the per-character charts. Pick the variant deterministically (e.g. the longest, then alphabetical), then drop the Character Emotion Arcs rules from `tool_sweep_compare.NOISE` |
-| — | Parsers & annotators: a parser choice the package does not offer runs nothing, silently (found 22 Nov by `tool_sweep.py`, no issue yet) | Bug | With Stanford CoreNLP as the package, `parsers_annotators_main.run` maps only "PCFG" and "Neural Network" to an annotator; any other `parser_menu_var` (e.g. "Dependency parser", left from another package) leaves `annotator = []`, so `if len(annotator) > 0` skips the run with no message. The GUI sets the right default when it opens, so a student hits this only if the menu holds a stale value. Warn and return when no annotator matches |
-| — | BERTopic crashes on a small corpus of whole documents (found 21 Nov, no issue yet) | Bug | On the 60-document HW 5 sample with "split documents" off, BERTopic finds no topic (every document is an outlier) and `hierarchical_topics` stops with "Found array with 0 sample(s)". The same on 1.6.43 and 1.6.44; with split on it runs. `topic_modeling_bert_util.run_BERTopic` should skip the hierarchy and say why when there are no topics. Open an issue |
 | 1671 | BERT word embeddings are context-free | Design | Each word is encoded alone, so vectors don't depend on the corpus. Affects a homework question. Decide: keep, document, or encode in context |
 | 1653 | Windows zip: JavaScript paths too long under `AppData\Local\Programs` | Bug | MAX_PATH in bundled node_modules. Shorten in the build or document the install location. Also matters for the self-updater's `_update` folder |
 | 1623 | Boxplot: asks for an option but none appear | Bug | |
@@ -413,14 +410,10 @@ To do this with `gh` (needs a login): `gh issue close N -c "<comment>"`. Without
 
 Re-measured 18 Nov 2026 over `src/` (223 files). The 16 Jul figures are in brackets.
 
-### 12.1 Latent crashes: undefined names (F821)
 
-Fixed on `fix/undefined-names` (23 Nov): 34 of the 44 that `ruff check src --select F821,F823` found, either fixed or removed with the dead code around them (among it `GIS_KML_util.py`, which nothing called, and the three pin helpers in `GIS_Google_pin_util` only it used), and `tests/test_undefined_names.py` now lints all of `src/` in CI (ruff is installed there for it), so a new one fails the build. The 11 left are in its `KNOWN` list:
 
 | File | Why it is left |
 |---|---|
-| `syntactic_analysis_ALL_main.py` (6) | Fixed on `fix/syntactic-analysis-run`; drop it from `KNOWN` once both have merged |
-| `html_annotator_extractor_util_NEW.py` (2), `nyt_api_call.py` (2) | Dead files that PR #1706 deletes |
 
 Found while fixing, not fixed (no recipe reaches them, so the change could not be checked): `charts_Excel_main.run` and `sentence_analysis_util.dictionary_items_bySentenceID` passed their arguments to `charts_Excel_util.create_excel_chart` in the wrong order (the output folder got the chart title). The second is fixed on the same branch; the first is not, pending `charts_Excel_line` in the tool sweep.
 

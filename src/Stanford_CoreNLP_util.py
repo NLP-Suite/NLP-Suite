@@ -293,6 +293,17 @@ def check_CoreNLP_annotator_availability(config_filename, annotator, language):
 # ner GIS, date
 
 
+# The CoreNLP annotator that runs a parser choice of the Parsers & annotators GUI: "parser (pcfg)" or "parser (nn)".
+# '' for a choice CoreNLP does not offer (e.g. "Dependency parser", left in the menu from Stanza or spaCy):
+#   the caller must warn, or RUN does nothing.
+def CoreNLP_parser_annotator(parser_menu_var):
+    if "PCFG" in parser_menu_var:
+        return "parser (pcfg)"
+    if parser_menu_var == "Neural Network":
+        return "parser (nn)"
+    return ""
+
+
 def CoreNLP_annotate(
     config_filename,
     inputFilename,
