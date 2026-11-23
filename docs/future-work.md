@@ -410,13 +410,12 @@ To do this with `gh` (needs a login): `gh issue close N -c "<comment>"`. Without
 
 Re-measured 18 Nov 2026 over `src/` (223 files). The 16 Jul figures are in brackets.
 
-### 12.1 Latent crashes: undefined names (F821): 43 [68]
+### 12.1 Latent crashes: undefined names (F821): 37 [68]
 
-Most of the remaining 43 are in rarely used tools:
+Most of the remaining 37 are in rarely used tools:
 
 | File | Count |
 |---|---|
-| `syntactic_analysis_ALL_main.py` | 6 |
 | `GIS_file_check_util.py` | 5 (`np`, `numColumns`, `msgTooFewColumnsForGeocoded`) |
 | `Gephi_util.py` | 5 (`attvalue_xml`, `type_choices`) |
 | `CoNLL_function_words_analysis_util.py` | 5 (`stats_pronouns` …) |
