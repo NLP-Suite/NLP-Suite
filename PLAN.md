@@ -8,14 +8,14 @@ What to do before tagging the next release, and what comes after it. The finding
 
 Python 3.11 with Pillow 13 and transformers 5 should close the open Dependabot alerts. The release carries the bump and nothing else, so a regression points to it (§3.3). It was planned as 1.6.46; that number went to the sweep's bug fixes. In order:
 
-1. **Dead files, PR #1706** (§1.1): rebase onto `roberto`, apply the file list (it also moves the Windows icon to `lib/images/` and updates the spec), merge. Roberto agrees to the deletions first. It removes `src/requirements*.txt` (108 alerts) and the STEP1–3 scripts, which #1688 depends on.
+1. **Legacy setup only, `chore/remove-legacy-setup`** (§1.1): `setup_Windows/`, `setup_Mac/`, the two shortcut scripts and `src/requirements*.txt` (108 alerts, closed once on `current-stable`), plus the icon move to `lib/images/`. #1688 depends on it. The rest of #1706 (one-off scripts, unused modules, `build-family-viewer.yml`) waits until it is checked against the family viewer; rebase #1706 after this merges.
 2. **The summarizer** (§3.2), its own PR: `bert-extractive-summarizer` blocks transformers ≥ 4.52. Nothing calls `doc_summary_BERT` (no GUI offers it), so ask Roberto whether to delete it with its requirement, which is simpler than the rewrite §3.2 proposes.
 3. **Rebase #1688** (`spike/python-3.11-pillow-13`) onto `roberto` and add what §3.3's table lists: transformers ≥ 5.10, `stanza>=1.12.2`, the `peft` decision, py311 in `pyproject.toml` and `pyrightconfig.json`, §14's bullets, the CHANGELOG security line.
 4. **Re-sync the dev env** on the new Python before testing (a new NLP311 env from `requirements.txt` + `requirements-mac.txt`).
 5. **Checks before the tag** (§3.3's list plus §14). The whole `python-env` is rebuilt, so this one needs the **full** tool sweep of 1.6.47 against **1.6.46** (`~/Documents/NLP_output/tool_sweep/1.6.46`, the published zip), not only the changed tools; then `bundle_gate.py` against a 1.6.46 snapshot. Also BERT NER, embeddings, WSI, fastcoref and Stanza coreference, and BERTopic on a clean Hugging Face cache, and the self-updater 1.6.46 → 1.6.47 (the first update that replaces the bundled Python).
 6. After promotion: re-read the Dependabot list (expect 0 open). Merge the release branch back into `roberto` with a merge commit, not a squash, as for 1.6.45 (#1743) and 1.6.46 (#1797), so the next release can fast-forward `current-stable`.
 
-Open question: does #1706 ship as its own release first (then the Python bump becomes 1.6.48), or ride in 1.6.47? §3.3 assumed its own.
+Settled 23 Nov: the legacy-setup deletion rides in 1.6.47; the rest of #1706 waits.
 
 **The tool sweep** (`tests/tool_sweep.py`, 129 recipes, every GUI has one or a `NOT_COVERED` reason) found the bugs 1.6.46 fixed (#1769–#1796). The second batch and the compare fixes (a recipe the baseline never ran is listed for review, not as a regression) are PR #1799. 1.6.46 checked clean on the published Mac zip: 0 regressions against 1.6.45, and the bundle gate passes. Baselines in `~/Documents/NLP_output/tool_sweep/`: 1.6.45, 1.6.46-rc1 and 1.6.46.
 
