@@ -780,6 +780,8 @@ def rtf_converter(
         tk.messagebox.showinfo("Warning", "There are no rtf files in the input directory. The program will exit.")
         return
     numberOfDocs = len(inputRTFs)
+    converted = 0
+    problems = []  # (file, reason) for each rtf that gave no txt
 
     for docNum, doc in enumerate(inputRTFs):
         head, tail = os.path.split(doc)
@@ -787,18 +789,25 @@ def rtf_converter(
         fileExtension = doc.split(".")[-1]
         # fileExtension = os.path.splitext(doc)[1]
         if fileExtension == "rtf":
-            lines = []  # list of each line in the txt files
             with open(doc, encoding="utf-8", errors="ignore") as rtf_fh:
                 fullText = rtf_fh.read()
-            # https://stackoverflow.com/questions/60897366/how-to-read-rtf-file-and-convert-into-python3-strings-and-can-be-stored-in-pyth
             # https://stackoverflow.com/questions/44580580/how-to-convert-rtf-string-to-plain-text-in-python-using-any-library
-            # https://stackoverflow.com/questions/188545/regular-expression-for-extracting-text-from-an-rtf-string/188877#188877
-            text = rtf_to_text(fullText)
-            # text=fullText
-            common = os.path.commonprefix([doc, inputDir])
-            relativePath = os.path.relpath(doc, common)
+            try:
+                text = rtf_to_text(fullText)
+            except Exception as e:
+                problems.append((tail, "it could not be read as rtf (" + str(e) + ")"))
+                continue
+            if text.strip() == "":
+                problems.append((tail, "it contains no text"))
+                continue
+            # a file from the input folder keeps its sub-folder under the output folder; a single input file
+            #   goes straight into the output folder (relpath against "" was relative to the current folder,
+            #   which put the txt outside the output folder)
+            if len(inputDir) > 0:
+                relativePath = os.path.relpath(doc, inputDir)
+            else:
+                relativePath = tail
             textFilename = os.path.join(outputDir, os.path.splitext(relativePath)[0] + ".txt")
-            # TODO: if the subdirectory doesn't exist in output directory, create it
             if not os.path.exists(os.path.dirname(textFilename)):
                 try:
                     os.makedirs(os.path.dirname(textFilename))
@@ -807,7 +816,29 @@ def rtf_converter(
                         raise
             with open(textFilename, "w", encoding="utf-8", errors="ignore") as textFile:
                 textFile.write(text)
-    if openOutputFiles and len(inputFilename) > 0:
+            converted += 1
+
+    if problems:
+        mb.showwarning(
+            title="rtf converter",
+            message=str(len(problems))
+            + " of "
+            + str(numberOfDocs)
+            + " rtf file(s) could not be converted to txt:\n\n"
+            + "\n".join("  " + name + ": " + reason for name, reason in problems),
+        )
+    IO_user_interface_util.timed_alert(
+        GUI_util.window,
+        2000,
+        "rtf converter",
+        "Finished running rtf to txt converter",
+        True,
+        str(converted) + " txt file(s) exported to the output directory " + outputDir,
+        True,
+        "",
+        False,
+    )
+    if openOutputFiles and len(inputFilename) > 0 and textFilename != "":
         IO_files_util.openFile(window, textFilename)
 
 

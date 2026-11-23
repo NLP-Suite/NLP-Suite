@@ -127,6 +127,10 @@ def _parse_feats(feats):
     return parsed
 
 
+# English modal auxiliaries (lemmas), tagged MD by CoreNLP but AUX by Stanza and spaCy, whose tables keep no Penn tag
+_MODAL_LEMMAS = {"can", "could", "may", "might", "must", "shall", "should", "will", "would", "ought"}
+
+
 def universal_to_penn(pos, feats=""):
     """Map one Universal POS tag (+ optional feats string) to the closest Penn Treebank tag.
     Tags that are not Universal (i.e. already Penn, or unknown) are returned unchanged."""
@@ -204,12 +208,17 @@ def normalize_to_canonical(headers, data):
     # stack works unchanged. No-op for CoreNLP tables (POS already Penn).
     pos_idx = source_positions.get("POS")
     feats_idx = source_positions.get("feats")
+    lemma_idx = source_positions.get("Lemma")
     if pos_idx is not None:
         remapped = []
         for row in data:
             if pos_idx < len(row):
                 feats_val = row[feats_idx] if (feats_idx is not None and feats_idx < len(row)) else ""
-                mapped = universal_to_penn(row[pos_idx], feats_val)
+                lemma_val = row[lemma_idx] if (lemma_idx is not None and lemma_idx < len(row)) else ""
+                if row[pos_idx] == "AUX" and str(lemma_val).lower() in _MODAL_LEMMAS:
+                    mapped = "MD"  # the verb modality analyses select POS MD
+                else:
+                    mapped = universal_to_penn(row[pos_idx], feats_val)
                 if mapped != row[pos_idx]:
                     row = list(row)
                     row[pos_idx] = mapped

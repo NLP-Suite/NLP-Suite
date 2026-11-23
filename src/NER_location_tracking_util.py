@@ -17,6 +17,7 @@ import tkinter.messagebox as mb
 import pandas as pd
 
 import IO_files_util
+import IO_internet_util
 import IO_user_interface_util
 
 PERSON_TAGS = {"PERSON"}
@@ -27,10 +28,10 @@ def _get_stanza_pipeline(language="en"):
     import stanza
 
     try:
-        nlp = stanza.Pipeline(lang=language, processors="tokenize,ner", use_gpu=False, verbose=False)
+        nlp = IO_internet_util.stanza_pipeline(lang=language, processors="tokenize,ner", use_gpu=False, verbose=False)
     except Exception:
         stanza.download(language, verbose=False)
-        nlp = stanza.Pipeline(lang=language, processors="tokenize,ner", use_gpu=False, verbose=False)
+        nlp = IO_internet_util.stanza_pipeline(lang=language, processors="tokenize,ner", use_gpu=False, verbose=False)
     return nlp
 
 
