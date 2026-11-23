@@ -79,66 +79,63 @@ def pronoun_stats(
     # data  = get_data(inputFilename)
     # data_divided_sents = CoNLL_util.sentence_division(data)
 
-    if 0:
-        stats_pronouns(data)
-    else:
-        if not os.path.isdir(outputDir):
-            mb.showwarning(title="output file path error", message="Please check OUTPUT DIRECTORY PATH and try again")
-            return filesToOpen
+    if not os.path.isdir(outputDir):
+        mb.showwarning(title="output file path error", message="Please check OUTPUT DIRECTORY PATH and try again")
+        return filesToOpen
 
-        pronouns_list, pronouns_stats, pronouns_data = stats_pronouns_output(data, data_divided_sents)
-        pronouns_list = pronouns_data
+    pronouns_list, pronouns_stats, pronouns_data = stats_pronouns_output(data, data_divided_sents)
+    pronouns_list = pronouns_data
 
-        # convert list to dataframe and save
-        df = pd.DataFrame(pronouns_list)
-        df, headers = CoNLL_util.process_df_headers(df, "PRONOUNS")
+    # convert list to dataframe and save
+    df = pd.DataFrame(pronouns_list)
+    df, headers = CoNLL_util.process_df_headers(df, "PRONOUNS")
 
-        IO_csv_util.df_to_csv(
-            GUI_util.window, df, pronouns_list_file_name, headers=headers, index=False, language_encoding="utf-8"
+    IO_csv_util.df_to_csv(
+        GUI_util.window, df, pronouns_list_file_name, headers=headers, index=False, language_encoding="utf-8"
+    )
+
+    if chartPackage != "No charts":
+        columns_to_be_plotted_xAxis = []
+        columns_to_be_plotted_yAxis = ["FORM"]
+        count_var = 1
+
+        outputFiles = charts_util.plot(
+            pronouns_list_file_name,
+            outputDir,
+            columns=columns_to_be_plotted_yAxis,
+            title="Frequency Distribution of Pronouns",
+            x_label="Pronoun",
+            count=count_var,
+            file_label="FW_pron",
         )
 
-        if chartPackage != "No charts":
-            columns_to_be_plotted_xAxis = []
-            columns_to_be_plotted_yAxis = ["FORM"]
-            count_var = 1
+        # run_all returns a string; must use append
+        if outputFiles != None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
 
-            outputFiles = charts_util.plot(
-                pronouns_list_file_name,
-                outputDir,
-                columns=columns_to_be_plotted_yAxis,
-                title="Frequency Distribution of Pronouns",
-                x_label="Pronoun",
-                count=count_var,
-                file_label="FW_pron",
-            )
+        columns_to_be_plotted_xAxis = []
+        columns_to_be_plotted_yAxis = ["PRONOUNS"]
+        count_var = 1
 
-            # run_all returns a string; must use append
-            if outputFiles != None:
-                if isinstance(outputFiles, str):
-                    filesToOpen.append(outputFiles)
-                else:
-                    filesToOpen.extend(outputFiles)
+        outputFiles = charts_util.plot(
+            pronouns_list_file_name,
+            outputDir,
+            columns=columns_to_be_plotted_yAxis,
+            title="Frequency Distribution of Types of Pronouns",
+            x_label="Pronoun type",
+            count=count_var,
+            file_label="FW_pron_type",
+        )
 
-            columns_to_be_plotted_xAxis = []
-            columns_to_be_plotted_yAxis = ["PRONOUNS"]
-            count_var = 1
-
-            outputFiles = charts_util.plot(
-                pronouns_list_file_name,
-                outputDir,
-                columns=columns_to_be_plotted_yAxis,
-                title="Frequency Distribution of Types of Pronouns",
-                x_label="Pronoun type",
-                count=count_var,
-                file_label="FW_pron_type",
-            )
-
-            # run_all returns a string; must use append
-            if outputFiles != None:
-                if isinstance(outputFiles, str):
-                    filesToOpen.append(outputFiles)
-                else:
-                    filesToOpen.extend(outputFiles)
+        # run_all returns a string; must use append
+        if outputFiles != None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
 
     # IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running PRONOUN Analysis at', True, '', True, startTime, True)
     return filesToOpen
@@ -168,49 +165,46 @@ def preposition_stats(
     # data  = get_data(inputFilename)
     # data_divided_sents = CoNLL_util.sentence_division(data)
 
-    if 0:
-        stats_prepositions(data)
-    else:
-        if not os.path.isdir(outputDir):
-            mb.showwarning(title="output file path error", message="Please check OUTPUT DIRECTORY PATH and try again")
-            return filesToOpen
+    if not os.path.isdir(outputDir):
+        mb.showwarning(title="output file path error", message="Please check OUTPUT DIRECTORY PATH and try again")
+        return filesToOpen
 
-        prepositions_list, prepositions_stats, prepositions_data = stats_prepositions_output(data, data_divided_sents)
-        prepositions_list = prepositions_data
+    prepositions_list, prepositions_stats, prepositions_data = stats_prepositions_output(data, data_divided_sents)
+    prepositions_list = prepositions_data
 
-        # convert list to dataframe and save
-        df = pd.DataFrame(prepositions_list)
-        df, headers = CoNLL_util.process_df_headers(df, "PREPOSITIONS")
+    # convert list to dataframe and save
+    df = pd.DataFrame(prepositions_list)
+    df, headers = CoNLL_util.process_df_headers(df, "PREPOSITIONS")
 
-        IO_csv_util.df_to_csv(
-            GUI_util.window,
-            df,
+    IO_csv_util.df_to_csv(
+        GUI_util.window,
+        df,
+        function_words_prepositions_file_name,
+        headers=headers,
+        index=False,
+        language_encoding="utf-8",
+    )
+
+    if chartPackage != "No charts":
+        columns_to_be_plotted_xAxis = []
+        columns_to_be_plotted_yAxis = ["PREPOSITIONS"]
+        count_var = 1
+
+        outputFiles = charts_util.plot(
             function_words_prepositions_file_name,
-            headers=headers,
-            index=False,
-            language_encoding="utf-8",
+            outputDir,
+            columns=columns_to_be_plotted_yAxis,
+            title="Frequency Distribution of Prepositions",
+            x_label="Preposition",
+            count=count_var,
+            file_label="FW_prep",
         )
 
-        if chartPackage != "No charts":
-            columns_to_be_plotted_xAxis = []
-            columns_to_be_plotted_yAxis = ["PREPOSITIONS"]
-            count_var = 1
-
-            outputFiles = charts_util.plot(
-                function_words_prepositions_file_name,
-                outputDir,
-                columns=columns_to_be_plotted_yAxis,
-                title="Frequency Distribution of Prepositions",
-                x_label="Preposition",
-                count=count_var,
-                file_label="FW_prep",
-            )
-
-            if outputFiles != None:
-                if isinstance(outputFiles, str):
-                    filesToOpen.append(outputFiles)
-                else:
-                    filesToOpen.extend(outputFiles)
+        if outputFiles != None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
 
     return filesToOpen
 
@@ -239,50 +233,46 @@ def article_stats(
     # data  = get_data(inputFilename)
     # data_divided_sents = CoNLL_util.sentence_division(data)
 
-    if 0:
-        stats_articles(data)
+    if not os.path.isdir(outputDir):
+        mb.showwarning(title="output file path error", message="Please check OUTPUT DIRECTORY PATH and try again")
         return filesToOpen
-    else:
-        if not os.path.isdir(outputDir):
-            mb.showwarning(title="output file path error", message="Please check OUTPUT DIRECTORY PATH and try again")
-            return filesToOpen
 
-        # output files
-        article_list, article_stats, article_data = stats_determiners_articles_output(data, data_divided_sents)
-        article_list = article_data
+    # output files
+    article_list, article_stats, article_data = stats_determiners_articles_output(data, data_divided_sents)
+    article_list = article_data
 
-        # convert list to dataframe and save
-        df = pd.DataFrame(article_list)
-        df, headers = CoNLL_util.process_df_headers(df, "ARTICLES")
+    # convert list to dataframe and save
+    df = pd.DataFrame(article_list)
+    df, headers = CoNLL_util.process_df_headers(df, "ARTICLES")
 
-        IO_csv_util.df_to_csv(
-            GUI_util.window,
-            df,
+    IO_csv_util.df_to_csv(
+        GUI_util.window,
+        df,
+        function_words_articles_file_name,
+        headers=headers,
+        index=False,
+        language_encoding="utf-8",
+    )
+
+    if chartPackage != "No charts":
+        columns_to_be_plotted_xAxis = []
+        columns_to_be_plotted_yAxis = ["ARTICLES"]
+        count_var = 1
+
+        outputFiles = charts_util.plot(
             function_words_articles_file_name,
-            headers=headers,
-            index=False,
-            language_encoding="utf-8",
+            outputDir,
+            columns=columns_to_be_plotted_yAxis,
+            title="Frequency Distribution of Articles",
+            x_label="Article",
+            count=count_var,
+            file_label="FW_art",
         )
-
-        if chartPackage != "No charts":
-            columns_to_be_plotted_xAxis = []
-            columns_to_be_plotted_yAxis = ["ARTICLES"]
-            count_var = 1
-
-            outputFiles = charts_util.plot(
-                function_words_articles_file_name,
-                outputDir,
-                columns=columns_to_be_plotted_yAxis,
-                title="Frequency Distribution of Articles",
-                x_label="Article",
-                count=count_var,
-                file_label="FW_art",
-            )
-            if outputFiles != None:
-                if isinstance(outputFiles, str):
-                    filesToOpen.append(outputFiles)
-                else:
-                    filesToOpen.extend(outputFiles)
+        if outputFiles != None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
 
     return filesToOpen
 
@@ -312,67 +302,63 @@ def conjunction_stats(
     # data  = get_data(inputFilename)
     # data_divided_sents = CoNLL_util.sentence_division(data)
 
-    if 0:
-        stats_conjunctions(data)
+    if not os.path.isdir(outputDir):
+        mb.showwarning(title="output file path error", message="Please check OUTPUT DIRECTORY PATH and try again")
         return filesToOpen
-    else:
-        if not os.path.isdir(outputDir):
-            mb.showwarning(title="output file path error", message="Please check OUTPUT DIRECTORY PATH and try again")
-            return filesToOpen
 
-        conjunction_list, conjunction_stats, conjunction_data = stats_conjunctions_output(data, data_divided_sents)
-        conjunction_list = conjunction_data
+    conjunction_list, conjunction_stats, conjunction_data = stats_conjunctions_output(data, data_divided_sents)
+    conjunction_list = conjunction_data
 
-        # convert list to dataframe and save
-        df = pd.DataFrame(conjunction_list)
-        df, headers = CoNLL_util.process_df_headers(df, "CONJUNCTIONS")
-        IO_csv_util.df_to_csv(
-            GUI_util.window,
-            df,
+    # convert list to dataframe and save
+    df = pd.DataFrame(conjunction_list)
+    df, headers = CoNLL_util.process_df_headers(df, "CONJUNCTIONS")
+    IO_csv_util.df_to_csv(
+        GUI_util.window,
+        df,
+        function_words_conjunctions_file_name,
+        headers=headers,
+        index=False,
+        language_encoding="utf-8",
+    )
+
+    if chartPackage != "No charts":
+        columns_to_be_plotted_xAxis = []
+        columns_to_be_plotted_yAxis = ["CONJUNCTIONS"]
+        count_var = 1
+
+        outputFiles = charts_util.plot(
             function_words_conjunctions_file_name,
-            headers=headers,
-            index=False,
-            language_encoding="utf-8",
+            outputDir,
+            columns=columns_to_be_plotted_yAxis,
+            title="Frequency Distribution of Conjunctions",
+            x_label="Conjunction",
+            count=count_var,
+            file_label="FW_conj",
         )
+        if outputFiles != None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
 
-        if chartPackage != "No charts":
-            columns_to_be_plotted_xAxis = []
-            columns_to_be_plotted_yAxis = ["CONJUNCTIONS"]
-            count_var = 1
+        columns_to_be_plotted_xAxis = []
+        columns_to_be_plotted_yAxis = ["Lemma"]
+        count_var = 1
 
-            outputFiles = charts_util.plot(
-                function_words_conjunctions_file_name,
-                outputDir,
-                columns=columns_to_be_plotted_yAxis,
-                title="Frequency Distribution of Conjunctions",
-                x_label="Conjunction",
-                count=count_var,
-                file_label="FW_conj",
-            )
-            if outputFiles != None:
-                if isinstance(outputFiles, str):
-                    filesToOpen.append(outputFiles)
-                else:
-                    filesToOpen.extend(outputFiles)
-
-            columns_to_be_plotted_xAxis = []
-            columns_to_be_plotted_yAxis = ["Lemma"]
-            count_var = 1
-
-            outputFiles = charts_util.plot(
-                function_words_conjunctions_file_name,
-                outputDir,
-                columns=columns_to_be_plotted_yAxis,
-                title="Frequency Distribution of Conjunction Words",
-                x_label="Conjunction word",
-                count=count_var,
-                file_label="FW_conj_words",
-            )
-            if outputFiles != None:
-                if isinstance(outputFiles, str):
-                    filesToOpen.append(outputFiles)
-                else:
-                    filesToOpen.extend(outputFiles)
+        outputFiles = charts_util.plot(
+            function_words_conjunctions_file_name,
+            outputDir,
+            columns=columns_to_be_plotted_yAxis,
+            title="Frequency Distribution of Conjunction Words",
+            x_label="Conjunction word",
+            count=count_var,
+            file_label="FW_conj_words",
+        )
+        if outputFiles != None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
 
     return filesToOpen
 
@@ -400,51 +386,47 @@ def auxiliary_stats(
     # data  = get_data(inputFilename)
     # data_divided_sents = CoNLL_util.sentence_division(data)
 
-    if 0:
-        stats_auxiliaries(data)
+    if not os.path.isdir(outputDir):
+        mb.showwarning(title="output file path error", message="Please check OUTPUT DIRECTORY PATH and try again")
         return filesToOpen
-    else:
-        if not os.path.isdir(outputDir):
-            mb.showwarning(title="output file path error", message="Please check OUTPUT DIRECTORY PATH and try again")
-            return filesToOpen
-        auxiliary_list, auxiliary_stats, auxiliary_data = stats_auxiliaries_output(data, data_divided_sents)
-        auxiliary_list = auxiliary_data
+    auxiliary_list, auxiliary_stats, auxiliary_data = stats_auxiliaries_output(data, data_divided_sents)
+    auxiliary_list = auxiliary_data
 
-        # convert list to dataframe and save
-        df = pd.DataFrame(auxiliary_list)
-        df, headers = CoNLL_util.process_df_headers(df, "AUXILIARIES")
+    # convert list to dataframe and save
+    df = pd.DataFrame(auxiliary_list)
+    df, headers = CoNLL_util.process_df_headers(df, "AUXILIARIES")
 
-        IO_csv_util.df_to_csv(
-            GUI_util.window,
-            df,
+    IO_csv_util.df_to_csv(
+        GUI_util.window,
+        df,
+        function_words_auxiliaries_file_name,
+        headers=headers,
+        index=False,
+        language_encoding="utf-8",
+    )
+
+    if chartPackage != "No charts":
+        columns_to_be_plotted_xAxis = []
+        # columns_to_be_plotted_yAxis = ['AUXILIARIES']
+        columns_to_be_plotted_yAxis = ["Lemma"]
+        count_var = 1
+
+        outputFiles = charts_util.plot(
             function_words_auxiliaries_file_name,
-            headers=headers,
-            index=False,
-            language_encoding="utf-8",
+            outputDir,
+            columns=columns_to_be_plotted_yAxis,
+            title="Frequency Distribution of Auxiliaries",
+            x_label="Auxiliary verb",
+            count=count_var,
+            file_label="FW_aux",
         )
+        if outputFiles != None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
 
-        if chartPackage != "No charts":
-            columns_to_be_plotted_xAxis = []
-            # columns_to_be_plotted_yAxis = ['AUXILIARIES']
-            columns_to_be_plotted_yAxis = ["Lemma"]
-            count_var = 1
-
-            outputFiles = charts_util.plot(
-                function_words_auxiliaries_file_name,
-                outputDir,
-                columns=columns_to_be_plotted_yAxis,
-                title="Frequency Distribution of Auxiliaries",
-                x_label="Auxiliary verb",
-                count=count_var,
-                file_label="FW_aux",
-            )
-            if outputFiles != None:
-                if isinstance(outputFiles, str):
-                    filesToOpen.append(outputFiles)
-                else:
-                    filesToOpen.extend(outputFiles)
-
-            return filesToOpen
+        return filesToOpen
 
 
 # for verb auxiliaries analysis

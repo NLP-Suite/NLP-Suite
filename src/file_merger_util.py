@@ -111,7 +111,7 @@ def file_merger(
                         700,
                         "Input file error",
                         "An error was encountered processing input file\n\n"
-                        + str(inputFilename)
+                        + str(doc)
                         + "\n\nProcessing other files will continue but, please, check the corrupt input file. Files in error will be listed in command line.",
                     )
                 print("File in error: " + str(doc))

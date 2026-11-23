@@ -69,7 +69,6 @@ def sentence_split_stanza_text(text_to_process, return_text=True):
         return [sentence for sentence in text_to_process.sentences]
     else:
         return [sentence.text for sentence in text_to_process.sentences]
-    return sentences
 
 
 # returns a single lemmatized word. input should be a single word.

@@ -29,7 +29,6 @@ if (
     sys.exit(0)
 
 
-import argparse
 from collections import Counter
 import csv
 import os
@@ -810,53 +809,6 @@ def sentiment_main(
 
     return filesToOpen
 
-
-if __name__ == "__main__":
-    # get arguments from command line
-    parser = argparse.ArgumentParser(description="Sentiment analysis with BERT")
-    parser.add_argument(
-        "--file",
-        type=str,
-        dest="inputFilename",
-        default="",
-        help='a string to hold the INPUT path and filename if only ONE txt file is processed; enter --file "" or eliminate --file flag to process ALL txt files in input directory; use "" if path and filenames contain spaces',
-    )
-    parser.add_argument(
-        "--dir",
-        type=str,
-        dest="inputDir",
-        default="",
-        help='a string to hold the INPUT path of the directory of ALL txt files to be processed; use "" if path contains spaces',
-    )
-    parser.add_argument(
-        "--out",
-        type=str,
-        dest="outputDir",
-        default="",
-        help='a string to hold the path of the OUTPUT directory; use "" if path contains spaces',
-    )
-    parser.add_argument(
-        "--configFileName",
-        type=str,
-        dest="outputDir",
-        default="",
-        help="a string to hold the path of the configFileName",
-    )
-    parser.add_argument("--outfile", type=str, dest="outputFilename", default="", help="output file")
-
-    parser.add_argument(
-        "--mode",
-        type=str,
-        dest="mode",
-        default="mean",
-        help="mode with which to calculate sentiment in the sentence: mean or median",
-    )
-    args = parser.parse_args()
-
-    # run main
-    sys.exit(
-        main(args.inputFilename, args.inputDir, args.outputDir, args.configFileName, args.outputFilename, args.mode)
-    )
 
 # very fast method to split a text file into a list whose elements are each sentence in that file. Found on: https://stackoverflow.com/a/31505798
 # -*- coding: utf-8 -*-

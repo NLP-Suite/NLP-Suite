@@ -25,6 +25,7 @@ class Vectorizer:
         self.sentiment_vector_size = 10
         self.doNotRepeat1 = False
         self.doNotRepeat2 = False
+        self.doNotRepeat = False
         self.result = False
         self.min_doc_len, self.max_doc_len, self.avg_doc_len, self.doc_len = self.compute_min_max_doc_len()
 
@@ -82,7 +83,7 @@ class Vectorizer:
                         elif len(sub_df) < 10:
                             if self.doNotRepeat2 == False:
                                 # TODO should export csv file with culprit files
-                                result = messagebox.askyesno(
+                                self.result = messagebox.askyesno(
                                     "Sentiment Analysis Score Error",
                                     "Document "
                                     + doc_ls[index]
@@ -94,7 +95,7 @@ class Vectorizer:
                                     "Python", "Please, show this message again for any similar subsequent warning"
                                 )
                                 self.doNotRepeat2 = not (doNotRepeat2)
-                            if result:
+                            if self.result:
                                 splitted.pop(index)
                                 continue
                         doclengths.append(len(sub_df))
@@ -109,7 +110,7 @@ class Vectorizer:
                         # IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Sentiment Analysis Score Error',
                         #                                    message="The file " + narrativeFile + " only contains one sentiment score.\n\n"
                         #                                            + "The file will be dropped from the analyses.")
-                        if doNotRepeat == False:
+                        if not self.doNotRepeat:
                             # TODO should export csv file with culprit files
                             messagebox.showwarning(
                                 title="Sentiment Analysis Score Error",
@@ -118,15 +119,15 @@ class Vectorizer:
                                 + " only contains one sentiment score.\n\n"
                                 + "The file will be dropped from the analyses.",
                             )
-                            doNotRepeat = messagebox.askyesno(
+                            self.doNotRepeat = messagebox.askyesno(
                                 "Python", "Please, do NOT show this message again for any similar subsequent warning?"
                             )
                         filesToDelete.append(narrativeFile)
                         continue
                     elif len(readerList) < 10:
-                        if doNotRepeat == False:
+                        if not self.doNotRepeat:
                             # TODO should export csv file with culprit files
-                            result = messagebox.askyesno(
+                            self.result = messagebox.askyesno(
                                 "Sentiment Analysis Score Error",
                                 "The file "
                                 + narrativeFile
@@ -134,10 +135,10 @@ class Vectorizer:
                                 + "The file is too short compared to others in the corpus. It might influence the analysis of shape of stories.\n\n"
                                 + "Would you like to drop this file from the analyses?",
                             )
-                            doNotRepeat = messagebox.askyesno(
+                            self.doNotRepeat = messagebox.askyesno(
                                 "Python", "Please, do NOT show this message again for any similar subsequent warning?"
                             )
-                        if result:
+                        if self.result:
                             filesToDelete.append(narrativeFile)
                             continue
                     # elif len(readerList) > 75:
