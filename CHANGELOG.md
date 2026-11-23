@@ -4,6 +4,9 @@ The most recent release is at the top. Each release's bullets are shown as **"Wh
 on the corresponding GitHub Release page (the top section is added automatically by the
 release workflow). Keep the newest version's section at the very top and update it before tagging.
 
+## Unreleased
+- **Character Emotion Arcs names each character the same way every time.** When a sentence held two forms of a name ("Robin" and "Robin Ellacott"), which one named the character, and its charts, changed from one RUN to the next. The fuller name is now always used, and the rows come in the same order.
+
 ## v1.6.45
 - **Sentiment analysis with ANEW, hedonometer, SentiWordNet or VADER is much faster.** Each tool ran Stanza on every word of every document to find its dictionary form; it now does that once for each different word. The scores are the same.
 - **Shape of Stories: best k is much faster on large corpora.** For each k it compared every pair of documents in slow loops: on 958 documents, about 4 minutes per k and 9 to 12 hours for the whole run. It now compares them all at once, with the same results.
