@@ -13,7 +13,7 @@ jobs:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v7
         with:
-          python-version: "3.10"
+          python-version: "3.11"
       # The suite stubs the GUI/NLP stack in tests/conftest.py, so it stays
       # hermetic: only pytest is needed, no Stanza/spaCy/NLTK install. ruff (the version pre-commit pins) is for
       # tests/test_undefined_names.py, which lints all of src/ for undefined names (F821/F823).

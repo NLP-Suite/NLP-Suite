@@ -10,8 +10,8 @@ Python 3.11 with Pillow 13 and transformers 5 should close the open Dependabot a
 
 1. **Legacy setup only, `chore/remove-legacy-setup`** (§1.1): `setup_Windows/`, `setup_Mac/`, the two shortcut scripts and `src/requirements*.txt` (108 alerts, closed once on `current-stable`), plus the icon move to `lib/images/`. #1688 depends on it. The rest of #1706 (one-off scripts, unused modules, `build-family-viewer.yml`) waits until it is checked against the family viewer; rebase #1706 after this merges.
 2. **The summarizer** (§3.2), its own PR, `chore/remove-bert-summarizer`: deletes `doc_summary_BERT` (nothing calls it) and `bert-extractive-summarizer`, which blocked transformers ≥ 4.52. Cora decided 23 Nov to delete rather than rewrite.
-3. **Rebase #1688** (`spike/python-3.11-pillow-13`) onto `roberto` and add what §3.3's table lists: transformers ≥ 5.10, `stanza>=1.12.2`, the `peft` decision, py311 in `pyproject.toml` and `pyrightconfig.json`, §14's bullets, the CHANGELOG security line.
-4. **Re-sync the dev env** on the new Python before testing (a new NLP311 env from `requirements.txt` + `requirements-mac.txt`).
+3. **Python 3.11, `feat/python-3.11`** (replaces #1688; built on #1800 and #1801): bundled CPython 3.11.14 (python-build-standalone `20251217`, the last with Tcl/Tk 8.6; from `20260113` on it is Tcl/Tk 9, which crashed 54 GUIs in the first candidate: `.trace("w", ...)` is gone), Pillow 13.0.0, `transformers>=5.10` (resolves 5.24), `peft>=0.22`, `stanza>=1.12.2`, py311 in pyproject and pyright, §14, CHANGELOG. Found on the way (23 Nov): 3.11 also lifts pandas to 3.x, folium to 1.0 and ipython to 9, so they are capped below those; and fastcoref 2.1.6 fails to load on transformers 5, fixed by `coreference_neural_util.patch_fastcoref_post_init` (same weights and clusters as on 4.51.3). python-dateutil 4 and datasets 5 come in transitively.
+4. **Dev env: done 23 Nov**, `NLP311` (conda, Python 3.11.18, Tcl 8.6.15: it did not catch the zip's Tcl 9). `pytest tests/`: 1017 passed, 2 failed (both pandas 3, fixed by the cap); `gui_smoke.py`: 150 ok, 0 crashed. fastcoref and Stanza coreference run.
 5. **Checks before the tag** (§3.3's list plus §14). The whole `python-env` is rebuilt, so this one needs the **full** tool sweep of 1.6.47 against **1.6.46** (`~/Documents/NLP_output/tool_sweep/1.6.46`, the published zip), not only the changed tools; then `bundle_gate.py` against a 1.6.46 snapshot. Also BERT NER, embeddings, WSI, fastcoref and Stanza coreference, and BERTopic on a clean Hugging Face cache, and the self-updater 1.6.46 → 1.6.47 (the first update that replaces the bundled Python).
 6. After promotion: re-read the Dependabot list (expect 0 open). Merge the release branch back into `roberto` with a merge commit, not a squash, as for 1.6.45 (#1743) and 1.6.46 (#1797), so the next release can fast-forward `current-stable`.
 
@@ -25,13 +25,6 @@ Nothing has been checked on Windows since 1.6.42. One pass on the **published 1.
 1. The menu from the zip, and one tool per family on `python-env` (§2.5): BERT NER, BERTopic, fastcoref coreference, a CoreNLP parse with the bundled JRE, a GIS map, wordclouds, an Excel chart.
 2. Shape of Stories with Hierarchical Clustering ticked (the default); NRC and SentiWordNet; #1705's start-up popups (menu with an empty `config/`, each Setup GUI); the first Stanza download (#1704).
 3. The self-updater from a 1.6.45 install to 1.6.46. Read `%TEMP%\NLP_Suite_update.log`.
-
-On a Mac (1.6.43 → 1.6.44 and 1.6.44 → 1.6.45 self-updates pass, 22 Nov; 1.6.45 → 1.6.46 not yet run):
-4. Update a real **1.6.42** install to the latest release by closing it and clicking Yes (the driver-based checks skipped the click, and the deletion of `NLP_Suite_previous` through a real menu start).
-5. NRC and SentiWordNet once with an empty `~/nltk_data`, so `punkt_tab` and `averaged_perceptron_tagger_eng` download.
-6. A GIS map and wordclouds from the zip.
-7. A source checkout on `current-stable` updating with git; opening and closing a GUI offline (no popups expected).
-8. The 1.6.45 speedups on the 958-document corpus (measured only on the 60-document sample in the zip).
 
 Ask students who report update problems to send the update log to coralynn.yang@emory.edu.
 

@@ -93,3 +93,21 @@ class TestSplitFoundMissing:
     def test_whole_words_only(self):
         sents = [(0, "the banker left", "a.txt")]
         assert WSI_util.split_found_missing(sents, ["bank"]) == ([], ["bank"])
+
+
+class _Tokenizer:
+    """A BERT tokenizer as transformers 5 has it: cls/sep ids, no build_inputs_with_special_tokens."""
+
+    cls_token_id = 101
+    sep_token_id = 102
+
+
+class TestWithSpecialTokens:
+    # transformers 5 dropped BertTokenizer.build_inputs_with_special_tokens, so WSI with BERT stopped with
+    # "BertTokenizer has no attribute build_inputs_with_special_tokens" (1.6.47 candidate sweep)
+    def test_wraps_ids_in_cls_and_sep(self):
+        assert WSI_classes.with_special_tokens(_Tokenizer(), [7592, 2088]) == [101, 7592, 2088, 102]
+
+    def test_keyword_stays_one_position_after_cls(self):
+        ids = WSI_classes.with_special_tokens(_Tokenizer(), [10, 11, 12])
+        assert ids.index(11) == 1 + 1  # wordpiece token_i=1 sits at token_i + 1, as last_four_layers reads it

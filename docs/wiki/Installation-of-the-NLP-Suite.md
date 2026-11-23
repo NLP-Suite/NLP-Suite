@@ -129,7 +129,7 @@ If you want to modify the NLP Suite source code or contribute to development:
 
 ### Prerequisites
 
-- [Anaconda](https://www.anaconda.com/download) (the NLP Suite is built and tested on Python 3.10)
+- [Anaconda](https://www.anaconda.com/download) (the NLP Suite is built and tested on Python 3.11)
 - [Git](https://git-scm.com/downloads)
 
 ### Steps

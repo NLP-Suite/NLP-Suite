@@ -22,10 +22,10 @@ jobs:
         include:
           - os: windows-latest
             artifact: NLP-Suite-windows-x64
-            python-version: '3.10'
+            python-version: '3.11'
           - os: macos-15          # Apple Silicon (M1+); macos-14 was retired by GitHub on 2 Nov 2026
             artifact: NLP-Suite-mac-arm64
-            python-version: '3.10'
+            python-version: '3.11'
 
     runs-on: ${{ matrix.os }}
 
@@ -110,27 +110,28 @@ jobs:
         run: |
           set -euo pipefail
           DIST="dist/NLP_Suite/python-env"
-          PBS_TAG="20241002"
+          # 20251217 is the last release whose 3.11 build has Tcl/Tk 8.6. From 20260113 on it is Tcl/Tk 9, which
+          # removed `trace variable`: every GUI that calls .trace("w", ...) (276 calls in src/) crashed at open
+          # (1.6.47 candidate, 23 Nov). Moving to Tcl 9 is its own migration; the check below enforces 8.6.
+          PBS_TAG="20251217"
 
           if [ "$RUNNER_OS" = "macOS" ]; then
             ARCH=$(uname -m)
             if [ "$ARCH" = "arm64" ]; then ARCH="aarch64"; fi
-            PBS_URL="https://github.com/indygreg/python-build-standalone/releases/download/${PBS_TAG}/cpython-3.10.15+${PBS_TAG}-${ARCH}-apple-darwin-install_only_stripped.tar.gz"
+            PBS_URL="https://github.com/indygreg/python-build-standalone/releases/download/${PBS_TAG}/cpython-3.11.14+${PBS_TAG}-${ARCH}-apple-darwin-install_only_stripped.tar.gz"
           else
-            PBS_URL="https://github.com/indygreg/python-build-standalone/releases/download/${PBS_TAG}/cpython-3.10.15+${PBS_TAG}-x86_64-pc-windows-msvc-install_only_stripped.tar.gz"
+            PBS_URL="https://github.com/indygreg/python-build-standalone/releases/download/${PBS_TAG}/cpython-3.11.14+${PBS_TAG}-x86_64-pc-windows-msvc-install_only_stripped.tar.gz"
           fi
 
           # SHA256 of each file this step may download, copied from that release's SHA256SUMS. The project
           # moved to astral-sh/python-build-standalone; GitHub redirects the indygreg/ URLs above, and the
-          # files are the same. 3.11.10 is listed ahead of the Python 3.11 move (#1688). Changing PBS_TAG
+          # files are the same. Changing PBS_TAG
           # or the Python version means adding its line here, from
           # https://github.com/astral-sh/python-build-standalone/releases/download/<PBS_TAG>/SHA256SUMS
           PBS_FILE="$(basename "$PBS_URL")"
           case "$PBS_FILE" in
-            cpython-3.10.15+20241002-aarch64-apple-darwin-install_only_stripped.tar.gz)  PBS_SHA=1f753073b2333b2977922387fe016255ebde0f8558c567ffb960b7f50477fd34 ;;
-            cpython-3.10.15+20241002-x86_64-pc-windows-msvc-install_only_stripped.tar.gz) PBS_SHA=50a39a5a09dd8786b154b116dbdbf7d6292fdf63b1683f6006d43246c0b9aad9 ;;
-            cpython-3.11.10+20241002-aarch64-apple-darwin-install_only_stripped.tar.gz)  PBS_SHA=263b1b50ff705ab064c50c3165de9df2ed712a77cd81c55dd340c3172e103687 ;;
-            cpython-3.11.10+20241002-x86_64-pc-windows-msvc-install_only_stripped.tar.gz) PBS_SHA=15a14bdc15a43119d74b7e3bde00031011d49d2a6068fe9743da92ba0c3d7b87 ;;
+            cpython-3.11.14+20251217-aarch64-apple-darwin-install_only_stripped.tar.gz)  PBS_SHA=a5a4bb1dc3c1beff4a9c07fd35e07e031498b71a5a63d19de383d445d43181c6 ;;
+            cpython-3.11.14+20251217-x86_64-pc-windows-msvc-install_only_stripped.tar.gz) PBS_SHA=4ca2caa73f20bbc3fcd9645de4c8e43aac5119760e446920b41e2f5637a03869 ;;
             *) echo "::error::No SHA256 listed for $PBS_FILE. Add it to this step from the release's SHA256SUMS."; exit 1 ;;
           esac
 
@@ -154,6 +155,8 @@ jobs:
             PYTHON="$DIST/python.exe"
           fi
 
+          # The tools' GUIs run on this Python's tkinter and need Tcl/Tk 8.6 (see PBS_TAG above)
+          "$PYTHON" -c "import sys, tkinter; v = tkinter.Tcl().eval('info patchlevel'); print('python-env Tcl/Tk', v); sys.exit(0 if v.startswith('8.6') else 'python-env has Tcl/Tk ' + v + '; the GUIs need 8.6 (.trace(\"w\", ...) is gone in Tcl 9)')"
           "$PYTHON" -m pip install --upgrade pip
           "$PYTHON" -m pip install --no-cache-dir -r requirements.txt
           if [ "$RUNNER_OS" = "Windows" ]; then

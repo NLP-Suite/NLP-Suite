@@ -1,4 +1,4 @@
-# SRL bridge - runs in the NLP Suite's main (3.10) env. Semantic Role Labeling cannot run in the
+# SRL bridge - runs in the NLP Suite's main (3.11) env. Semantic Role Labeling cannot run in the
 # Suite's environment (Riccorl/transformer-srl pins a legacy 2020-2022 stack: torch 1.7, allennlp
 # 1.2, spaCy 2.x, Python 3.8). So SRL runs in a SEPARATE isolated Python 3.8 env, invoked here as a
 # subprocess - the same pattern by which CoreNLP runs as a separate Java process.
