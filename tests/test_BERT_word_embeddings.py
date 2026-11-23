@@ -16,7 +16,6 @@ _STUBS = (
     "sentence_transformers",
     "torch",
     "contextualSpellCheck",
-    "summarizer",
     "plotly",
     "plotly.express",
     "sklearn",

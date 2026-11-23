@@ -98,6 +98,8 @@ Practical exposure is low across the board (the Suite opens the user's own files
 
 ### 3.2 What blocks transformers: `bert-extractive-summarizer`
 
+**Decided 23 Nov: deleted** (`chore/remove-bert-summarizer`), not rewritten; the rewrite below is kept only in case someone wants the feature back with a GUI.
+
 **Nothing calls it (found 22 Nov).** `doc_summary_BERT` has no caller in `src/`: no GUI offers it, and `git log -S "doc_summary_BERT("` finds only the May 2023 commit that added it (`3d3abe8d`). So the simpler fix is to delete the function, the module-level `from summarizer import Summarizer` and the requirement, rather than rewrite it below. Roberto's call, since he wrote it; if he wants the feature, it needs a GUI anyway.
 
 The pin exists because `bert-extractive-summarizer` 0.10.1 (its last release, Jan 2022) imports `TransfoXLModel` at load time (`summarizer/bert.py:12`), and transformers removed it in 4.52. So `import summarizer` fails on anything that fixes the alerts, and `BERT_util.py:50` imports it at module level, so every BERT GUI would fail to open, not only the summary.
@@ -118,7 +120,7 @@ The Python bump means users download a new bundled Python (the whole env is rebu
 
 Prerequisites, in order:
 1. `chore/remove-legacy-setup` is merged (§1.1; the narrow part of #1706). It deletes `src/requirements*.txt` and the STEP1–3 scripts, which also settles two of #1688's open review points: its `src/requirements.txt` hunk goes away, and nothing left creates a `python=3.8` env.
-2. The summarizer PR (§3.2), on its own.
+2. The summarizer PR (§3.2), on its own: `chore/remove-bert-summarizer` deletes it.
 3. Rebase #1688 onto `roberto` after both (its `requirements.txt` hunk sits next to #1705's lines; its `src/requirements.txt` hunk becomes a modify/delete conflict: drop it).
 
 What #1688 then carries, beyond the 3.10 → 3.11 workflow and Pillow change it already has:
@@ -133,7 +135,7 @@ What #1688 then carries, beyond the 3.10 → 3.11 workflow and Pillow change it 
 | Security line: "Pillow 13 and transformers 5 fix N advisories; the app now runs on Python 3.11" | `CHANGELOG.md` | User-facing |
 
 Checks before tagging, added to #1688's own list (installer build on both OSes, welcome screen and logo, `gui_smoke.py` on 3.11, Google Earth icon preview, one heavy pipeline, SRL still runs):
-- BERT: NER, document summary (the §3.2 replacement), word embeddings, sentiment, WSI. Each downloads its model on first use, so test on a clean Hugging Face cache once.
+- BERT: NER, word embeddings, sentiment, WSI. Each downloads its model on first use, so test on a clean Hugging Face cache once.
 - Coreference with the BERT (fastcoref) engine and with Stanza (peft), end to end.
 - The full tool sweep against the 1.6.46 baseline, and `bundle_gate.py` against a 1.6.46 snapshot.
 - BERTopic topic modeling.

@@ -6,6 +6,7 @@ release workflow). Keep the newest version's section at the very top and update 
 
 ## Unreleased
 - **Removed the 2021 Anaconda setup scripts** (`setup_Windows/`, `setup_Mac/`: STEP1–3, the run and shortcut scripts, the beta readmes) and the files only they used (`src/NLP_setup_shortcut_add.py`, `src/NLP_setup_shortcut_remove.py`, `src/requirements.txt`, `src/requirements_mac.txt`). They installed Python 3.8 with Anaconda 2021.05 and were replaced by the downloadable zip; nothing a tool does changes. The Windows app icon moved to `lib/images/`.
+- **Removed the unused BERT document summary** (`BERT_util.doc_summary_BERT`) and the `bert-extractive-summarizer` package it needed. No GUI offered it. The package held transformers below 4.52, so removing it lets transformers move to a version without known security problems.
 
 ## v1.6.46
 - **MALLET topic modeling works in the downloaded NLP Suite.** On the Mac zip it stopped with "Failed to import tkagg backend" at the first chart. Its charts are now drawn the way every other tool's are.

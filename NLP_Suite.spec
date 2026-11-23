@@ -79,7 +79,7 @@ a = Analysis(
         'torch', 'torchvision', 'torchaudio',
         'transformers', 'tokenizers', 'sentence_transformers', 'huggingface_hub', 'hf_xet', 'safetensors',
         'stanza',    # needs torch, so it could not load in the menu even before 1.6.43
-        'sklearn', 'gensim', 'bertopic', 'umap', 'hdbscan', 'pyLDAvis', 'fastcoref', 'summarizer',
+        'sklearn', 'gensim', 'bertopic', 'umap', 'hdbscan', 'pyLDAvis', 'fastcoref',
         'nltk',      # nltk downloads its data at runtime, in the tools
         'textblob', 'textstat', 'pyphen', 'nrclex', 'langdetect', 'langid', 'spacy_langdetect', 'spacytextblob',
         'autocorrect', 'spellchecker', 'fuzzywuzzy', 'wn', 'emoji',
