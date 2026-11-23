@@ -11,12 +11,14 @@ import importlib
 import sys
 from unittest.mock import MagicMock, patch
 
+# umap: fix/reproducible-topics-wsi imports UMAP at the top of topic_modeling_bert_util
 _STUBS = [
     "bertopic",
     "sentence_transformers",
     "sklearn",
     "sklearn.feature_extraction",
     "sklearn.feature_extraction.text",
+    "umap",
 ]
 with patch.dict(sys.modules, {name: MagicMock() for name in _STUBS}):
     sys.modules.pop("topic_modeling_bert_util", None)
