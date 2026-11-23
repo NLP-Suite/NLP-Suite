@@ -140,6 +140,9 @@ def run_relational(
                 three_way_Sankey = False
                 var3 = None
                 Sankey_limit3_var = None
+            outputFilename = IO_files_util.generate_output_file_name(
+                inputFilename, "", outputDir, ".html", "Sankey", *csv_file_relational_field_list
+            )
             outputFiles = charts_util.Sankey(
                 inputFilename,
                 outputFilename,
