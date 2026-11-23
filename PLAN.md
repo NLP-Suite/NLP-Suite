@@ -39,7 +39,7 @@ Once the Windows pass is done: delete `spike/1.6.43-bundle-size-rc` (origin), `s
 
 ## After 1.6.47
 
-- **Fold the tests into one file per `src/` module** (`test_<module>.py`): about 105 files today, some modules spread over three (`config_util`, `IO_files_util`, `topic_modeling_gensim_util`) and GIS over about a dozen, some named after a bug or a person. Its own PR, a pure move: `pytest --collect-only` counts the same tests before and after. Watch the GIS tests that load functions from the source with their own module-level setup. #1683 and #1682 add `test_gender_dictionary_persons.py` and `test_spaCy_conll_head.py`: rename them after they merge. Can go before 1.6.47.
+- Tests are one file per `src/` module (`test_<module>.py`, 23 Nov). Fold in, after they merge: #1801's `test_BERT_sentiment_truncation.py` and `test_BERT_word_embeddings.py` (→ `test_BERT_util.py`), #1683's `test_gender_dictionary_persons.py` and #1682's `test_spaCy_conll_head.py`.
 - Left from the sweep: #1779 (functions that do not exist, e.g. Comparative bar charts); the categorical treemap, sunburst and colormap charts stop with "No search values found" (§10).
 - **Trim the spec further** (§2.1): it keeps spaCy, pandas and the rest for the language advisor, which since #1732 runs on `python-env`. Probe build first.
 - **Performance**, in §6.10's order: next, pandas out of `GUI_util` (§6.3).
