@@ -89,3 +89,17 @@ def test_coreNLP_tables_are_unchanged():
               "Document ID", "Document"]  # fmt: skip
     rows = [["1", "would", "would", "MD", "O", "2", "aux", "2:aux", "", "1", "1", "1", "d"]]
     assert CoNLL_util.normalize_to_canonical(header, [list(r) for r in rows])[1] == rows
+
+
+def test_heads_written_as_floats_are_followed():
+    # Stanza_util writes Head through pandas as a float ("3.0", root "0.0"): the real table of the 5 sample reviews
+    # has "14.0", and "14.0".isdigit() is False, so the search still found nothing on the zip
+    rows = [r[:7] + [r[7] + ".0"] + r[8:] for r in STANZA_ROWS]
+    _, data = CoNLL_util.normalize_to_canonical(list(STANZA_HEADER), rows)
+    first, second = [s for s in CoNLL_util.CoNLL_record_division(data) if s]
+
+    def related(sentence):
+        return sorted(str(index) for index, _, _ in search_util.search_in_sentence("book", sentence, "FORM"))
+
+    assert related(first) == ["3", "4"]
+    assert related(second) == ["1", "4"]

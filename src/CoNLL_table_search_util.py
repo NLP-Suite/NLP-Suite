@@ -89,8 +89,12 @@ def dependency_heads(token):
     heads = deps_index(token[SearchField.DEPS.value])
     if not heads:
         head = str(token[SearchField.HEAD.value]).strip()
-        if head.isdigit():
-            heads = [int(head)]
+        try:  # Stanza tables write Head as a float ("14.0")
+            index = float(head)
+        except ValueError:
+            index = None
+        if index is not None and index == int(index) and index > 0:
+            heads = [int(index)]
     return heads
 
 
