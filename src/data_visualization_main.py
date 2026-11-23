@@ -140,6 +140,9 @@ def run_relational(
                 three_way_Sankey = False
                 var3 = None
                 Sankey_limit3_var = None
+            outputFilename = IO_files_util.generate_output_file_name(
+                inputFilename, "", outputDir, ".html", "Sankey", *csv_file_relational_field_list
+            )
             outputFiles = charts_util.Sankey(
                 inputFilename,
                 outputFilename,
@@ -504,13 +507,23 @@ def run_numeric(
                 "Warning", "No Y-axis variable has been selected.\n\nPlease, select a Y-axis variable and try again."
             )
             return
+        if split_data_byCategory_var and csv_field_boxplot_var == "":
+            mb.showwarning(
+                "Warning",
+                'You ticked "Split data by category" but selected no category csv file field.\n\nPlease, select the categorical csv file field to split the data by (or untick "Split data by category") and try again.',
+            )
+            return
+        outputFilename = IO_files_util.generate_output_file_name(
+            inputFilename, "", outputDir, ".html", "boxplot", csv_field_visualization_var
+        )
         outputFiles = charts_util.boxplot(
             inputFilename,
-            outputDir,
+            outputFilename,
             csv_field_visualization_var,
-            complete_sid=False,
-            csv_field_Y_axis_list=csv_file_field_Y_axis_list,
-            X_axis_var=X_axis_var,
+            points=points_var,
+            bycategory=split_data_byCategory_var,
+            category=csv_field_boxplot_var or None,
+            color=csv_field_boxplot_color_var or None,
         )
         if outputFiles != None:
             if isinstance(outputFiles, str):

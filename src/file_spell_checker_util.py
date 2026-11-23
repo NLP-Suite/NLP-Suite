@@ -69,6 +69,7 @@ import file_cleaner_util
 import IO_csv_util
 import IO_files_util
 from IO_files_util import make_directory
+import IO_internet_util
 import IO_user_interface_util
 import reminders_util
 from Stanza_functions_util import sentence_split_stanza_text, stanzaPipeLine
@@ -1430,11 +1431,11 @@ def spellcheck(inputFilename, inputDir, checker_value_var, check_withinDir):
 def stanza_langid_pipeline():
     """Stanza's language identifier alone (no parser), downloading the multilingual model the first time."""
     try:
-        return stanza.Pipeline(lang="multilingual", processors="langid", verbose=False)
+        return IO_internet_util.stanza_pipeline(lang="multilingual", processors="langid", verbose=False)
     except Exception as e:  # the multilingual model is not downloaded yet
         print("Downloading Stanza's language identification model (" + str(e) + ")")
         stanza.download(lang="multilingual", verbose=False)
-        return stanza.Pipeline(lang="multilingual", processors="langid", verbose=False)
+        return IO_internet_util.stanza_pipeline(lang="multilingual", processors="langid", verbose=False)
 
 
 # function implements three different approaches to language detection: langdetect, spacy, langid

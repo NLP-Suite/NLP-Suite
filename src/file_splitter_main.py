@@ -72,11 +72,19 @@ def run():
         return
 
     if extract_sentences_var:
+        if extract_sentences_search_words_var.strip() == "":
+            mb.showwarning(
+                title="Input error",
+                message="Please, enter the comma-separated word(s) that a sentence must contain to be extracted and try again.",
+            )
+            return
         import sentence_analysis_util
 
-        sentence_analysis_util.extract_sentences(
-            window, inputFilename, inputDir, outputDir, extract_sentences_search_words_var
+        filesToOpen = sentence_analysis_util.extract_sentences(
+            window, inputFilename, inputDir, outputDir, extract_sentences_search_words_var, config_filename
         )
+        if openOutputFiles and len(filesToOpen) > 0:
+            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
         return
     # split by Beginning Middle and End K sentences
     elif extract_BME_K_sentences:

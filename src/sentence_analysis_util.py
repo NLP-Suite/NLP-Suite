@@ -13,12 +13,49 @@ if (
 
 import collections
 import os
+import re
 import tkinter as tk
 
 import pandas as pd
 
 import IO_csv_util
 import IO_files_util
+
+
+def sentences_with_and_without_words(sentences, search_words):
+    """Split sentences into those that contain one of the comma-separated search words (or collocations, e.g.
+    "coming out") and those that do not. The match is on whole words and case sensitive, as in Word search's
+    default options."""
+    words = [w.strip() for w in search_words.split(",") if w.strip()]
+    patterns = [re.compile(r"(?<!\w)" + re.escape(w) + r"(?!\w)") for w in words]
+    found, not_found = [], []
+    for sentence in sentences:
+        (found if any(p.search(sentence) for p in patterns) else not_found).append(sentence)
+    return found, not_found
+
+
+# File splitter, "Split by word(s) (extract sentences)": for each input file, NLP_<file>_extract.txt has the sentences
+#   with the search word(s), NLP_<file>_extract_wo-searchword.txt the sentences without; returns the files written
+def extract_sentences(window, inputFilename, inputDir, outputDir, search_words, configFileName=""):
+    from Stanza_functions_util import sentence_split_stanza_text, stanzaPipeLine
+
+    files = IO_files_util.getFileList(inputFilename, inputDir, ".txt", silent=False, configFileName=configFileName)
+    filesToOpen = []
+    for file in files:
+        with open(file, encoding="utf-8", errors="ignore") as f:
+            text = f.read()
+        found, not_found = sentences_with_and_without_words(
+            sentence_split_stanza_text(stanzaPipeLine(text)), search_words
+        )
+        name = os.path.splitext(os.path.basename(file))[0]
+        if not name.startswith("NLP_"):
+            name = "NLP_" + name
+        for suffix, sentences in (("_extract.txt", found), ("_extract_wo-searchword.txt", not_found)):
+            outputFilename = os.path.join(outputDir, name + suffix)
+            with open(outputFilename, "w", encoding="utf-8", errors="ignore") as f:
+                f.write("\n".join(sentences) + ("\n" if sentences else ""))
+            filesToOpen.append(outputFilename)
+    return filesToOpen
 
 
 def Extract(lst):

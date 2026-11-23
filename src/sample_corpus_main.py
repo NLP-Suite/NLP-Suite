@@ -73,12 +73,17 @@ def run():
             selectedCsvFile="",
             search_by_search_keywords=True,
             search_keywords_list=keywords_inDocument,
+            minus_K_var=0,
+            plus_K_var=0,
+            extract_sentences=False,
             create_subcorpus_var=True,
             search_options_list=[],
             lang="English",
             chartPackage=chartPackage,
             dataTransformation=dataTransformation,
         )
+        if filesToOpen is None:  # no txt files in input, or the user cancelled
+            filesToOpen = []
     else:
         mb.showwarning(
             title="Warning", message="The selected option is not available yet. Please, check back soon.\n\nSorry!"

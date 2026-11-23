@@ -121,6 +121,28 @@ def get_hover_column_numbers(withHeader_var, headers, hover_info_column_list):
 
 
 # returns None if an error is encountered
+def series_names_to_column_positions(headers, selected_series):
+    """Turn the Excel charts GUI's series, pairs of csv header names such as [["Sentence ID", "Sentiment score"]],
+    into the column positions charts_util.prepare_data_to_be_plotted_inExcel indexes with (iloc), e.g. [[2, 0]].
+
+    Returns (positions, missing): missing lists the names that are not headers of the csv. Positions already
+    given as integers are kept.
+    """
+    headers = list(headers)
+    positions, missing = [], []
+    for series in selected_series:
+        row = []
+        for name in series:
+            if isinstance(name, int):
+                row.append(name)
+            elif name in headers:
+                row.append(headers.index(name))
+            else:
+                missing.append(name)
+        positions.append(row)
+    return positions, missing
+
+
 def create_excel_chart(
     window,
     data_to_be_plotted,

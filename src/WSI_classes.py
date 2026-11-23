@@ -1,5 +1,6 @@
 from collections import defaultdict
 import os
+import random
 from tkinter import messagebox as mb
 
 import numpy as np
@@ -27,6 +28,13 @@ def last_four_layers(encoded_layers, sent_i, token_i):
     """
     pos = token_i + 1
     return [encoded_layers[-layer_i][sent_i][pos] for layer_i in range(1, 5)]
+
+
+def seeded_shuffle(data, seed=SEED):
+    """The vectors in an order k-means does not depend on the corpus' order for, but the same order on every
+    RUN: k-means is seeded, and an unseeded shuffle made it start from different points each time."""
+    random.Random(seed).shuffle(data)
+    return data
 
 
 def candidate_ks(k_range, n_samples):
@@ -174,7 +182,7 @@ class Clusterer:
             prev_w = tup
         if "".join(ongoing_word) == word:
             data.append(np.mean(ongoing_rep, axis=0).flatten())
-        np.random.shuffle(data)
+        data = seeded_shuffle(data)
 
         #        return np.array(data)[:500]
         return np.array(data)

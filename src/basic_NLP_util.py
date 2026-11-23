@@ -18,6 +18,8 @@
 
 import tkinter.messagebox as mb
 
+import IO_internet_util
+
 # language name (as stored in the config) -> ISO 639-1 code used by both Stanza and spaCy models
 _LANG_CODE = {
     "english": "en",
@@ -78,11 +80,15 @@ def _stanza_pipeline(lang):
 
     if lang not in _stanza_pipe:
         try:
-            _stanza_pipe[lang] = stanza.Pipeline(lang=lang, processors="tokenize, pos, lemma", verbose=False)
+            _stanza_pipe[lang] = IO_internet_util.stanza_pipeline(
+                lang=lang, processors="tokenize, pos, lemma", verbose=False
+            )
         except Exception:
             # models not present yet - download once, then retry
             stanza.download(lang, processors="tokenize, pos, lemma", verbose=False)
-            _stanza_pipe[lang] = stanza.Pipeline(lang=lang, processors="tokenize, pos, lemma", verbose=False)
+            _stanza_pipe[lang] = IO_internet_util.stanza_pipeline(
+                lang=lang, processors="tokenize, pos, lemma", verbose=False
+            )
     return _stanza_pipe[lang]
 
 

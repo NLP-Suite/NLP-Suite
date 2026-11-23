@@ -40,6 +40,46 @@ import IO_user_interface_util
 #   TIS-620 (Thai)
 
 
+def dispatcher_arguments(
+    function,
+    window,
+    inputFilename,
+    inputDir,
+    outputDir,
+    config_filename,
+    openOutputFiles,
+    chartPackage,
+    dataTransformation,
+):
+    """The arguments file_checker_converter_cleaner_main.run passes to the function of the selected menu option.
+
+    Most converter/cleaner functions take all eight; the ones below take fewer, or take them in another order.
+    tests/test_file_checker_dispatch.py checks every function in that GUI's pydict against this.
+    """
+    if function == "check_empty_file":
+        return (inputFilename, inputDir, config_filename)
+    if function == "predict_encoding":
+        return (window, inputFilename, inputDir, outputDir)
+    if function == "check_utf8_compliance":
+        return (window, inputFilename, inputDir, outputDir, openOutputFiles)
+    if function in ("convert_2_ASCII", "find_replace_string"):
+        return (window, inputFilename, inputDir, outputDir, config_filename)
+    if function == "spelling_checker_cleaner":
+        return (window, inputFilename, inputDir, outputDir, openOutputFiles, config_filename)
+    if function == "compute_sentence_length":
+        return (inputFilename, inputDir, outputDir, config_filename, chartPackage, dataTransformation)
+    return (
+        window,
+        inputFilename,
+        inputDir,
+        outputDir,
+        config_filename,
+        openOutputFiles,
+        chartPackage,
+        dataTransformation,
+    )
+
+
 # Predict a file's encoding using chardet
 def predict_encoding(window, inputFilename, inputDir, outputDir, n_lines=20):
     if inputFilename == "" and inputDir != "":
