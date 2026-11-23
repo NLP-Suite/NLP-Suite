@@ -145,6 +145,27 @@ def _write_outputs(engine, coref_rows, per_file_corefed, outputCorefedDir):
 # ======================================================================================
 #  BERT option  ->  fastcoref (LingMess / F-coref)
 # ======================================================================================
+def patch_fastcoref_post_init(model_class):
+    """Make fastcoref's model class load on transformers 5.
+
+    fastcoref 2.1.6 (unmaintained since 2023) ends FCorefModel.__init__ with the old init_weights(). transformers 5
+    sets all_tied_weights_keys in post_init() and from_pretrained reads it, so FCoref() stopped with
+    "'FCorefModel' object has no attribute 'all_tied_weights_keys'". This calls post_init() when the attribute is
+    missing; on transformers 4 it is never missing and nothing changes. The loaded weights are the same as on 4.51.3.
+    """
+    if getattr(model_class, "_nlp_suite_post_init_patch", False):
+        return
+    original_init = model_class.__init__
+
+    def __init__(self, *args, **kwargs):
+        original_init(self, *args, **kwargs)
+        if not hasattr(self, "all_tied_weights_keys"):
+            self.post_init()
+
+    model_class.__init__ = __init__
+    model_class._nlp_suite_post_init_patch = True
+
+
 def fastcoref_coref(
     config_filename,
     inputFilename,
@@ -168,6 +189,7 @@ def fastcoref_coref(
 
     try:
         from fastcoref import FCoref
+        from fastcoref.coref_models.modeling_fcoref import FCorefModel
     except ImportError:
         mb.showerror(
             title="fastcoref not available",
@@ -201,6 +223,7 @@ def fastcoref_coref(
         False,
     )
 
+    patch_fastcoref_post_init(FCorefModel)
     try:
         model = FCoref()  # first call downloads the model
     except Exception as e:

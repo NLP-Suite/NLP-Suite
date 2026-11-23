@@ -1,4 +1,4 @@
-# SRL worker - runs INSIDE the isolated Python 3.8 env (srl_test38), NOT the NLP Suite's 3.10 env.
+# SRL worker - runs INSIDE the isolated Python 3.8 env (srl_test38), NOT the NLP Suite's 3.11 env.
 # It is invoked as a subprocess by SRL_util.py. Reads txt input (a file or a directory of .txt),
 # runs Riccorl/transformer-srl, and writes one CSV row per (sentence, predicate) with PropBank roles
 # mapped to plain-language columns. Keep dependencies to what the srl_test38 env provides.
@@ -14,7 +14,7 @@ import sys
 import urllib.parse
 
 # NOTE: transformer_srl is imported LAZILY inside main() (not at module top), so this script stays
-# importable under the Suite's Python 3.10 bundle (e.g. a PyInstaller import audit). transformer_srl
+# importable under the Suite's Python 3.11 bundle (e.g. a PyInstaller import audit). transformer_srl
 # only loads when the worker is actually RUN as a subprocess in the isolated Python 3.8 SRL env.
 
 # Fallback only; SRL_util passes the resolved model path as argv[3]. Default to <NLP-Suite>/lib/SRL/.

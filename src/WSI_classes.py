@@ -18,10 +18,19 @@ dropout_rate = 0.25
 bert_dim = 768
 
 
+def with_special_tokens(tokenizer, ids):
+    """BERT's model input for one sequence: [CLS] ids [SEP].
+
+    This is what tokenizer.build_inputs_with_special_tokens(ids) returned; transformers 5 removed that
+    method from BertTokenizer, and WSI with BERT stopped with an AttributeError (1.6.47).
+    """
+    return [tokenizer.cls_token_id] + list(ids) + [tokenizer.sep_token_id]
+
+
 def last_four_layers(encoded_layers, sent_i, token_i):
     """Hidden states of the last four layers for wordpiece token_i of sentence sent_i.
 
-    get_batches feeds the model build_inputs_with_special_tokens(...), which puts [CLS] at position 0,
+    get_batches feeds the model with_special_tokens(...), which puts [CLS] at position 0,
     but keeps the wordpiece list WITHOUT it. So wordpiece token_i sits at model position token_i + 1.
     Reading position token_i took the vector of the PREVIOUS wordpiece (or [CLS] for the first), and
     senses were induced from the word before the keyword rather than from the keyword.
@@ -71,7 +80,7 @@ class Clusterer:
             for i in range(0, len(tokenized_text_all), 510):
                 tokenized_text = tokenized_text_all[i : i + 510]
                 indexed_tokens = self.tokenizer.convert_tokens_to_ids(tokenized_text)
-                indexed_tokens = self.tokenizer.build_inputs_with_special_tokens(indexed_tokens)
+                indexed_tokens = with_special_tokens(self.tokenizer, indexed_tokens)
                 all_data.append(indexed_tokens)
                 all_words.append(tokenized_text)
                 all_masks.append(list(np.ones(len(indexed_tokens))))
@@ -232,7 +241,7 @@ class Matcher:
             for i in range(0, len(tokenized_text_all), 510):
                 tokenized_text = tokenized_text_all[i : i + 510]
                 indexed_tokens = self.tokenizer.convert_tokens_to_ids(tokenized_text)
-                indexed_tokens = self.tokenizer.build_inputs_with_special_tokens(indexed_tokens)
+                indexed_tokens = with_special_tokens(self.tokenizer, indexed_tokens)
                 all_data.append(indexed_tokens)
                 all_words.append(tokenized_text)
                 all_masks.append(list(np.ones(len(indexed_tokens))))

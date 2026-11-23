@@ -6,7 +6,9 @@
 # Platform-specific extras live in requirements-windows.txt and requirements-mac.txt.
 
 # Core data science
-pandas
+# pandas < 3: Python 3.10 held it at 2.x; on 3.11 it would resolve to 3.x (string dtype, copy-on-write), a migration
+# of its own, not part of the 1.6.47 security release
+pandas>=2.2,<3
 numpy
 scipy
 # floor: Shape of Stories' Hierarchical Clustering passes AgglomerativeClustering(metric=...), which 1.2 added
@@ -17,7 +19,8 @@ xlrd
 numexpr
 
 # NLP
-stanza
+# floor: 1.12.2 fixes a pickle code-execution advisory in model loading; today it resolves to 1.15
+stanza>=1.12.2
 spacy
 nltk
 gensim
@@ -36,23 +39,25 @@ spacytextblob
 spacy-langdetect
 
 # Transformers / deep learning (all on torch)
-# transformers 4.51.3: bert-extractive-summarizer, which needed < 4.52, is gone (1.6.47; nothing called it).
-# The Python 3.11 build moves this to 5.x, which fixes the remaining advisories (docs/future-work.md 3.2).
-transformers==4.51.3
+# transformers >= 5.10 fixes every open advisory (remote-code paths, save_pretrained path traversal, the custom
+# generation code downloaded before trust consent). 5.x needs Python 3.11 (1.6.47). Before 1.6.47 it was held at
+# 4.51.3 by bert-extractive-summarizer, which is gone (nothing called it).
+transformers>=5.10
 sentence-transformers
 # TensorFlow (tensorflow, tensorflow-hub, tf-keras, h5py) is not installed: nothing imports it. transformers,
 # sentence-transformers, BERTopic and fastcoref run on torch.
 
 # Coreference resolution (neural engine for the Coreference GUI)
-# fastcoref -> the 'BERT' option (SpanBERT/LingMess); its model self-downloads on first use.
+# fastcoref -> the 'BERT' option (SpanBERT/LingMess); its model self-downloads on first use. 2.1.6 (unmaintained) needs
+# coreference_neural_util.patch_fastcoref_post_init to load on transformers 5.
 # NOTE: coreferee (the former 'spaCy' option) was removed - it pins spacy<3.6, which forces the
 # whole suite's spaCy stack down into un-buildable source dists and breaks the PyInstaller build.
 fastcoref
 # peft -> the 'Stanza' option: Stanza's coreference model is XLM-RoBERTa with LoRA adapters, loaded through peft.
 # stanza lists peft only under its "transformers" extra, so a plain `stanza` install leaves it out and the zip's
-# Stanza coreference stopped with "No module named 'peft'". peft declares no transformers bound; 0.21.3 imports
-# with the transformers 4.51.3 pin above and also handles transformers 5 (1.6.46). 0.22 needs Python 3.11.
-peft==0.21.3
+# Stanza coreference stopped with "No module named 'peft'" (1.6.46). 0.22 needs Python 3.11 and is the first
+# release made for transformers 5.
+peft>=0.22
 
 # Topic modeling
 bertopic
@@ -68,7 +73,8 @@ wordcloud
 kaleido
 
 # GIS / Maps
-folium
+# folium < 1: 3.11 would lift it to 1.0; kept at 0.x so the GIS maps change only when tested for it
+folium<1
 geopy
 simplekml
 
@@ -111,9 +117,12 @@ pycorenlp
 stanfordcorenlp
 
 # Image
-# Pillow pinned to 10.4.0: Pillow 12.x is incompatible with the bundled Tcl/Tk 8.6 runtime and
-# crashes loading the welcome-screen images (Evan's testing) - the app won't open without this pin.
-Pillow==10.4.0
+# Pillow 13.0.0 is the first release that fixes the open advisories (among them GHSA-c6hw-5grf-ff96, a TIFF
+# decoder out-of-bounds read in 8.1.0 through 12.x); it needs Python 3.11. The old 10.4.0 pin dated from a
+# welcome-screen crash under the bundled Tcl/Tk ("invalid command name PyImagingPhoto"). That crash came from
+# PIL.ImageTk, which the welcome screen and logo no longer use: they go through GUI_util.tk_image_from_pil.
+# The only ImageTk caller left is the Google Earth icon preview, inside a try/except.
+Pillow==13.0.0
 
 # GUI
 tkcolorpicker
@@ -121,7 +130,7 @@ tkcolorpicker
 customtkinter==6.0.0
 
 # IPython: topic_modeling_gensim_util calls pyLDAvis.display, which imports it
-ipython
+ipython<9
 
 # Not installed, because nothing in src/ imports them (docs/future-work.md 2.3): geopandas, shapely, gmaps,
 # googlemaps, geojson and geocoder (only the unused GIS_heatMap* files; GIS_Google_Maps_util writes its own JS),
