@@ -20,6 +20,7 @@ release workflow). Keep the newest version's section at the very top and update 
 - **Sample corpus: "by keywords in documents" works.** It stopped with "search_sentences_documents() missing 3 required positional arguments". It now copies the documents that contain your keywords into a "subcorpus_search" folder of your input folder.
 - **Spell checker: "*" (all checkers) and "Spell checker (via NLTK unusual words)" work.** Both stopped with "nltk_unusual_words() takes from 6 to 8 positional arguments but 10 were given", so with "*" none of the other checkers ran either. "Spell checker (via BERT)" is no longer in the menu: the BERT checker had been removed, and "*" stopped there next.
 - **Data visualization: Sankey charts work.** On the Relational tab every Sankey chart stopped with "IsADirectoryError: Is a directory: '.'", because the chart was given no file name. It is now saved as an html file in your output folder.
+- **N-grams: "Character" is no longer in the N-grams type menu.** Character N-grams were offered but never computed: with "Character" selected, RUN wrote nothing and said nothing. Only word N-grams are available; if "Character" reaches RUN anyway (for example from an old setting), you are told to select "Word".
 
 ## v1.6.45
 - **Sentiment analysis with ANEW, hedonometer, SentiWordNet or VADER is much faster.** Each tool ran Stanza on every word of every document to find its dictionary form; it now does that once for each different word. The scores are the same.
