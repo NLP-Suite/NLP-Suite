@@ -5,6 +5,7 @@ on the corresponding GitHub Release page (the top section is added automatically
 release workflow). Keep the newest version's section at the very top and update it before tagging.
 
 ## Unreleased
+- **MALLET topic modeling works in the downloaded NLP Suite.** On the Mac zip it stopped with "Failed to import tkagg backend" at the first chart. Its charts are now drawn the way every other tool's are.
 - **Coreference with Stanza works in the downloaded NLP Suite.** In the zip it stopped with "No module named 'peft'", a package Stanza's coreference model needs that was not installed. It is now included.
 
 ## v1.6.45
