@@ -4,9 +4,9 @@ import os
 import string
 
 import IO_csv_util
+import IO_internet_util
 
 punctuation = string.punctuation
-import stanza
 
 global called
 global nlp
@@ -138,7 +138,7 @@ def readandsplit(
         return re.findall(r"[A-Za-z']+", out)
     else:
         if not called:
-            nlp = stanza.Pipeline(lang="en", processors="tokenize,lemma")
+            nlp = IO_internet_util.stanza_pipeline(lang="en", processors="tokenize,lemma")
             called = 1
         doc = nlp("".join(out))
         if index + 1 == nFiles:

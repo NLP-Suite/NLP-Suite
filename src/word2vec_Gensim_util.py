@@ -20,7 +20,6 @@ import string
 import gensim
 import numpy as np
 import pandas as pd
-import stanza
 
 import IO_csv_util
 import IO_files_util
@@ -145,10 +144,10 @@ def run_Gensim_word2vec(
 
     # initialize Stanza pipeline
     if lemmatize_var:
-        stanzaPipeLine = stanza.Pipeline(lang="en", processors="tokenize, lemma")
+        stanzaPipeLine = IO_internet_util.stanza_pipeline(lang="en", processors="tokenize, lemma")
         print("Tokenizing and Lemmatizing...")
     else:
-        stanzaPipeLine = stanza.Pipeline(lang="en", processors="tokenize")
+        stanzaPipeLine = IO_internet_util.stanza_pipeline(lang="en", processors="tokenize")
         print("Tokenizing...")
 
     stop_words = _load_stopwords()

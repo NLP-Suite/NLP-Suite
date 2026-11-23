@@ -10,6 +10,7 @@ from SPARQLWrapper import JSON, SPARQLWrapper
 import stanza
 
 import IO_files_util
+import IO_internet_util
 
 sparql = SPARQLWrapper("http://dbpedia.org/sparql")
 ssl._create_default_https_context = ssl._create_unverified_context
@@ -23,7 +24,7 @@ def _get_stanza_pipeline():
     global _stannlp
     if _stannlp is None:
         stanza.download("en")
-        _stannlp = stanza.Pipeline(lang="en", processors="tokenize,ner,mwt,pos,lemma")
+        _stannlp = IO_internet_util.stanza_pipeline(lang="en", processors="tokenize,ner,mwt,pos,lemma")
     return _stannlp
 
 

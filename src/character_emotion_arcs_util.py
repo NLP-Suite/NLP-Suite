@@ -25,6 +25,7 @@ import pandas as pd
 
 import IO_csv_util
 import IO_files_util
+import IO_internet_util
 import IO_user_interface_util
 import nrclex_util
 
@@ -1111,10 +1112,8 @@ def main(
             all_rows = []
 
     if not all_rows:
-        import stanza
-
         try:
-            nlp = stanza.Pipeline(lang="en", processors="tokenize,ner", use_gpu=False)
+            nlp = IO_internet_util.stanza_pipeline(lang="en", processors="tokenize,ner", use_gpu=False)
         except Exception as e:
             mb.showerror(title="Stanza Error", message=f"Could not initialize Stanza NER pipeline.\n\n{str(e)}")
             return filesToOpen

@@ -26,7 +26,6 @@ import matplotlib.pyplot as plt  # pip install matplotlib
 import numpy as np
 import pandas as pd
 from PIL import Image
-import stanza
 from wordcloud import STOPWORDS, WordCloud
 
 import IO_files_util
@@ -747,14 +746,14 @@ def python_wordCloud(
         #   to avoid the same improper word to appear with lower and upper case at the beginning of a sentence
         if not IO_internet_util.ensure_stanza_model("wordclouds_util.py", lang="en", window=GUI_util.window):
             return filesToOpen
-        stannlp = stanza.Pipeline(lang="en", processors="tokenize, mwt")
+        stannlp = IO_internet_util.stanza_pipeline(lang="en", processors="tokenize, mwt")
         runStanza = True
         processors = "tokenize, mwt"
         if lemmatize:
             processors = processors + ", lemma"
         if exclude_punctuation or differentPOS_differentColors:
             processors = processors + ", pos"  # , ner'
-        stannlp = stanza.Pipeline(lang="en", processors=processors)
+        stannlp = IO_internet_util.stanza_pipeline(lang="en", processors=processors)
 
     if runStanza:
         startTime = IO_user_interface_util.timed_alert(

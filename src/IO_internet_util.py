@@ -296,6 +296,30 @@ def stanza_download_message(lang="en", language_name=None):
     )
 
 
+def stanza_pipeline(*args, **kwargs):
+    """stanza.Pipeline(...) that uses the models already on disk, so a tool whose model is downloaded runs offline.
+
+    stanza.Pipeline() fetches resources.json from GitHub every time a pipeline is built (DownloadMethod.
+    DOWNLOAD_RESOURCES), so with no internet every Stanza tool stopped with ConnectionError although its models
+    were there (issue #1764). DownloadMethod.REUSE_RESOURCES reuses the local resources.json and models and
+    downloads only what is missing: resources.json itself, or a model. Build every Stanza pipeline with this;
+    tests/test_stanza_offline.py checks src/ for direct stanza.Pipeline calls. Arguments are stanza.Pipeline's."""
+    import stanza
+    from stanza.pipeline.core import DownloadMethod
+
+    kwargs.setdefault("download_method", DownloadMethod.REUSE_RESOURCES)
+    return stanza.Pipeline(*args, **kwargs)
+
+
+def stanza_multilingual_pipeline(*args, **kwargs):
+    """stanza's MultilingualPipeline(...), reusing the models on disk as stanza_pipeline does (issue #1764)."""
+    from stanza.pipeline.core import DownloadMethod
+    from stanza.pipeline.multilingual import MultilingualPipeline
+
+    kwargs.setdefault("download_method", DownloadMethod.REUSE_RESOURCES)
+    return MultilingualPipeline(*args, **kwargs)
+
+
 def ensure_stanza_model(
     script, download_function=None, resource=None, *, lang="en", resources_dir=None, window=None, language_name=None
 ):
