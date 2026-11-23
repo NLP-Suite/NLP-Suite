@@ -237,6 +237,12 @@ def complete_order(bb, c):
 # ordering: the string like "2,3"
 
 
+class UncomparableFilenames(Exception):
+    """Two filenames cannot be ordered by the filename settings: the whole list is then sorted alphabetically
+    (sort_by_filename_settings). Returning -1 for such a pair made the comparison inconsistent, and sorted()
+    then left the files in arbitrary order."""
+
+
 def do_compare(input_list, file_end, sort_order, compare_split, date_format, date_loc):
     def compare(filename1, filename2):
         if compare_split not in filename1:
@@ -247,7 +253,7 @@ def do_compare(input_list, file_end, sort_order, compare_split, date_format, dat
                 + filename1
                 + "\nYou should edit the filename settings using the button 'Setup INPUT/OUTPUT configuration at the top of the GUI.\n\n"
             )
-            return -1
+            raise UncomparableFilenames(filename1)
         if compare_split not in filename2:
             #  The information may have been entered incorrectly when setting up INPUT/OUTPUT (I/O) configuration. Please, check and edit the information. The information may have been entered incorrectly when setting up INPUT/OUTPUT (I/O) configuration. Please, check and edit the information.
             print(
@@ -257,7 +263,7 @@ def do_compare(input_list, file_end, sort_order, compare_split, date_format, dat
                 + filename2
                 + "\nYou should edit the filename settings using the button 'Setup INPUT/OUTPUT configuration at the top of the GUI.\n\n"
             )
-            return -1
+            raise UncomparableFilenames(filename2)
 
         try:
             filename1 = os.path.basename(filename1).replace(file_end, "")
@@ -287,7 +293,7 @@ def do_compare(input_list, file_end, sort_order, compare_split, date_format, dat
                 val2 = parse_date(filename2, date_format)
                 if val1 is not None and val2 is not None:
                     return -1 if val1 < val2 else 1
-        except:
+        except Exception as e:
             # The following pair of filenames are incompatible with the
             print(
                 "Non fatal filename error: date error. Error ignored.\nThe date format "
@@ -299,7 +305,7 @@ def do_compare(input_list, file_end, sort_order, compare_split, date_format, dat
                 + "\nYou should edit the filename settings using the button 'Setup INPUT/OUTPUT configuration at the top of the GUI.\n\n"
             )
             print(filename1, "\n", filename2)
-            return -1
+            raise UncomparableFilenames(filename2) from e
 
     return sorted(input_list, key=functools.cmp_to_key(compare))
 
@@ -453,11 +459,17 @@ def getFileList(inputFile, inputDir, fileType=".*", silent=False, configFileName
             except:
                 date_pos = 9e999
 
-        try:
-            files = do_compare(files, fileType, sort_order, separator, date_format, date_pos)
-        except:
-            files.sort()
+        files = sort_by_filename_settings(files, fileType, sort_order, separator, date_format, date_pos)
     return files
+
+
+def sort_by_filename_settings(files, fileType, sort_order, separator, date_format, date_pos):
+    """The files in the order of the I/O configuration's filename settings; alphabetical when they cannot be
+    compared that way (a name without the separator or the date, a sort order the names do not fit)."""
+    try:
+        return do_compare(files, fileType, sort_order, separator, date_format, date_pos)
+    except Exception:
+        return sorted(files)
 
 
 def selectFile(window, IsInputFile, checkCoNLL, title, fileType, extension, outputFileVar=None, initialFolder=""):

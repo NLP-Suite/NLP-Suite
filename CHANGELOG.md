@@ -26,6 +26,7 @@ release workflow). Keep the newest version's section at the very top and update 
 - **File checker/converter/cleaner: the rtf → txt converter saves the txt file in your output folder.** With a single rtf file as input, the txt file was written outside the output folder (in a folder built from the rtf file's own path) and nothing told you. It now goes into the output folder, a message says how many files were converted, and an rtf with no text, or one that cannot be read, is named in a warning.
 - **Word search tells you when no search option is selected.** Clicking RUN with nothing ticked was meant to say "No search options have been selected" but never did. It now does.
 - **File checker/converter/cleaner: "Document converter (csv --> txt)" is no longer in the Convert Files menu.** It was never finished: every csv file got "The function is still under construction. Sorry!". It will come back when it works.
+- **Semantic aggregation: "Aggregate by sentence index" works.** It stopped with "Cannot save file into a non-existent directory: '.csv'": the output file name was built with its folder and extension in the wrong places.
 
 ## v1.6.45
 - **Sentiment analysis with ANEW, hedonometer, SentiWordNet or VADER is much faster.** Each tool ran Stanza on every word of every document to find its dictionary form; it now does that once for each different word. The scores are the same.
