@@ -232,7 +232,7 @@ def run():
         # check that input file is a CoNLL table
         if not CoNLL_util.check_CoNLL(csv_file):
             return
-        outputFilename = IO_files_util.generate_output_file_name(csv_file, outputDir, ".csv", "WordNet", "conll")
+        outputFilename = IO_files_util.generate_output_file_name(csv_file, "", outputDir, ".csv", "WordNet", "conll")
         filesToOpen.append(outputFilename)
         outputFiles = semantic_aggregation_WordNet_util.Wordnet_bySentenceID(
             csv_file,
