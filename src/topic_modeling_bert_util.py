@@ -4,8 +4,12 @@ import os
 from bertopic import BERTopic
 from sentence_transformers import SentenceTransformer
 from sklearn.feature_extraction.text import CountVectorizer
+from umap import UMAP
 
 import GUI_util
+
+# UMAP starts from a random layout: with a fixed seed the same corpus gives the same topics on every RUN
+RANDOM_SEED = 42
 
 
 def get_docs(inputDir, split_docs_var):
@@ -56,7 +60,9 @@ def run_BERTopic(inputDir, outputDir, openOutputFiles, split_docs_var):
     sentence_model = SentenceTransformer("all-MiniLM-L6-v2")
     embeddings = sentence_model.encode(docs, show_progress_bar=True)
     vectorizer_model = CountVectorizer(stop_words="english")
-    topic_model = BERTopic(vectorizer_model=vectorizer_model).fit(docs, embeddings)
+    # BERTopic's own default UMAP, plus the seed (which also makes UMAP run on one core)
+    umap_model = UMAP(n_neighbors=15, n_components=5, min_dist=0.0, metric="cosine", random_state=RANDOM_SEED)
+    topic_model = BERTopic(vectorizer_model=vectorizer_model, umap_model=umap_model).fit(docs, embeddings)
     model_path = f"{outputDir}/models"
     if not os.path.exists(model_path):
         os.makedirs(model_path)

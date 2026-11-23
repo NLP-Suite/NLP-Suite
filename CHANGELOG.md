@@ -4,6 +4,9 @@ The most recent release is at the top. Each release's bullets are shown as **"Wh
 on the corresponding GitHub Release page (the top section is added automatically by the
 release workflow). Keep the newest version's section at the very top and update it before tagging.
 
+## Unreleased
+- **BERTopic, MALLET and Word Sense Induction give the same result every time.** Run twice on the same corpus, they found different topics, keywords and sense clusters each time, so an answer could not be reproduced. They now start from a fixed seed. Results differ from earlier versions, and are the same from one RUN to the next. BERTopic may run a little slower on many-core machines.
+
 ## v1.6.45
 - **Sentiment analysis with ANEW, hedonometer, SentiWordNet or VADER is much faster.** Each tool ran Stanza on every word of every document to find its dictionary form; it now does that once for each different word. The scores are the same.
 - **Shape of Stories: best k is much faster on large corpora.** For each k it compared every pair of documents in slow loops: on 958 documents, about 4 minutes per k and 9 to 12 hours for the whole run. It now compares them all at once, with the same results.
