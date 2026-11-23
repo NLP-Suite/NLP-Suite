@@ -4,9 +4,9 @@ import matplotlib.pyplot as plt
 def sense_bar_chart(Word2Vec_Dir, figsize=(20, 10), fontsize=32):
 
     with open(f"{Word2Vec_Dir}/output/senses") as f:
-        tokens = list(set(f.read().split("\n")[:-1]))
+        tokens = sorted(set(f.read().split("\n")[:-1]))  # set order changes with each run's hash seed
     tokens = [tok.split("\t") for tok in tokens]
-    vocab = list(set([tok[1] for tok in tokens]))
+    vocab = sorted(set([tok[1] for tok in tokens]))
     v_paths = []
     for w in vocab:
         chart_title = f"Frequency Distribution of Senses of '{w}'"

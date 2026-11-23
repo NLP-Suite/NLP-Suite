@@ -147,6 +147,19 @@ def _normalize_character_name(name, canonical_map):
     return name
 
 
+def characters_of_sentence(persons, canonical_map):
+    """The characters one sentence's PERSON mentions stand for, in alphabetical order.
+
+    The first variant registered in *canonical_map* names the character for the whole corpus, so the order
+    matters: *persons* is a set, whose order changes with each run's hash seed, and a sentence with "Robin"
+    and "Robin Ellacott" named her either way from one run to the next. The mentions are taken fullest name
+    first (most name words, then longest), then alphabetically, so the same corpus always gives the same names.
+    """
+    ordered = sorted(persons, key=lambda p: (-len(_name_tokens(p)), -len(p), p))
+    characters = {_normalize_character_name(p, canonical_map) for p in ordered}
+    return sorted(characters) or ["_NARRATOR/UNATTRIBUTED_"]
+
+
 def analyze_file(filepath, nlp_pipeline, doc_id, canonical_map=None):
     with open(filepath, encoding="utf-8", errors="ignore") as f:
         text = f.read()
@@ -165,14 +178,7 @@ def analyze_file(filepath, nlp_pipeline, doc_id, canonical_map=None):
         persons = _extract_persons_from_sentence(sent)
         scores = _score_sentence_nrc(sent_text)
 
-        normalized_persons = set()
-        for p in persons:
-            normalized_persons.add(_normalize_character_name(p, canonical_map))
-
-        if not normalized_persons:
-            normalized_persons = {"_NARRATOR/UNATTRIBUTED_"}
-
-        for character in normalized_persons:
+        for character in characters_of_sentence(persons, canonical_map):
             row = {
                 "Document ID": doc_id,
                 "Document": IO_csv_util.dressFilenameForCSVHyperlink(filepath),
@@ -219,8 +225,7 @@ def analyze_conll_table(conll_path):
                 if name and name.lower() != "nan":
                     persons.add(name)
             scores = _score_sentence_nrc(sent_text)
-            normalized = {_normalize_character_name(p, canonical_map) for p in persons} or {"_NARRATOR/UNATTRIBUTED_"}
-            for character in normalized:
+            for character in characters_of_sentence(persons, canonical_map):
                 row = {
                     "Document ID": int(doc_id) if str(doc_id).isdigit() else doc_id,
                     "Document": doc_link,
