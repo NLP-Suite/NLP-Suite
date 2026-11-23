@@ -413,24 +413,17 @@ To do this with `gh` (needs a login): `gh issue close N -c "<comment>"`. Without
 
 Re-measured 18 Nov 2026 over `src/` (223 files). The 16 Jul figures are in brackets.
 
-### 12.1 Latent crashes: undefined names (F821): 43 [68]
+### 12.1 Latent crashes: undefined names (F821)
 
-Most of the remaining 43 are in rarely used tools:
+Fixed on `fix/undefined-names` (23 Nov): 33 of the 44 that `ruff check src --select F821,F823` found, either fixed or removed with the dead code around them, and `tests/test_undefined_names.py` now lints all of `src/` in CI (ruff is installed there for it), so a new one fails the build. The 11 left are in its `KNOWN` list:
 
-| File | Count |
+| File | Why it is left |
 |---|---|
-| `syntactic_analysis_ALL_main.py` | 6 |
-| `GIS_file_check_util.py` | 5 (`np`, `numColumns`, `msgTooFewColumnsForGeocoded`) |
-| `Gephi_util.py` | 5 (`attvalue_xml`, `type_choices`) |
-| `CoNLL_function_words_analysis_util.py` | 5 (`stats_pronouns` …) |
-| `IO_files_util.py` | 3 (§12.2) |
-| 13 more files | 1–2 each |
+| `syntactic_analysis_ALL_main.py` (6) | Fixed on `fix/syntactic-analysis-run`; drop it from `KNOWN` once both have merged |
+| `GIS_KML_util.py` (1, `icon_csv_field_var`) | In `generate_kml`, which nothing calls: delete the function |
+| `html_annotator_extractor_util_NEW.py` (2), `nyt_api_call.py` (2) | Dead files that PR #1706 deletes |
 
-Full list: `ruff check src/ --select F821`.
-
-### 12.2 Error handler that crashes: `IO_files_util.py` ~line 292
-
-In the filename-date sort's `except:`, `date_location` is undefined, so a filename with an unparsable date raises `NameError` instead of printing the "non fatal" notice. The same file also has `gatherCLAs()` (~line 1640), which uses `argparse` without importing it. Delete it or fix it.
+Found while fixing, not fixed (no recipe reaches them, so the change could not be checked): `charts_Excel_main.run` and `sentence_analysis_util.dictionary_items_bySentenceID` passed their arguments to `charts_Excel_util.create_excel_chart` in the wrong order (the output folder got the chart title). The second is fixed on the same branch; the first is not, pending `charts_Excel_line` in the tool sweep.
 
 ### 12.3 Silent failures: 212 bare `except:` [221]
 
@@ -460,7 +453,7 @@ Coverage is 683 test functions in 67 files [3]. Gaps:
 - Large modules (lines): `DB_PCACE_data_analysis_util` 7,731 · `charts_util` 5,620 · `corpus_profiler_util` 4,191 · `Stanford_CoreNLP_util` 3,563 · `statistics_txt_util` 3,033. When you open one for a feature, pull testable helpers out instead of adding in place.
 - About 900 `print()` calls. Move to `logging` over time.
 
-**Order:** §12.2 → F821 file by file → bare excepts on user paths → B023 → B006 → eval/shell.
+**Order:** the F821 left in §12.1 → bare excepts on user paths → B023 → B006 → eval/shell.
 
 ## 13. Branches
 

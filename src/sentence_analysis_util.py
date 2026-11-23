@@ -154,11 +154,14 @@ def dictionary_items_bySentenceID(
         )
         filesToOpen.append(outputFilename)
         IO_csv_util.list_to_csv(window, DictionaryList, outputFilename)
-        outputFilename = IO_files_util.generate_output_file_name(
-            file, inputDir, outputDir, ".xlsx", str(Sentence_ID) + "-Dict_value", "chart", "", "", "", False, True
+        import charts_Excel_util
+
+        # the arguments in the order create_excel_chart takes them (the chart file name is made from the csv's)
+        chartFilename = charts_Excel_util.create_excel_chart(
+            GUI_util.window, [DictionaryList], outputFilename, outputDir, "Dict_value", chart_title, ["bar"]
         )
-        filesToOpen.append(outputFilename)
-        charts_Excel_util.create_excel_chart(GUI_util.window, [DictionaryList], outputFilename, chart_title, ["bar"])
+        if chartFilename:
+            filesToOpen.append(chartFilename)
 
     if openOutputFiles == True:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)

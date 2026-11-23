@@ -354,7 +354,7 @@ def check_for_typo_sub_dir(
         filesToOpen.append(outputFileName_complete)
 
         outputFiles = charts_util.plot(
-            inputFilename,
+            outputFileName_simple,
             outputDir,
             columns=["Typo?"],
             title="Frequency of Potential Typos",
@@ -404,24 +404,6 @@ def check_word_similarity(input_word, checklist, similarity_value):  # similarit
 
 
 # -------------------Angel-----------------End of fuzzywuzzy
-
-
-def check_edit_dist(input_word, checklist, similarity_value):
-    exist_typo = False
-    for word in checklist:
-        # TODO see also pyslpellchecker https://pypi.org/project/pyspellchecker/ which is based on
-        #   Peter Norvig’s blog post on setting up a simple spell checking algorithm based on Levenshtein's edit distance
-        # It uses a Levenshtein Distance
-        dist = nltk.edit_distance(input_word, word[0])
-        if len(input_word) >= similarity_value:
-            if 0 < dist <= 2:
-                exist_typo = True
-                return exist_typo, word[0], word[1]
-                # word[0] is the token, word[1] is the frequency of the token in the entire corpus
-        elif 0 < dist <= 1:
-            exist_typo = True
-            return exist_typo, word[0], word[1]
-    return exist_typo, "", ""
 
 
 # the main checking function, takes input:

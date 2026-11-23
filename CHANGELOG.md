@@ -4,6 +4,9 @@ The most recent release is at the top. Each release's bullets are shown as **"Wh
 on the corresponding GitHub Release page (the top section is added automatically by the
 release workflow). Keep the newest version's section at the very top and update it before tagging.
 
+## Unreleased
+- **Fixed errors that stopped several tools part-way ("NameError").** Excel charts: every chart that was created ended with an error. Google Earth maps: RUN stopped at once. Shape of Stories: a document with only one or a few sentiment scores stopped the run. Semantic analysis: the "Select dictionary file" button for WSI did nothing but raise an error. Word similarity on subdirectories: the typo chart was not drawn. File merger: an unreadable file stopped the merge instead of being reported and skipped. Corpora whose filenames hold a date the Suite cannot read: sorting now prints its warning instead of stopping. Dictionary items by sentence index: the chart step stopped with an error.
+
 ## v1.6.45
 - **Sentiment analysis with ANEW, hedonometer, SentiWordNet or VADER is much faster.** Each tool ran Stanza on every word of every document to find its dictionary form; it now does that once for each different word. The scores are the same.
 - **Shape of Stories: best k is much faster on large corpora.** For each k it compared every pair of documents in slow loops: on 958 documents, about 4 minutes per k and 9 to 12 hours for the whole run. It now compares them all at once, with the same results.

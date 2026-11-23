@@ -293,7 +293,7 @@ def do_compare(input_list, file_end, sort_order, compare_split, date_format, dat
                 "Non fatal filename error: date error. Error ignored.\nThe date format "
                 + date_format
                 + " and/or date location "
-                + str(date_location)
+                + str(date_loc)
                 + " stored for the filenames in your corpus are not valid for the filename\n   "
                 + filename2
                 + "\nYou should edit the filename settings using the button 'Setup INPUT/OUTPUT configuration at the top of the GUI.\n\n"
@@ -1538,19 +1538,6 @@ def run_jar_script(scriptName, inputFilename, inputDir, outputDir, openOutputFil
     #     IO_util.timed_alert(GUI_util.window,2000,'Analysis start','Started running Sentence visualization: Dependency tree viewer (png graphs) at',True,'\n\nYou can follow Sentence Complexity in command line.')
     #     subprocess.call(['java', '-jar', 'DependenSee.Jar', inputFilename, outputDir])
     #     IO_util.timed_alert(GUI_util.window,2000,'Analysis end','Finished running Sentence visualization: Dependency tree viewer (png graphs) at',True,'\n\nMake sure to open the png files in output, one graph for each sentence.')
-    if visualization_tools == "Sentence visualization: Dynamic sentence network viewer (Gephi graphs)":
-        # TODO the script does not work even in command line using the arguments in the ReadMe file; it seems to want two more parameters
-        """
-        Error in input parameters
-        Usage Example:
-        args1 = "inputFilename"
-        args2 = "outputinputFilename.gexf"
-        args3 = true or false
-        args4 = $$$
-        # if checkIO_Filename_InputDir ("Sentence Visualization: Dynamic Sentence Network Viewer (Gephi graphs)",inputFilename, inputDir, outputDir):
-        #     subprocess.call(['java', '-jar', 'DynamicSentenceViewer.jar', inputFilename, outputDir])
-        """
-        return
     if openOutputFiles == True:
         OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
 
@@ -1637,27 +1624,6 @@ def detectCsvHeader (csvFile):
         reader=csv.reader(csvf, has_header)
         print ("detectCsvHeader has_header ",has_header)
 """
-
-
-# function written by Jian Chen for NVA but not used but very helpful to generalize for all scripts
-# Gather any user provided arguments. If incorrect number to run from CL, return False
-def gatherCLAs():
-    parser = argparse.ArgumentParser(description="Process command line arguments for noun verb analysis")
-    parser.add_argument("--inputFile", help="CoNLL file input")
-    parser.add_argument("--outputDir", help="Directory to save output excel/csv files")
-    parser.add_argument("--openFiles", help="<True/False> If true, will open all exported excel/csv files")
-    args = parser.parse_args()
-
-    # numArgsProvided = len(vars(args))
-    # print(numArgsProvided)
-    if len(sys.argv) != 3:
-        return False
-    else:
-        if args.openFiles == "True":
-            openOut = True
-        else:
-            openOut = False
-        return args.inputFile, args.outputDir, openOut
 
 
 # move the gender & quote files under the gender & quote dir where a user is more likely to look for it
