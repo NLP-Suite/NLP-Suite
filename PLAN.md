@@ -2,36 +2,34 @@
 
 What to do before tagging the next release, and what comes after it. The findings behind each item (evidence, line numbers, proposed fixes) are in [docs/future-work.md](docs/future-work.md); section numbers below refer to it. How to fix an issue is in [CLAUDE.md](CLAUDE.md#fixing-an-issue); how a release is checked is in §14. What has shipped is in [CHANGELOG.md](CHANGELOG.md).
 
-**Last updated:** 23 Nov 2026. v1.6.46 (fixes from the tool sweep) released 23 Nov; v1.6.45 (HW 5 speedups) 22 Nov; v1.6.44 (bundle size) 21 Nov. Releases are Cora's (handed over by Roberto). HW 5 is due Sun 6 Dec.
+**Last updated:** 23 Nov 2026. v1.6.47 (Python 3.11, Pillow 13, transformers 5: the security release) released 23 Nov; v1.6.46 (fixes from the tool sweep) 23 Nov; v1.6.45 (HW 5 speedups) 22 Nov; v1.6.44 (bundle size) 21 Nov. Releases are Cora's (handed over by Roberto). HW 5 is due Sun 6 Dec.
 
-## Next: 1.6.47, the Python 3.11 security release (§3)
+## Next: 1.6.48, cleanup and what the sweep left
 
-Python 3.11 with Pillow 13 and transformers 5 should close the open Dependabot alerts. The release carries the bump and nothing else, so a regression points to it (§3.3). It was planned as 1.6.46; that number went to the sweep's bug fixes. In order:
+No dependency changes: `requirements*.txt` and the bundled Python (python-build-standalone `20251217`) stay as in 1.6.47, so the sweep against 1.6.47 shows only what the code changed. In order:
 
-1. **Legacy setup only, `chore/remove-legacy-setup`** (§1.1): `setup_Windows/`, `setup_Mac/`, the two shortcut scripts and `src/requirements*.txt` (108 alerts, closed once on `current-stable`), plus the icon move to `lib/images/`. #1688 depends on it. The rest of #1706 (one-off scripts, unused modules, `build-family-viewer.yml`) waits until it is checked against the family viewer; rebase #1706 after this merges.
-2. **The summarizer** (§3.2), its own PR, `chore/remove-bert-summarizer`: deletes `doc_summary_BERT` (nothing calls it) and `bert-extractive-summarizer`, which blocked transformers ≥ 4.52. Cora decided 23 Nov to delete rather than rewrite.
-3. **Python 3.11, `feat/python-3.11`** (replaces #1688; built on #1800 and #1801): bundled CPython 3.11.14 (python-build-standalone `20251217`, the last with Tcl/Tk 8.6; from `20260113` on it is Tcl/Tk 9, which crashed 54 GUIs in the first candidate: `.trace("w", ...)` is gone), Pillow 13.0.0, `transformers>=5.10` (resolves 5.24), `peft>=0.22`, `stanza>=1.12.2`, py311 in pyproject and pyright, §14, CHANGELOG. Found on the way (23 Nov): 3.11 also lifts pandas to 3.x, folium to 1.0 and ipython to 9, so they are capped below those; and fastcoref 2.1.6 fails to load on transformers 5, fixed by `coreference_neural_util.patch_fastcoref_post_init` (same weights and clusters as on 4.51.3). python-dateutil 4 and datasets 5 come in transitively.
-4. **Dev env: done 23 Nov**, `NLP311` (conda, Python 3.11.18, Tcl 8.6.15: it did not catch the zip's Tcl 9). `pytest tests/`: 1017 passed, 2 failed (both pandas 3, fixed by the cap); `gui_smoke.py`: 150 ok, 0 crashed. fastcoref and Stanza coreference run.
-5. **Checks before the tag** (§3.3's list plus §14). The whole `python-env` is rebuilt, so this one needs the **full** tool sweep of 1.6.47 against **1.6.46** (`~/Documents/NLP_output/tool_sweep/1.6.46`, the published zip), not only the changed tools; then `bundle_gate.py` against a 1.6.46 snapshot. Also BERT NER, embeddings, WSI, fastcoref and Stanza coreference, and BERTopic on a clean Hugging Face cache, and the self-updater 1.6.46 → 1.6.47 (the first update that replaces the bundled Python).
-6. After promotion: re-read the Dependabot list (expect 0 open). Merge the release branch back into `roberto` with a merge commit, not a squash, as for 1.6.45 (#1743) and 1.6.46 (#1797), so the next release can fast-forward `current-stable`.
+1. **Tests, one file per `src/` module: PR #1803.** Rebase on `roberto`. 1.6.47 added two tests to `test_WSI.py`, which #1803 splits: they go to `test_WSI_classes.py`. #1801 has merged, so also fold its two BERT test files (`test_BERT_sentiment_truncation.py`, `test_BERT_word_embeddings.py`) into `test_BERT_util.py`. Pure move: `pytest --collect-only` counts the same tests before and after.
+2. **The rest of #1706** (§1.1): the one-off `src/_*.py` scripts, the unused modules, `post_build_fixup.py`, `wiki-draft-About.md`, `build-family-viewer.yml`. The family-viewer worry is settled (23 Nov): the viewer (`family_archive_app.py`, `gedcom_to_csv.py`) moved to a private repo on 16 Jun 2026 and imported only pandas, geopy and the standard library, nothing #1706 deletes; `build-family-viewer.yml` builds two spec files that are no longer in the repo. Rebase #1706 on `roberto`, drop what 1.6.47 already deleted, merge once Roberto agrees.
+3. **Left from the sweep** (§10): #1779 (functions that do not exist, e.g. Comparative bar charts); the categorical treemap, sunburst and colormap charts stop with "No search values found".
+4. **`tool_sweep.py` on a source checkout:** seed each recipe's `config/` from `lib/config_defaults` when the folder being swept has none. On 23 Nov a source sweep ran about 40 recipes with no language set (VADER: "your language is ''"), so it could not stand in for a zip sweep.
+5. **Checks before the tag** (§14): tool sweep of the candidate against **1.6.47** (sweep the published 1.6.47 zip first; until then `~/Documents/NLP_output/tool_sweep/1.6.47-rc2` plus `1.6.47-rc3-wsi2` for WSI), `bundle_gate.py` against a 1.6.47 snapshot, the self-updater 1.6.47 → 1.6.48. After promotion, merge the release branch back into `roberto` with a merge commit (#1804 did it for 1.6.47).
 
-Settled 23 Nov: the legacy-setup deletion rides in 1.6.47; the rest of #1706 waits.
+## 1.6.49: Tcl/Tk 9, and the newest CPython 3.11 (§3.3)
 
-**The tool sweep** (`tests/tool_sweep.py`, 129 recipes, every GUI has one or a `NOT_COVERED` reason) found the bugs 1.6.46 fixed (#1769–#1796). The second batch and the compare fixes (a recipe the baseline never ran is listed for review, not as a regression) are PR #1799. 1.6.46 checked clean on the published Mac zip: 0 regressions against 1.6.45, and the bundle gate passes. Baselines in `~/Documents/NLP_output/tool_sweep/`: 1.6.45, 1.6.46-rc1 and 1.6.46.
+1.6.47 bundles CPython 3.11.14 from python-build-standalone `20251217`, the last release with Tcl/Tk 8.6. The newest 3.11 (3.11.18, `20261110`) comes only with Tcl/Tk 9, which crashed 54 GUIs at open in the first 1.6.47 candidate. Porting `src/` to Tcl 9 lets the bundled Python take four more CPython patch releases. Its own release, because it touches every GUI. Plan in §3.3.
 
 ## Still to check on the published releases
 
-Nothing has been checked on Windows since 1.6.42. One pass on the **published 1.6.46 Windows zip** covers what 1.6.43–1.6.46 changed:
-1. The menu from the zip, and one tool per family on `python-env` (§2.5): BERT NER, BERTopic, fastcoref coreference, a CoreNLP parse with the bundled JRE, a GIS map, wordclouds, an Excel chart.
-2. Shape of Stories with Hierarchical Clustering ticked (the default); NRC and SentiWordNet; #1705's start-up popups (menu with an empty `config/`, each Setup GUI); the first Stanza download (#1704).
-3. The self-updater from a 1.6.45 install to 1.6.46. Read `%TEMP%\NLP_Suite_update.log`.
+Nothing has been checked on Windows since 1.6.42. One pass on the **published 1.6.47 Windows zip** covers what 1.6.43–1.6.47 changed:
+1. The menu from the zip, and one tool per family on `python-env` (§2.5): BERT NER, BERTopic, fastcoref coreference, Stanza coreference, WSI with BERT, a CoreNLP parse with the bundled JRE, a GIS map, wordclouds, an Excel chart.
+2. Shape of Stories with Hierarchical Clustering ticked (the default); NRC and SentiWordNet; #1705's start-up popups (menu with an empty `config/`, each Setup GUI); the first Stanza download (#1704); the welcome screen and logo (Pillow 13).
+3. The self-updater from a 1.6.46 install to 1.6.47: the first update that replaces the bundled Python, through the Windows (PowerShell) swap script, which the Mac check on 23 Nov did not exercise. Read `%TEMP%\NLP_Suite_update.log`.
 
 Ask students who report update problems to send the update log to coralynn.yang@emory.edu.
 
-## After 1.6.47
+## After 1.6.49
 
-- **Fold the tests into one file per `src/` module** (`test_<module>.py`): about 105 files today, some modules spread over three (`config_util`, `IO_files_util`, `topic_modeling_gensim_util`) and GIS over about a dozen, some named after a bug or a person. Its own PR, a pure move: `pytest --collect-only` counts the same tests before and after. Watch the GIS tests that load functions from the source with their own module-level setup. #1683 and #1682 add `test_gender_dictionary_persons.py` and `test_spaCy_conll_head.py`: rename them after they merge. Can go before 1.6.47.
-- Left from the sweep: #1779 (functions that do not exist, e.g. Comparative bar charts); the categorical treemap, sunburst and colormap charts stop with "No search values found" (§10).
+- **pandas 3, folium 1, ipython 9** (§3.2): 1.6.47 caps them below those versions; moving to each is its own change, tested with the sweep.
 - **Trim the spec further** (§2.1): it keeps spaCy, pandas and the rest for the language advisor, which since #1732 runs on `python-env`. Probe build first.
 - **Performance**, in §6.10's order: next, pandas out of `GUI_util` (§6.3).
 - PR #1682 (spaCy CoNLL IDs, a shared structure) and PR #1683, which needs changes (§9). Close the four stale 2024 PRs with a thank-you comment.

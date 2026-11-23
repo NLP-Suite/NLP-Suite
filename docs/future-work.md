@@ -8,7 +8,7 @@ Moved out of PLAN.md on 11 Nov 2026. The sections keep their scan dates; nothing
 
 - [1. Dead code (scan of 10 Nov 2026)](#1-dead-code-scan-of-10-nov-2026)
 - [2. Bundle size (scan of 11 Nov 2026)](#2-bundle-size-scan-of-11-nov-2026)
-- [3. Security alerts and the Python 3.11 release (scan of 11 Nov 2026)](#3-security-alerts-and-the-python-311-release-scan-of-11-nov-2026)
+- [3. Python and pinned dependencies (after 1.6.47)](#3-python-and-pinned-dependencies-after-1647)
 - [5. Outdated copy and flows (scan of 9 Nov 2026)](#5-outdated-copy-and-flows-scan-of-9-nov-2026)
 - [6. Performance: slow GUI opening and "downloading"](#6-performance-slow-gui-opening-and-downloading)
 - [7. UI overhaul: findings (10 Nov 2026)](#7-ui-overhaul-findings-10-nov-2026)
@@ -26,9 +26,9 @@ Moved out of PLAN.md on 11 Nov 2026. The sections keep their scan dates; nothing
 
 **How it was found:** every `src/*.py` whose module name appears nowhere else in `src/`, `tests/`, `lib/`, the specs, the workflows or the setup scripts (`grep -w`), plus the §5.1 findings. A mention in a comment counts as a use, so the list is short of complete (`videos_util` was found only by reading). Not swept: dead functions and branches inside live modules (§12.7 counts 496 unused variables); `lib/` data files; TIPS pdfs no GUI names.
 
-### 1.1 Delete in a later release, with PR #1706 (needs Roberto's yes)
+### 1.1 The rest of PR #1706 (1.6.48, needs Roberto's yes)
 
-Held out of 1.6.44 (21 Nov) so the bundle-size release changes only what the build ships: nothing below is deleted yet. The deletion was commit `c21e33de` on the old `release/v1.6.44`; it also moved the Windows icon to `lib/images/` and updated the spec and pyproject's ruff excludes. The legacy setup scripts, the two `src/requirements*` files and the icon move went first, on their own, in `chore/remove-legacy-setup` (1.6.47, 23 Nov); the rest waits until it is clear nothing the family viewer builds needs it. Rebase PR #1706 onto `roberto` after that and drop what is already gone. Each file below was checked: nothing imports it, launches it with `run_script`, or names it in a workflow.
+1.6.47 (23 Nov) deleted the legacy setup scripts, `src/requirements*.txt` and moved the Windows icon to `lib/images/` (#1800). What is below is the rest of #1706, held while it was unclear whether the family viewer needed any of it. It does not (23 Nov): the viewer (`family_archive_app.py`, `gedcom_to_csv.py`) moved to a private repo on 16 Jun 2026 (`d6bcf213`) and imported only pandas, geopy and the standard library; `build-family-viewer.yml` builds `FamilyArchiveViewer.spec` and `GedcomConverter.spec`, which left the repo with it. Rebase #1706 on `roberto` and drop what is already gone. Each file below was checked: nothing imports it, launches it with `run_script`, or names it in a workflow.
 
 | Group | Files | Evidence |
 |---|---|---|
@@ -36,7 +36,7 @@ Held out of 1.6.44 (21 Nov) so the bundle-size release changes only what the bui
 | Unused modules | `GIS_heatMapIntegration.py`, `GIS_heatMapintegration_ver2.py`, `html_annotator_extractor_util_NEW.py`, `knowledge_graphs_DBpedia_util_SPARQL.py` (440 lines), `nyt_api_call.py`, `TensorFlow_semantic_analysis.py`, `POTUS_webscraper.py` (2023), `pandas_compat_util.py`, `videos_util.py`, `NLP_setup_download_jars.py` | Imported nowhere. `pandas_compat_util` (July 2026) is a shim for pandas < 1.3 that nothing ever adopted; pandas 2 is pinned. `videos_util` is imported only in commented-out lines (`GUI_util`, `NLP_welcome_main`); `NLP_setup_download_jars` was named only in the old spec's hidden imports |
 | Repo root and workflows | `post_build_fixup.py`, `wiki-draft-About.md`, `.github/workflows/build-family-viewer.yml` | §5.1 #14. The spec mentions `post_build_fixup` only in a comment |
 
-**Checks for the PR:** rerun the grep on the final tree; `pytest tests/`; `tests/gui_smoke.py`; CHANGELOG: one line ("Removed the 2021 Anaconda setup scripts and unused files; nothing a tool uses changed").
+**Checks for the PR:** rerun the grep on the final tree; `pytest tests/`; `tests/gui_smoke.py`; `bundle_gate.py` (some names were in the spec's hidden imports); CHANGELOG: one line ("Removed unused files; nothing a tool uses changed").
 
 ### 1.2 Looks dead, is not
 
@@ -54,7 +54,7 @@ Held out of 1.6.44 (21 Nov) so the bundle-size release changes only what the bui
 
 ## 2. Bundle size (scan of 11 Nov 2026)
 
-**Where it stands:** `release/v1.6.44` trims the spec to what the menu runs, drops TensorFlow and 14 packages nothing imports, and recompresses 42 TIPS pdfs: a CI build of the same commits on 13 Nov was 775 MB (Mac) and 863 MB (Windows), against 1,332 and 1,541 MB for 1.6.43. Re-measure on the 1.6.44 candidate. What is left is below.
+**Where it stands:** 1.6.44 trimmed the spec to what the menu runs, dropped TensorFlow and 14 packages nothing imports, and recompressed 42 TIPS pdfs (1,332 → 775 MB on the Mac, 1,541 → 863 MB on Windows, CI builds of 13 Nov). Zips since: 1.6.46 723 MB (Mac) and 792 MB (Windows); 1.6.47 789 and 859 MB: Python 3.11 with torch 2.15 and transformers 5 grew the unpacked `python-env` from 1,792 to 2,037 MB (`bundle_gate.py`, 23 Nov). What is left is below.
 
 **How it was found:** `gh release view` for the asset sizes; reading `NLP_Suite.spec`, `build-installers.yml` and `run_script_util.py`; a `grep` of `src/*.py` for an `import`/`from` of each package in `requirements*.txt`, then for any mention of the ones with no import. **Not measured:** per-package sizes inside the zip. The figures below that say "estimate" need one release zip unpacked and `du` run on `_internal/` and `python-env/.../site-packages` by package (not possible on Cora's machine; do it on the machine that runs the pre-tag build).
 
@@ -77,72 +77,36 @@ On each candidate:
 - zip size on both OSes; the menu opens from the zip on Windows and on a Mac; `gui_smoke.py`; one tool from each family run from the zip (BERT NER and sentiment, BERTopic, coreference with fastcoref, a CoreNLP parse via the bundled JRE, GIS map, wordclouds, an Excel chart).
 - 14.1: the self-updater 1.6.(n−1) → n still finds its manifest and keeps user files.
 
-## 3. Security alerts and the Python 3.11 release (scan of 11 Nov 2026)
+## 3. Python and pinned dependencies (after 1.6.47)
 
-Dependabot alerts on `current-stable`, read 11 Nov 2026 with `gh api repos/NLP-Suite/NLP-Suite/dependabot/alerts`. Versions below were checked with `uv pip compile requirements.txt requirements-windows.txt` (and the Mac platform) against PyPI on the same day; nothing was built or run.
+### 3.1 What 1.6.47 closed
 
-### 3.1 What is open: 178 alerts
+1.6.47 (23 Nov 2026) moved the build and the bundled `python-env` to Python 3.11, Pillow to 13.0.0 and transformers to 5.x, and deleted `src/requirements*.txt` and `bert-extractive-summarizer` (nothing called it; it held transformers below 4.52). Dependabot on `current-stable` right after the promotion: **0 open, 179 fixed that day.** Re-read it when a requirement changes; `.github/dependabot.yml` is still not wanted (version-update PRs would fight the deliberate pins below).
 
-| Manifest | Pillow | transformers | stanza | protobuf | Closed by |
-|---|---|---|---|---|---|
-| `requirements.txt` (what the build installs) | 52 (4 critical) | 18 (6 high) | — | — | Pillow: #1688. transformers: §3.2 |
-| `src/requirements.txt` | 51 | — | 1 | 2 | Deleted in `chore/remove-legacy-setup` (1.6.47) |
-| `src/requirements_mac.txt` | 50 | — | 1 | 3 | Deleted in `chore/remove-legacy-setup` (1.6.47) |
+Not seen by Dependabot: the SRL env (`setup_SRL.py`: `transformer-srl==2.4.6`, torch 1.7, allennlp, spaCy 2, Python 3.8). Old, with advisories of its own, but opt-in and local, with no newer release to move to.
 
-- **108 of the 178 are in the two stale `src/` files**, which no build reads. Deleting both (§1.1, held out of 1.6.44) closes them once it reaches `current-stable` (Dependabot reads the default branch, not `roberto`). The stanza and protobuf alerts are only there: the root file leaves both unpinned, and today they resolve to stanza 1.15.0 and protobuf 7.36.2, above every fixed version.
-- **Pillow 13.0.0 fixes all 52 in the root file**, and it needs Python 3.11 (no 3.10 wheels). That is #1688.
-- **transformers is the other 18**, and Pillow does not touch them. `release/v1.6.44` moves it from 4.41.2 to 4.51.3, the last version the summarizer allows (§3.2), which closes 7. 14 are fixed by 4.53 (ReDoS, three untrusted-pickle loaders); 4 need 5.x: two remote-code-execution paths (fixed in 5.3 and 5.5), a `save_pretrained` path traversal (5.10) and the `Trainer` (5.0). transformers 5 also needs Python 3.11, so it can only move with #1688.
-- **Not seen by Dependabot:** the SRL env (`setup_SRL.py`: `transformer-srl==2.4.6`, torch 1.7, allennlp, spaCy 2, Python 3.8). It is old and has known advisories of its own, but it is opt-in, local, and has no newer release to move to. Leave it; say so if anyone asks.
+### 3.2 Held back on purpose
 
-Practical exposure is low across the board (the Suite opens the user's own files and downloads fixed models from Hugging Face), but the critical Pillow ones are in JPEG and TIFF decoding, which any image input reaches.
+Each of these was found while testing 1.6.47 and is pinned or patched so that release changed only Python and the security packages. Each is its own later change, checked with the tool sweep.
 
-### 3.2 What blocks transformers: `bert-extractive-summarizer`
+| What | Where | Why it is held | To move it |
+|---|---|---|---|
+| Tcl/Tk 8.6: python-build-standalone `20251217`, CPython 3.11.14 | `build-installers.yml` (`PBS_TAG`, and a step that fails the build if python-env's Tcl is not 8.6) | From `20260113` on, the 3.11 builds carry Tcl/Tk 9 (`20261110`: 3.11.18 with 9.0.4). Tcl 9 removed `trace variable`, so every GUI that calls `.trace("w", ...)` crashed at open (54 in the first candidate). 3.11.14 lacks four CPython patch releases | §3.3 (1.6.49) |
+| `pandas>=2.2,<3` | `requirements.txt` | Python 3.10 held it at 2.x; on 3.11 it resolves to 3.1 (default string dtype, copy-on-write). Two tests failed on it (`test_conll_sentence_table`, `test_shape_of_stories_clustering`) | A migration of its own: the pandas 3 deprecation warnings on 2.3 first, then the sweep |
+| `folium<1`, `ipython<9` | `requirements.txt` | 3.11 lifts them to 1.0 and 9; held so GIS maps and pyLDAvis change only when tested for it | Lift one at a time; the GIS and topic-modeling recipes |
+| fastcoref 2.1.6 patched at load | `coreference_neural_util.patch_fastcoref_post_init` | Unmaintained since 2023; on transformers 5 `FCorefModel` misses `post_init()` ("no attribute 'all_tied_weights_keys'"). The patch calls it; weights and clusters match 4.51.3 | Drop the patch if fastcoref gets a release, or replace fastcoref |
+| Transitive moves 3.11 brought | python-dateutil 3 → 4, datasets 2.14 → 5.2 (fastcoref), numpy 2.2 → 2.4, scikit-learn 1.7 → 1.9, scipy 1.15 → 1.17 | Not pinned: the 1.6.47 sweep showed no change from them | Watch in the next sweeps |
 
-**Decided 23 Nov: deleted** (`chore/remove-bert-summarizer`), not rewritten; the rewrite below is kept only in case someone wants the feature back with a GUI.
+The local dev env for 3.11 is `NLP311` (conda, Python 3.11.18, Tcl 8.6.15). It did not catch the Tcl 9 crash, because conda's Python has Tcl 8.6: only a sweep or `bundle_gate.py` on the built zip did.
 
-**Nothing calls it (found 22 Nov).** `doc_summary_BERT` has no caller in `src/`: no GUI offers it, and `git log -S "doc_summary_BERT("` finds only the May 2023 commit that added it (`3d3abe8d`). So the simpler fix is to delete the function, the module-level `from summarizer import Summarizer` and the requirement, rather than rewrite it below. Roberto's call, since he wrote it; if he wants the feature, it needs a GUI anyway.
+### 3.3 Tcl/Tk 9 (proposed 1.6.49)
 
-The pin exists because `bert-extractive-summarizer` 0.10.1 (its last release, Jan 2022) imports `TransfoXLModel` at load time (`summarizer/bert.py:12`), and transformers removed it in 4.52. So `import summarizer` fails on anything that fixes the alerts, and `BERT_util.py:50` imports it at module level, so every BERT GUI would fail to open, not only the summary.
+Goal: bundle the newest CPython 3.11 from python-build-standalone, which now comes only with Tcl/Tk 9.
 
-It has **one caller**: `doc_summary_BERT`, `BERT_util.py:215`, `Summarizer()` then `bert_model(fullText, min_length=60)`. (It also builds the model inside the per-document loop, so it reloads bert-large-uncased once per file.)
-
-**Fix (small, one PR, before the bump):** replace it with a function in `BERT_util` that does what the package does by default: split sentences, drop those under 60 characters, embed each with `bert-large-uncased` (mean of the second-to-last hidden layer), k-means with k = ceil(0.2 × sentences), keep the sentence nearest each centroid, in document order. transformers and scikit-learn are already requirements, so nothing new is added. Build the model once, outside the loop. Test the selection step (embeddings in, chosen sentence indices out) with synthetic vectors. Then drop `bert-extractive-summarizer` from `requirements.txt`. This works on today's 4.41.2 too, so it can land in any release before the bump.
-
-The other transformers users look safe on 5.x from their imports: `BERT_util` (`AutoTokenizer`, `AutoModelForTokenClassification`, `pipeline`), `WSI_util` (`BertModel`, `BertTokenizer`), `sentence-transformers`, `bertopic`. **fastcoref 2.1.6 was the risk, and did break (23 Nov):** on 5.24 `FCoref()` stops with "'FCorefModel' object has no attribute 'all_tied_weights_keys'", because its `__init__` ends with the old `init_weights()` instead of `post_init()`. `coreference_neural_util.patch_fastcoref_post_init` adds the call; the weights checksum and the clusters match 4.51.3. Earlier note: **fastcoref 2.1.6 is the risk**: it subclasses `BertPreTrainedModel` and imports `transformers.activations.ACT2FN`. The imports still exist in 5.x, but it is unmaintained since 2023 and needs a real coreference run.
-
-Resolution check: with Pillow 13.0.0 and `transformers>=5.10` on Python 3.11, both Windows and Mac resolve (transformers 5.22.2, tokenizers 0.23.3, sentence-transformers 6.3.0, fastcoref 2.1.6, bertopic 0.17.4).
-
-### 3.3 Proposed release: 1.6.47
-
-Planned as 1.6.46 until the tool sweep's fixes took that number (23 Nov).
-
-The Python bump means users download a new bundled Python (the whole env is rebuilt), so if something breaks it should be clear it was the bump. Proposal: this release carries the bump and nothing else, after 1.6.44 (bundle size), 1.6.45 (HW 5 speedups), 1.6.46 (sweep fixes) and the dead files (§1.1) have shipped; #1682 and §6.3 wait for the release after it. Roberto's call.
-
-Prerequisites, in order:
-1. `chore/remove-legacy-setup` is merged (§1.1; the narrow part of #1706). It deletes `src/requirements*.txt` and the STEP1–3 scripts, which also settles two of #1688's open review points: its `src/requirements.txt` hunk goes away, and nothing left creates a `python=3.8` env.
-2. The summarizer PR (§3.2), on its own: `chore/remove-bert-summarizer` deletes it.
-3. Rebase #1688 onto `roberto` after both (its `requirements.txt` hunk sits next to #1705's lines; its `src/requirements.txt` hunk becomes a modify/delete conflict: drop it).
-
-What #1688 then carries, beyond the 3.10 → 3.11 workflow and Pillow change it already has:
-
-| Change | File | Why |
-|---|---|---|
-| `transformers>=5.10` (was `==4.51.3` from 1.6.44; rewrite the comment) | `requirements.txt` | Closes the other 18. If fastcoref fails on 5.x: `transformers>=4.53,<5` closes 14 and leaves the 4, and still needs §3.2 |
-| `peft`: keep `==0.21.3` or move to 0.22 (which needs Python 3.11); rewrite the comment either way | `requirements.txt` | 1.6.46 added it for Stanza coreference. 0.21.3 declares no transformers bound; run Stanza coreference on transformers 5 before choosing |
-| `stanza>=1.12.2` (was unpinned) | `requirements.txt` | No-op today (resolves 1.15.0), but stops a cached or constrained resolve from going back below the pickle-RCE fix |
-| `target-version = "py311"`, `"pythonVersion": "3.11"` | `pyproject.toml`, `pyrightconfig.json` | #1688 left them at 3.10; nothing else open touches them now |
-| Pillow bullet; "CI Python" bullet → 3.11 | §14 here | Settled decisions |
-| Security line: "Pillow 13 and transformers 5 fix N advisories; the app now runs on Python 3.11" | `CHANGELOG.md` | User-facing |
-
-Checks before tagging, added to #1688's own list (installer build on both OSes, welcome screen and logo, `gui_smoke.py` on 3.11, Google Earth icon preview, one heavy pipeline, SRL still runs):
-- BERT: NER, word embeddings, sentiment, WSI. Each downloads its model on first use, so test on a clean Hugging Face cache once.
-- Coreference with the BERT (fastcoref) engine and with Stanza (peft), end to end.
-- The full tool sweep against the 1.6.46 baseline, and `bundle_gate.py` against a 1.6.46 snapshot.
-- BERTopic topic modeling.
-- The self-updater from the previous release: the first update that replaces the bundled Python itself.
-- After the promotion to `current-stable`: re-read the Dependabot list; expect 0 open.
-
-Not needed: protobuf (transitive, resolves to 7.36.2), or a `.github/dependabot.yml` (alerts work without one; version-update PRs would fight the deliberate pins).
+1. **A Tcl 9 dev env.** Unpack `cpython-3.11.18+20261110` (or newer) for the Mac, install `requirements.txt` + `requirements-mac.txt` into it, and run `tests/gui_smoke.py` and `tests/gui_layout_gate.py` on it. That reproduces the crash without a CI build.
+2. **Port the traces.** `src/` has 267 `.trace("w", ...)` calls in 52 files (the old `trace_variable` form, removed in Tcl 9). Change each to `.trace_add("write", callback)`, which exists on Tcl 8.6 too, so the port can merge before the Python moves. The callback's third argument becomes `"write"` instead of `"w"`: grep for callbacks that read it (most are `lambda x, y, z:` and ignore it). A test can fail on any `.trace("` left in `src/`.
+3. **Then the rest of Tk 9**, found by the smoke and layout gates on the Tcl 9 env: CustomTkinter 6.0.0 and `tkcolorpicker` on Tk 9, fonts and scaling (Tk 9 changes the default scaling on Mac and Windows), `PhotoImage` formats, and anything `bundle_gate.py` lists.
+4. **Then the bump:** `PBS_TAG`, the URLs, the two SHA256 lines, and the Tcl check flipped to 9. Full tool sweep against the previous release, bundle gate, and the self-updater (a second python-env swap).
 
 ## 5. Outdated copy and flows (scan of 9 Nov 2026)
 
@@ -168,7 +132,7 @@ Deletions and behaviour changes. Each is ready to do once decided.
 | 11 | `parsers_annotators_main` | Two unreachable "select Stanford CoreNLP as your default package" branches (300–313, 395–408); "Open coreference GUI" checkbox is read and never used; Word2Vec item never matches its own label; coreference item says "via spaCy" (coreferee is gone); Stanza constituency says "not available yet" though Setup offers it | One PR for the annotator menu |
 | 12 | Open-GUI launchers that use `sys.executable` | `DB_PCACE_data_analysis_main`, `DB_PCACE_data_validation_main`, `DB_SQL_main` (frozen: that is the app, not Python); `corpus_checker_PCACE_data_main` runs `sudo Python X_main.py` on a Mac and launches `WordNet.py`, which does not exist | Use `run_script_util` everywhere |
 | 13 | TIPS menu | "pip install & Anaconda environments", "Python: download, install, run", "Anaconda & pip useful commands" are second in the main TIPS list | Move to the end as developer TIPS, or remove. The pdfs themselves, and the Java / CoreNLP / MALLET install TIPS and "Topic modeling and corpus size", need a read |
-| 14 | Dead files | `videos_util.py` (pafy/vlc, imported nowhere), `NLP_setup_download_jars.py`, `knowledge_graphs_DBpedia_util_SPARQL.py`, `nyt_api_call.py`, `html_annotator_extractor_util_NEW.py`, `TensorFlow_semantic_analysis.py`, `GIS_heatMapIntegration.py`, `GIS_heatMapintegration_ver2.py`, `post_build_fixup.py`, `wiki-draft-About.md`, `.github/workflows/build-family-viewer.yml` (its spec files are not in the repo) | **1.6.44, §1.1.** |
+| 14 | Dead files | `videos_util.py` (pafy/vlc, imported nowhere), `NLP_setup_download_jars.py`, `knowledge_graphs_DBpedia_util_SPARQL.py`, `nyt_api_call.py`, `html_annotator_extractor_util_NEW.py`, `TensorFlow_semantic_analysis.py`, `GIS_heatMapIntegration.py`, `GIS_heatMapintegration_ver2.py`, `post_build_fixup.py`, `wiki-draft-About.md`, `.github/workflows/build-family-viewer.yml` (its spec files are not in the repo) | **1.6.48, §1.1.** |
 | 16 | Reminders | 51 titles are in `reminders.csv` twice, under a GUI and under `*`. Popups read only the `*` row, the dropdown toggles the GUI row, so switching a reminder off there does nothing. About 12 definitions in `reminders_util` are used nowhere (Java 64-bit `-d64`, "CoreNLP Server is shutting down", tkinter Mac bug, SVO/WordNet/MALLET/Google Earth "system requirements") | Delete the per-GUI duplicates and the unused definitions |
 | 18 | wordclouds | Menu offers Wordle (site gone) and Tagxedo (needs Silverlight); "Tagul" is now WordArt; Python WordCloud asks for internet though it needs none | Remove the two, rename the third, drop the check |
 | 19 | `MEMO_Development_Notes.md`, `docs/CustomTkinter-Migration-Plan.md` | June 2026 history (Python 3.8 build, Mac Intel CI, files since deleted); a plan that names `setup-app/` and says installers build from `roberto` | A "historical" banner on each, or delete |
@@ -341,10 +305,10 @@ Reviewed 9 Nov 2026. The older PRs conflict only because v1.6.40 reformatted all
 
 | PR | Opened | What | Merge | Tests | Release | Review |
 |---|---|---|---|---|---|---|
-| #1706 | 11-10 | Dead files and the legacy setup scripts (§1.1) | Conflict with `roberto` since #1705 (`README.txt`, `CLAUDE.md`) | — | 1.6.44, if Roberto agrees | Rebase on `roberto`; the pre-tag build is its test |
+| #1706 | 11-10 | The rest of the dead files (§1.1); its legacy-setup part shipped in 1.6.47 (#1800) | Conflicts: rebase and drop the files #1800 deleted | — | 1.6.48, if Roberto agrees | The pre-tag build and `bundle_gate.py` are its test |
+| #1803 | 11-23 | Tests: one file per `src/` module (pure move, 104 → 76 files, 979 tests collected before and after) | Conflict with 1.6.47's `test_WSI.py` change | Full run equal before and after | 1.6.48 | Rebase; also fold #1801's two BERT test files |
 | #1682 | 10-16 | spaCy CoNLL ID/HEAD sentence-level and 1-based | Conflict: ruff only, mechanical | 2 pass | Later (shared structure) | Correct: Stanza and CoreNLP already write 1-based, sentence-level, root 0, and no reader compensates for spaCy's old values. Shared structure, so not in a release about the updater. spaCy tables already on disk stay 0-based: say "re-parse" in the CHANGELOG |
 | #1683 | 10-16 | Gender dictionary looks up only PERSON tokens | Conflict: ruff only | 5 pass | No | **Needs changes:** hardcodes `Stanford_CoreNLP_util.CoreNLP_annotate` whatever parser is configured (so the option now needs Java); returns `''` with no message when no NER csv comes back; once "Will" is a PERSON anywhere, every "will" is tagged |
-| #1688 | 10-26 | Python 3.11 build so Pillow can go to 13.0.0 | Conflict: 2 adjacent lines | CI only | §3.3 | Decide. Whole pinned stack must rebuild on 3.11. STEP2 scripts still create `python=3.8` envs (`setup_Windows/STEP2-install_NLP-Suite.ps1:12`, `setup_Mac/STEP2-install_NLP-Suite.command:35`) and `pyproject.toml`/`pyrightconfig.json` say py310; the PR touches none of them |
 | #1528 | 2024-09 | "dictionary functionality" (CallaGong) | — | — | No | **Close**: targets `current-stable`, 2 years old |
 | #1525 | 2024-09 | Generalized Excel file reads (esunn0412) | — | — | No | **Close**: targets `current-stable`, 2 years old |
 | #1436 | 2024-03 | Document Statistics sentence-length fix (razzak-ammar) | — | — | No | **Close**: check first that v1.6.39's sentence-statistics rewrite fixed it |
@@ -451,11 +415,10 @@ Coverage is 683 test functions in 67 files [3]. Gaps:
 
 Head branches of merged PRs are deleted automatically (repo setting since 18 Nov 2026; the coralynnkc fork has it too). Remote branches besides `roberto`, `current-stable`:
 
-- `cora-batch-2` (30 Oct 2026): collaborator staging, holds a merge of #1699. Not in `roberto`.
 - `mac-font-pin` (22 Jul 2026): not in `roberto`, no open PR. Check whether it's still needed.
 - `dictionary` (Sep 2024), `taeeun` (Dec 2024): heads of stale PRs #1528 and #1525. Delete after those PRs are closed.
 - `remove_shortcut_prompt` (2021), `tony` (2023): no open PR. Delete candidates.
-- Cora's, open work: `spike/1.6.43-bundle-size-rc` (§2, now 1.6.44), `chore/remove-dead-files` (#1706).
+- Cora's, open work: `chore/remove-dead-files` (#1706), `chore/tests-one-file-per-module` (#1803). The 1.6.43 spike branches and the 1.6.44 backup were deleted on 23 Nov.
 
 Deleting someone else's remote branch is Roberto's call.
 
