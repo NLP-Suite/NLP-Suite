@@ -17,7 +17,7 @@ Python 3.11 with Pillow 13 and transformers 5 should close the open Dependabot a
 
 Open question: does #1706 ship as its own release first (then the Python bump becomes 1.6.48), or ride in 1.6.47? §3.3 assumed its own.
 
-**The tool sweep** (`tests/tool_sweep.py`, 129 recipes, every GUI has one or a `NOT_COVERED` reason) found the bugs 1.6.46 fixed (#1769–#1796). Its own PR (`feat/tool-sweep`) is still open work: `compare` reports a recipe missing from the baseline as a REGRESSION and should list it as new; then rebase onto `roberto` and open the PR. Baselines in `~/Documents/NLP_output/tool_sweep/`: 1.6.45, 1.6.46-rc1 and 1.6.46.
+**The tool sweep** (`tests/tool_sweep.py`, 129 recipes, every GUI has one or a `NOT_COVERED` reason) found the bugs 1.6.46 fixed (#1769–#1796). The second batch and the compare fixes (a recipe the baseline never ran is listed for review, not as a regression) are PR #1799. 1.6.46 checked clean on the published Mac zip: 0 regressions against 1.6.45, and the bundle gate passes. Baselines in `~/Documents/NLP_output/tool_sweep/`: 1.6.45, 1.6.46-rc1 and 1.6.46.
 
 ## Still to check on the published releases
 
