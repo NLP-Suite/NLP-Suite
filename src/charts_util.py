@@ -1462,11 +1462,12 @@ def multiple_barchart(datalist, outputFilename, var, ntopchoices):
 # points is the choice to represent all points of data, the outliers, or none of them, it should be given through a dropdown menu
 # color is another choice of categorical variable to split the data along
 def boxplot(data, outputFilename, var, points, bycategory=None, category=None, color=None):
+    # The GUI's "Data" menu offers all, None and outliers; Plotly takes "all", "outliers" or False.
     if points == "All points":
         points = "all"
-    elif points == "no points":
+    elif points in ("no points", "None"):
         points = False
-    elif points == "outliers only":
+    elif points in ("outliers only", ""):
         points = "outliers"
     if color == "":
         color = None
