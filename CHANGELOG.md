@@ -8,6 +8,7 @@ release workflow). Keep the newest version's section at the very top and update 
 - **MALLET topic modeling works in the downloaded NLP Suite.** On the Mac zip it stopped with "Failed to import tkagg backend" at the first chart. Its charts are now drawn the way every other tool's are.
 - **Coreference with Stanza works in the downloaded NLP Suite.** In the zip it stopped with "No module named 'peft'", a package Stanza's coreference model needs that was not installed. It is now included.
 - **Parsers & annotators tells you when a choice cannot run.** With Stanford CoreNLP as your package, a parser CoreNLP does not offer (for example "Dependency parser", left in the menu from Stanza or spaCy) or an annotator it does not have (Word embeddings) made RUN do nothing, with no message. You now get a warning that says what to pick instead.
+- **BERTopic on a small corpus tells you why it found no topics, instead of crashing.** On a few dozen whole documents BERTopic often finds no topic, and it stopped with "Found array with 0 sample(s)"; with fewer than 10 documents it stopped with "k must be less than or equal to the number of training points". It now saves the topic table, skips the topic hierarchy chart, and suggests ticking "Split documents into sentences".
 
 ## v1.6.45
 - **Sentiment analysis with ANEW, hedonometer, SentiWordNet or VADER is much faster.** Each tool ran Stanza on every word of every document to find its dictionary form; it now does that once for each different word. The scores are the same.
