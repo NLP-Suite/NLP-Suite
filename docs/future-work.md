@@ -112,9 +112,11 @@ The other transformers users look safe on 5.x from their imports: `BERT_util` (`
 
 Resolution check: with Pillow 13.0.0 and `transformers>=5.10` on Python 3.11, both Windows and Mac resolve (transformers 5.22.2, tokenizers 0.23.3, sentence-transformers 6.3.0, fastcoref 2.1.6, bertopic 0.17.4).
 
-### 3.3 Proposed release: 1.6.46
+### 3.3 Proposed release: 1.6.47
 
-The Python bump means users download a new bundled Python (the whole env is rebuilt), so if something breaks it should be clear it was the bump. Proposal: this release carries the bump and nothing else, after 1.6.44 (bundle size), 1.6.45 (HW 5 speedups) and the dead files (§1.1) have shipped; #1682 and §6.3 wait for the release after it. Roberto's call.
+Planned as 1.6.46 until the tool sweep's fixes took that number (23 Nov).
+
+The Python bump means users download a new bundled Python (the whole env is rebuilt), so if something breaks it should be clear it was the bump. Proposal: this release carries the bump and nothing else, after 1.6.44 (bundle size), 1.6.45 (HW 5 speedups), 1.6.46 (sweep fixes) and the dead files (§1.1) have shipped; #1682 and §6.3 wait for the release after it. Roberto's call.
 
 Prerequisites, in order:
 1. #1706 is merged (§1.1, after 1.6.45). It deletes `src/requirements*.txt` and the STEP1–3 scripts, which also settles two of #1688's open review points: its `src/requirements.txt` hunk goes away, and nothing left creates a `python=3.8` env.
@@ -126,6 +128,7 @@ What #1688 then carries, beyond the 3.10 → 3.11 workflow and Pillow change it 
 | Change | File | Why |
 |---|---|---|
 | `transformers>=5.10` (was `==4.51.3` from 1.6.44; rewrite the comment) | `requirements.txt` | Closes the other 18. If fastcoref fails on 5.x: `transformers>=4.53,<5` closes 14 and leaves the 4, and still needs §3.2 |
+| `peft`: keep `==0.21.3` or move to 0.22 (which needs Python 3.11); rewrite the comment either way | `requirements.txt` | 1.6.46 added it for Stanza coreference. 0.21.3 declares no transformers bound; run Stanza coreference on transformers 5 before choosing |
 | `stanza>=1.12.2` (was unpinned) | `requirements.txt` | No-op today (resolves 1.15.0), but stops a cached or constrained resolve from going back below the pickle-RCE fix |
 | `target-version = "py311"`, `"pythonVersion": "3.11"` | `pyproject.toml`, `pyrightconfig.json` | #1688 left them at 3.10; nothing else open touches them now |
 | Pillow bullet; "CI Python" bullet → 3.11 | §14 here | Settled decisions |
@@ -133,7 +136,8 @@ What #1688 then carries, beyond the 3.10 → 3.11 workflow and Pillow change it 
 
 Checks before tagging, added to #1688's own list (installer build on both OSes, welcome screen and logo, `gui_smoke.py` on 3.11, Google Earth icon preview, one heavy pipeline, SRL still runs):
 - BERT: NER, document summary (the §3.2 replacement), word embeddings, sentiment, WSI. Each downloads its model on first use, so test on a clean Hugging Face cache once.
-- Coreference with the BERT (fastcoref) engine, end to end.
+- Coreference with the BERT (fastcoref) engine and with Stanza (peft), end to end.
+- The full tool sweep against the 1.6.46 baseline, and `bundle_gate.py` against a 1.6.46 snapshot.
 - BERTopic topic modeling.
 - The self-updater from the previous release: the first update that replaces the bundled Python itself.
 - After the promotion to `current-stable`: re-read the Dependabot list; expect 0 open.
