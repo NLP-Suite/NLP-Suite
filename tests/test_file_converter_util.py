@@ -1,10 +1,22 @@
-"""rtf -> txt converter writes the txt file in the output folder and says what it did (#1766).
+"""Tests for src/file_converter_util.py, one file per module (folded from 2 files, 23 Nov 2026).
+
+From test_rtf_converter.py:
+
+rtf -> txt converter writes the txt file in the output folder and says what it did (#1766).
 
 For a single input file (no input folder), rtf_converter named the output os.path.join(outputDir,
 os.path.relpath(doc, os.path.commonprefix([doc, ""]))): commonprefix with "" is "", so relpath worked relative to
 the current directory, and the txt went to outputDir/../../<the input file's path>, outside the output folder, with
 no message. The function is pulled out of file_converter_util (which imports pdfminer, docx, striprtf: not in CI)
 and run with striprtf's rtf_to_text stubbed.
+
+From test_csv_converter_not_offered.py:
+
+File checker/converter/cleaner: the unfinished csv -> txt converter is not offered (#1768).
+
+file_converter_util.csv_converter answers every csv with "The function is still under construction. Sorry!", yet
+"Document converter (csv --> txt)" was the first item of the Convert Files menu. It is out of the menu and of the
+option -> function map until it exists.
 """
 
 import ast
@@ -89,3 +101,30 @@ def test_an_unreadable_rtf_is_reported(corpus):
     rtf_converter(MagicMock(), str(rtf), "", str(tmp_path / "out"), "cfg.csv", False, "Excel", "No transformation")
     assert namespace["mb"].showwarning.call_count == 1
     assert "bad rtf" in str(namespace["mb"].showwarning.call_args)
+
+
+# ---- formerly tests/test_csv_converter_not_offered.py -------------------------------------------------------
+
+SRC = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "src")
+SOURCE = open(os.path.join(SRC, "file_checker_converter_cleaner_main.py"), encoding="utf-8").read()
+
+
+def _convert_menu_values():
+    for n in ast.walk(ast.parse(SOURCE)):
+        if (
+            isinstance(n, ast.Call)
+            and getattr(n.func, "attr", None) == "OptionMenu"
+            and any(isinstance(a, ast.Name) and a.id == "convert_tools_var" for a in n.args)
+        ):
+            return [a.value for a in n.args if isinstance(a, ast.Constant)]
+    raise AssertionError("Convert Files menu not found")
+
+
+def test_csv_converter_is_not_in_the_convert_menu():
+    values = _convert_menu_values()
+    assert "Document converter (docx --> txt)" in values
+    assert not any("csv" in v for v in values)
+
+
+def test_csv_converter_is_not_mapped():
+    assert "csv_converter" not in SOURCE

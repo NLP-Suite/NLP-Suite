@@ -435,7 +435,7 @@ Largest reliability lever. Convert to `except Exception`, and on user-facing pat
 ### 12.6 Tests
 
 Coverage is 683 test functions in 67 files [3]. Gaps:
-- No **empty-DataFrame** regression test for the chart/statistics pipeline (only `test_emotion_arc_html.py` covers an empty frame).
+- No **empty-DataFrame** regression test for the chart/statistics pipeline (only the emotion-arc tests in `test_character_emotion_arcs_util.py` cover an empty frame).
 - No **multi-column chart** regression test for `charts_util` (the v1.6.4 "by Document" grouped-bar fix has no test).
 
 ### 12.7 Hygiene

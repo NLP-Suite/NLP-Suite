@@ -1,4 +1,8 @@
-"""Word sense induction (WSI_classes / WSI_util): the helpers that pick WHICH vector and WHICH k.
+"""Tests for src/WSI_classes.py.
+
+Split from test_WSI.py (23 Nov 2026), whose docstring was:
+
+Word sense induction (WSI_classes / WSI_util): the helpers that pick WHICH vector and WHICH k.
 
 The keyword's vector used to be read one position too early: the model input starts with [CLS], the
 wordpiece list does not, so position token_i held the PREVIOUS wordpiece. Senses were induced from the
@@ -21,8 +25,8 @@ for _mod in (
 ):
     sys.modules.setdefault(_mod, MagicMock())
 
+
 import WSI_classes  # noqa: E402
-import WSI_util  # noqa: E402
 
 
 def _fake_layers(n_layers=12, n_sents=2, n_positions=6):
@@ -72,24 +76,3 @@ class TestBestK:
 
     def test_tie_goes_to_fewer_senses(self):
         assert WSI_classes.best_k({4: 0.5, 2: 0.5}) == 2
-
-
-class TestParseKeywords:
-    def test_comma_separated_lowercased(self):
-        assert WSI_util.parse_keywords(" Bank, river ,BANK,, ") == ["bank", "river"]
-
-    def test_csv_dictionary_file(self, tmp_path):
-        # the "Select dictionary file" button puts the csv PATH into the keywords widget
-        f = tmp_path / "words.csv"
-        f.write_text("Bank,finance\nSpring\n\nbank\n", encoding="utf-8")
-        assert WSI_util.parse_keywords(str(f)) == ["bank", "spring"]
-
-
-class TestSplitFoundMissing:
-    def test_splits_in_input_order(self):
-        sents = [(0, "we sat on the bank", "a.txt"), (1, "spring came early", "b.txt")]
-        assert WSI_util.split_found_missing(sents, ["spring", "gaze", "bank"]) == (["spring", "bank"], ["gaze"])
-
-    def test_whole_words_only(self):
-        sents = [(0, "the banker left", "a.txt")]
-        assert WSI_util.split_found_missing(sents, ["bank"]) == ([], ["bank"])

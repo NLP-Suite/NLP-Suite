@@ -1,8 +1,29 @@
-"""Unit tests for the Head / DepRel / Deps columns of the Stanford CoreNLP CoNLL table.
+"""Tests for src/Stanford_CoreNLP_util.py, one file per module (folded from 3 files, 23 Nov 2026).
+
+From test_corenlp_conll_dependencies.py:
+
+Unit tests for the Head / DepRel / Deps columns of the Stanford CoreNLP CoNLL table.
 
 The fixture is CoreNLP 4.6.0 PCFG output (tokenize, ssplit, pos, lemma, ner, parse) for
 "John and Mary left. She wanted to leave.", trimmed to the fields the parser routine reads. In both
 sentences one token has two enhanced edges, so the enhanced graph cannot fill the one-edge Head/DepRel columns.
+
+From test_corenlp_coref_resolved_text.py:
+
+process_json_coref: the resolved text is built without crashing when a period comes first.
+
+get_resolved skips a ". " that would follow another period, and checked result[-1] to find one. When ". " was the
+first token output, result was still '' and the check raised IndexError: string index out of range, which ended a
+958-document SVO + coreference run on its 86th file.
+
+From test_corenlp_parser_annotator.py:
+
+Parsers & annotators: which CoreNLP annotator a parser choice runs, and '' when the package does not offer it.
+
+With Stanford CoreNLP as the package, run() mapped only "PCFG" and "Neural Network" to an annotator; any other
+parser choice (e.g. "Dependency parser", left in the menu from Stanza or spaCy) left the annotator empty and RUN
+did nothing, with no message (found 22 Nov 2026 by tests/tool_sweep.py, recipe parser_CoreNLP). run() now warns
+when ``CoreNLP_parser_annotator`` returns ''.
 """
 
 import sys
@@ -114,3 +135,87 @@ def test_deprel_annotator_uses_the_tree():
     by_form = {(row[5], row[1]): (row[2], row[3]) for row in rows}
     assert by_form[("1", "Mary")] == (1, "conj")
     assert by_form[("2", "She")] == (2, "nsubj")
+
+
+# ---- formerly tests/test_corenlp_coref_resolved_text.py -----------------------------------------------------
+
+# Imported at the top of Stanford_CoreNLP_util but not needed by the json routines; CI installs only pytest.
+_STUBS = [
+    "pycorenlp",
+    "Stanford_CoreNLP_clause_util",
+    "Stanford_CoreNLP_SVO_enhanced_dependencies_util",
+    "file_splitter_ByLength_util",
+    "file_splitter_merged_txt_util",
+    "parsers_annotators_visualization_util",
+]
+with patch.dict(sys.modules, {name: MagicMock() for name in _STUBS}):
+    import Stanford_CoreNLP_util
+
+
+def _token(word, lemma=None, pos="NN", after=" "):
+    return {"word": word, "lemma": lemma or word, "pos": pos, "after": after}
+
+
+def _resolve(sentences, corefs=None):
+    json = {"sentences": [{"tokens": tokens} for tokens in sentences], "corefs": corefs or {}}
+    return Stanford_CoreNLP_util.process_json_coref("config.csv", 1, "doc.txt", 0, json)
+
+
+def test_period_first_does_not_crash():
+    text = _resolve([[_token(".", pos=".")], [_token("Rain", pos="NN"), _token("fell", "fall", "VBD", "")]])
+    assert text == ". Rain fell"
+
+
+def test_period_after_period_is_still_skipped():
+    text = _resolve([[_token("Stop", pos="VB", after=""), _token(".", pos=".", after="")], [_token(".", pos=".")]])
+    assert text == "Stop."
+
+
+def test_pronoun_takes_its_antecedent():
+    corefs = {
+        "1": [
+            {"text": "Mary", "type": "PROPER", "sentNum": 1, "startIndex": 1},
+            {"text": "she", "type": "PRONOMINAL", "sentNum": 2, "startIndex": 1},
+        ]
+    }
+    text = _resolve(
+        [
+            [_token("Mary", pos="NNP"), _token("left", "leave", "VBD", ""), _token(".", pos=".")],
+            [_token("she", "she", "PRP"), _token("returned", "return", "VBD", ""), _token(".", pos=".", after="")],
+        ],
+        corefs,
+    )
+    assert text == "Mary left. Mary returned."
+
+
+# ---- formerly tests/test_corenlp_parser_annotator.py --------------------------------------------------------
+
+# Imported at the top of Stanford_CoreNLP_util but not needed here; CI installs only pytest.
+_STUBS = [
+    "pycorenlp",
+    "Stanford_CoreNLP_clause_util",
+    "Stanford_CoreNLP_SVO_enhanced_dependencies_util",
+    "file_splitter_ByLength_util",
+    "file_splitter_merged_txt_util",
+    "parsers_annotators_visualization_util",
+]
+with patch.dict(sys.modules, {name: MagicMock() for name in _STUBS}):
+    import Stanford_CoreNLP_util
+
+
+def test_the_two_CoreNLP_parsers():
+    assert (
+        Stanford_CoreNLP_util.CoreNLP_parser_annotator("Probabilistic Context Free Grammar (PCFG)") == "parser (pcfg)"
+    )
+    assert Stanford_CoreNLP_util.CoreNLP_parser_annotator("Neural Network") == "parser (nn)"
+
+
+def test_parsers_of_other_packages_give_nothing():
+    for choice in ("Dependency parser", "Constituency parser", ""):
+        assert Stanford_CoreNLP_util.CoreNLP_parser_annotator(choice) == ""
+
+
+def test_every_parser_offered_for_CoreNLP_maps_to_an_annotator():
+    # the list NLP_setup_package_language_main and config_util offer for Stanford CoreNLP
+    for choice in ("Neural Network", "Probabilistic Context Free Grammar (PCFG)"):
+        assert Stanford_CoreNLP_util.CoreNLP_parser_annotator(choice) != ""
