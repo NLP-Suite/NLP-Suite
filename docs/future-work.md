@@ -415,12 +415,11 @@ Re-measured 18 Nov 2026 over `src/` (223 files). The 16 Jul figures are in brack
 
 ### 12.1 Latent crashes: undefined names (F821)
 
-Fixed on `fix/undefined-names` (23 Nov): 33 of the 44 that `ruff check src --select F821,F823` found, either fixed or removed with the dead code around them, and `tests/test_undefined_names.py` now lints all of `src/` in CI (ruff is installed there for it), so a new one fails the build. The 11 left are in its `KNOWN` list:
+Fixed on `fix/undefined-names` (23 Nov): 34 of the 44 that `ruff check src --select F821,F823` found, either fixed or removed with the dead code around them (among it `GIS_KML_util.py`, which nothing called, and the three pin helpers in `GIS_Google_pin_util` only it used), and `tests/test_undefined_names.py` now lints all of `src/` in CI (ruff is installed there for it), so a new one fails the build. The 11 left are in its `KNOWN` list:
 
 | File | Why it is left |
 |---|---|
 | `syntactic_analysis_ALL_main.py` (6) | Fixed on `fix/syntactic-analysis-run`; drop it from `KNOWN` once both have merged |
-| `GIS_KML_util.py` (1, `icon_csv_field_var`) | In `generate_kml`, which nothing calls: delete the function |
 | `html_annotator_extractor_util_NEW.py` (2), `nyt_api_call.py` (2) | Dead files that PR #1706 deletes |
 
 Found while fixing, not fixed (no recipe reaches them, so the change could not be checked): `charts_Excel_main.run` and `sentence_analysis_util.dictionary_items_bySentenceID` passed their arguments to `charts_Excel_util.create_excel_chart` in the wrong order (the output folder got the chart title). The second is fixed on the same branch; the first is not, pending `charts_Excel_line` in the tool sweep.

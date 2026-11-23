@@ -21,8 +21,6 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Files whose hits are left as they are, with the reason. Shrink this list; never grow it for new code.
 KNOWN = {
-    # generate_kml has no caller anywhere in src/; delete it with its module's other dead code
-    "GIS_KML_util.py": "unreachable: generate_kml is never called",
     # dead files that PR #1706 deletes
     "html_annotator_extractor_util_NEW.py": "deleted by PR #1706",
     "nyt_api_call.py": "deleted by PR #1706",

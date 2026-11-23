@@ -1112,7 +1112,6 @@ def geocode(
 
 
 # TODO MINO GIS date option
-# from GIS_KML_util
 # convert date to Google Earth Pro date (GEP)
 def convertToGEP(date):
     GEPdateFormat = ""
