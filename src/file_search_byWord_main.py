@@ -50,7 +50,7 @@ def run():
 
     filesToOpen = []
 
-    if extra_GUIs_var == False and search_by_dictionary == False and search_by_keyword == False:
+    if extra_GUIs_var.get() == False and search_by_dictionary == False and search_by_keyword == False:
         mb.showwarning(
             title="Input error",
             message="No search options have been selected.\n\nPlease, select a search option and try again.",
