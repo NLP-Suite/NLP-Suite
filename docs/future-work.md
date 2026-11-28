@@ -19,6 +19,7 @@ Moved out of PLAN.md on 11 Nov 2026. The sections keep their scan dates; nothing
 - [13. Branches](#13-branches)
 - [14. Requirements, release checks and settled decisions](#14-requirements-release-checks-and-settled-decisions)
 - [15. The updater: known limits](#15-the-updater-known-limits)
+- [16. Outdated NLP tools and models (scan of 28 Nov 2026)](#16-outdated-nlp-tools-and-models-scan-of-28-nov-2026)
 
 ---
 
@@ -447,3 +448,57 @@ Deleting someone else's remote branch is Roberto's call.
 - GitHub allows 60 unauthenticated API calls an hour per IP; on a shared campus network the exit-time release lookup can get 403. The fallback is the download page with the reason.
 - The Git update on `current-stable` still runs `git add -A` + `git stash`, so local edits go into a stash silently.
 - A release file the NLP Suite itself rewrites at run time would keep the backup every time; none is known.
+
+## 16. Outdated NLP tools and models (scan of 28 Nov 2026)
+
+What each tool uses, whether it is still current, and what would replace it. Inventory from `requirements.txt`, model IDs hard-coded in `src/`, and the GUI menus. Replacements were checked with web searches on 28 Nov 2026 (search results only; the pages were not read in full); entries marked *judgment* were not checked. Lexicon and corpus-trained methods (VADER, NRC, hedonometer, MALLET, Word2Vec) are not state of the art on benchmarks but remain defensible in social-science work because they are interpretable: keep them. Every swap changes outputs, so add new options beside the old ones rather than replacing them, record the model ID in the output, and run `tests/tool_sweep.py` (§14).
+
+### 16.1 Proposed order
+
+| # | Change | Where | Risk |
+|---|---|---|---|
+| 1 | Retire the `transformer-srl` / AllenNLP 3.8 env | `SRL_util.py`, `SRL_worker.py`, `setup_SRL.py`, `lib/SRL/` | High: no maintained drop-in (16.5) |
+| 2 | One configurable embedding model instead of three hard-coded 2018–2021 ones | `semantic_similarity_util.py:56`, `topic_modeling_bert_util.py:82`, `BERT_util.py:227`; `bert-base-uncased` in `WSI_util.py:219`, `:244` | Medium: outputs change, download grows |
+| 3 | GlotLID for language detection | `file_spell_checker_util.py`, `corpus_profiler_util.py:256`, style analysis | Low; adds `fasttext` |
+| 4 | Maverick as a coreference option; fastcoref as default (ties to §5.1) | `coreference_neural_util.py`, `coreference_main.py:348` | Medium: licence |
+| 5 | GLiNER in place of the unimplemented IBM zshot NER option | `BERT_util.NER_tags_BERT()` sibling, `NER_main.py:489` | Low; check its transformers pin against `>=5.10` |
+| 6 | "Legacy" group in the sentiment menu (CoreNLP, Stanza, SentiWordNet, TextBlob) | `SA_algorithms` in `sentiment_analysis_main.py`, `sentiment_analysis_util.selected_algorithms()`, the group-name test at `sentiment_analysis_main.py:792` | Low |
+| 7 | A sentiment model not trained on tweets | `BERT_util.sentiment_analysis_BERT(model_path=...)` | Medium |
+| 8 | Open English WordNet via `wn` (already a requirement) | 7 files import `nltk.corpus.wordnet`; SentiWordNet must stay on WordNet 3.0 | Low |
+| 9 | CoreNLP no longer the default parser | `NLP_setup_package_language_main.py`; first give OpenIE, enhanced dependencies and clauses a non-CoreNLP path | High |
+
+### 16.2 Parsers
+
+- **Stanford CoreNLP** (repo mentions 4.2.0 and 4.6.0): pre-transformer models; still released (4.5.9 / 4.5.10 in 2025), mostly maintenance ([releases](https://github.com/stanfordnlp/CoreNLP/releases)). Keep as an option.
+- **Stanza** (`>=1.12.2`): current and maintained ([release history](https://stanfordnlp.github.io/stanza/release_history.html)). Keep as default.
+- **spaCy `en_core_web_sm`** (18 call sites): lowest-accuracy English model. Route all loads through one `spaCy_util` loader with a sm/trf choice in setup; `en_core_web_trf` is already used in 2 places.
+
+### 16.3 NER and coreference
+
+- **NER, `djagatiya/ner-roberta-base-ontonotesv5-englishv4`:** adequate RoBERTa-base fine-tune (*judgment*). Add [GLiNER](https://github.com/urchade/GLiNER) for user-named entity types; a fork, [neuml/gliner](https://github.com/neuml/gliner), exists to relax its transformers pin.
+- **Coreference:** CoreNLP (about 2016, pronouns only) and Stanza are the menu's first options; fastcoref ("BERT") also clusters nominal mentions. [Maverick](https://aclanthology.org/2024.acl-long.722) (ACL 2024, `pip install maverick-coref`) reports state of the art on CoNLL-2012 at much lower memory and time; a mirror lists its licence as CC BY-NC 4.0 ([libraries.io](https://libraries.io/pypi/maverick-coref)): confirm on the official repo before shipping. It fits as a second backend in `coreference_neural_util.py` under the same `(corefed_files, errorFound)` contract.
+
+### 16.4 Sentiment and emotion
+
+- **Cardiff RoBERTa / XLM-R** (`cardiffnlp/twitter-*`): trained on tweets, a poor fit for narrative text. The multilingual one is the hard-coded default in `BERT_util.sentiment_main()`.
+- **Obsolete for accuracy:** CoreNLP sentiment (RNTN, 2013), Stanza sentiment, SentiWordNet 3.0, TextBlob/Pattern. Move to "Legacy".
+- **ANEW** (`lib/sentimentLib/EnglishANEW.csv`, 1999, about 1,000 words): Warriner et al. 2013 (about 14k words) or NRC VAD have the same valence/arousal/dominance columns (*judgment*).
+- **Keep:** VADER, hedonometer (also feeds Shape of Stories), NRC EmoLex.
+
+### 16.5 SRL, SVO, OpenIE
+
+- **SRL:** [transformer-srl](https://github.com/riccorl/transformer-srl) (BERT-base, Shi & Lin 2019) on AllenNLP 1.2 / torch 1.7 / Python 3.8; AllenNLP was archived in 2022. The search found no maintained, pip-installable English PropBank SRL with pretrained models; research continues ([2025 survey](https://arxiv.org/html/2502.08660)). Options: keep it frozen and isolated; re-host the checkpoint on current torch/transformers without AllenNLP (*judgment*, unverified); or LLM extraction (open question: acceptable for an offline, reproducible research tool?). Any replacement must write the CSV columns `SRL_util` already produces, so `SRL_main`, `SVO_main`, `semantic_analysis_main` and `corpus_profiler_util` keep working.
+- **OpenIE via CoreNLP** (2015, `SVO_main.py:441`): outdated; neural OpenIE or LLM triples (*judgment*).
+- **SVO by dependency rules:** sound; improves with the parser.
+
+### 16.6 Embeddings and topics
+
+- `all-MiniLM-L6-v2`, `all-distilroberta-v1` (2021), `bert-base-uncased` (2018) are dated. 2026 blog rankings name Qwen3-Embedding-0.6B and EmbeddingGemma-300m as strong small models and bge-small-en-v1.5 as the smallest ([supermemory](https://supermemory.ai/blog/best-open-source-embedding-models-benchmarked-and-ranked/), [app-lab](https://app-lab.ai/blog/choose-embedding-model-2026/)); confirm on the MTEB leaderboard and check licences (EmbeddingGemma uses Gemma terms, *judgment*).
+- **Keep:** Gensim Word2Vec, BERTopic (swap its embedder), MALLET; Gensim LDA as the no-Java fallback.
+
+### 16.7 Knowledge graphs, lexicons, utilities
+
+- **DBpedia Spotlight** (`knowledge_graphs_DBpedia_util.py:34`, a public http endpoint) and **YAGO**: aging; Wikidata is the natural fourth target (*judgment*).
+- **WordNet** through NLTK is Princeton 3.0; Open English WordNet through `wn`. Wrap access in one helper first: the APIs differ.
+- **Language detection:** `langdetect`, `langid`, `spacy-langdetect` → [GlotLID](https://huggingface.co/cis-lmu/glotlid) v3 (fastText, about 2,000 labels, Apache 2.0; [GitHub](https://github.com/AI-Natural-Language-Processing-Lab/GlotLID-language-identification-model)). Map its ISO 639-3 codes to the 2-letter codes the language config uses.
+- **Fine as they are:** textstat formulas, geopy/Nominatim, Gephi, word clouds. Spell checkers are basic (SymSpell or LanguageTool would be upgrades, *judgment*). The name-based gender annotator is a contested method, not an outdated model: a caveat in its TIPS file is enough.

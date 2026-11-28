@@ -38,5 +38,6 @@ Ask students who report update problems to send the update log to coralynn.yang@
 - Retest and close recent issues that releases may have fixed; fix the open recent bugs (§10). Triage the 2021–2024 backlog (§11).
 - The updater's known limits: long paths, no checksum or resume, the GitHub API rate limit, the silent `git stash` (§15).
 - UI overhaul (§7), as its own releases.
+- Outdated NLP tools and models (§16): SRL env first, then one configurable embedding model, GlotLID, Maverick and GLiNER as new options; each its own issue, checked with the sweep.
 - Tech debt in §12's order, and the missing chart regression tests (§12.6).
 - Stale remote branches (§13): delete Cora's merged ones; the others are Roberto's call.
